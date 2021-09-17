@@ -1,0 +1,13 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+
+[packages]
+
+[dev-packages]
+pytest = "==6.2.2"
+mypy = "==0.812"
+black = "==19.10b0"
+
+[requires]
+python_version = "3.9"
