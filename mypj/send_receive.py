@@ -76,7 +76,7 @@ class SendReceive():
         result_hidden = session.post(url_post_hidden, headers=self.headers, json=post_data_hidden)
         print(result_hidden.status_code)
         print(result_hidden.json())
-        return result_hidden.json()
+        return result_hidden
 
 
     # 推測した数字を登録する
@@ -89,7 +89,7 @@ class SendReceive():
         result_guess = session.post(url_post_guess, headers=self.headers, json=post_data_guess)
         print(result_guess.status_code)
         print(result_guess.json())
-        return result_guess.json()
+        return result_guess
 
 """試し
 drun = SendReceive(room_id=4001)
