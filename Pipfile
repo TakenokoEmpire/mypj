@@ -4,6 +4,8 @@ verify_ssl = true
 
 [packages]
 requests = "*"
+streamlit = "*"
+pygame = "*"
 
 [dev-packages]
 pytest = "==6.2.2"
