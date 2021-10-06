@@ -4,6 +4,7 @@ from pygame.locals import *
 from typing import List, Tuple
 import time
 from game_number_guess import NumberGuess
+import sys
 #mixer.Sound("--.mp3") #音の再生
 
 
@@ -20,15 +21,19 @@ class ShowGame:
     max_hp:int=100,
     display_size:Tuple[int]=(360,640),
     stage1_damage:int=4,
-    stage1_exp:int=10
+    stage1_exp:int=10,
+    enemy_level:int=0,
+    stage_num:int=3
     ):
         self.lv = lv
         self.num = num
         self.turn = turn
         self.max_hp = max_hp
         self.screen = pygame.display.set_mode(display_size)
-        self.damage_list = [stage1_damage]
-        self.exp_list = [stage1_exp]
+        self.damage_list = [stage1_damage,20,30]
+        self.exp_list = [stage1_exp,20,30]
+        self.enemy_level = enemy_level
+        self.stage_num = stage_num
         self.gamescene = 0
         self.error_count = 0
         self.history_count = 0
@@ -104,8 +109,12 @@ class ShowGame:
         """
         self.enemy1_img = pygame.image.load("./mypj3/img/enemy1.png")
         self.enemy1_damage_img = pygame.image.load("./mypj3/img/enemy1_damage.png")
-        self.enemy_list = [self.enemy1_img]
-        self.enemy_damage_list = [self.enemy1_damage_img]
+        self.enemy2_img = pygame.image.load("./mypj3/img/enemy2.png")
+        self.enemy2_damage_img = pygame.image.load("./mypj3/img/enemy2_damage.png")
+        self.enemy3_img = pygame.image.load("./mypj3/img/enemy3.png")
+        self.enemy3_damage_img = pygame.image.load("./mypj3/img/enemy3_damage.png")
+        self.enemy_list = {1:self.enemy1_img, 2:self.enemy2_img, 3:self.enemy3_img}
+        self.enemy_damage_list = {1:self.enemy1_damage_img, 2:self.enemy2_damage_img, 3:self.enemy3_damage_img}
         self.enemyrect = Rect(93,60,187,250)
 
     def set_button(self,
@@ -125,6 +134,9 @@ class ShowGame:
         self.prev_buttonrect = Rect(prev_button_place)
         self.next_buttonrect = Rect(next_button_place)
         self.history_buttonrect = Rect(history_button_place)
+        self.stage_select_buttonrect = []
+        for i in range(self.stage_num):
+            self.stage_select_buttonrect.append(Rect(80,100+100*i,200,50))
         self.normal_button_img = pygame.image.load("./mypj3/img/normal_button.png")
         self.boss_button_img = pygame.image.load("./mypj3/img/boss_button.png")
         self.how_to_play_button_img = pygame.image.load("./mypj3/img/how_to_button.png")
@@ -150,6 +162,7 @@ class ShowGame:
 
     def set_sound(self):
         self.bgm_dict = {"normal":"./mypj3/sound/normal_BGM.mp3",
+        "boss":"./mypj3/sound/boss.mp3",
         "home":"./mypj3/sound/home.mp3",
         "clear":"./mypj3/sound/clear_bgm.mp3",
         "failed":"./mypj3/sound/failed_bgm.mp3"}
@@ -170,6 +183,7 @@ class ShowGame:
         self.hit_list = []
         self.blow_list = []
         self.num = [0,1,2,3,4]
+        self.enemy_level = 0
 
     def home_show(self):
         """ホーム画面の描画
@@ -188,17 +202,27 @@ class ShowGame:
                 self.running = False
             if (event.type == pygame.MOUSEBUTTONUP) and (event.button == 1):
                     if self.normal_buttonrect.collidepoint(event.pos):
-                        self.gamescene = 1
+                        self.gamescene = 1  #normal stageへ
                         numberguess.make_1ans()    # 新しい答えの生成が必要
                         pygame.mixer.Channel(0).play(pygame.mixer.Sound(self.se_dict["start"]))
                         time.sleep(2)
-                        pygame.mixer.music.load(self.bgm_dict["normal"])
-                        pygame.mixer.music.set_volume(0.3)
-                        pygame.mixer.music.play(loops=-1)
                     if self.boss_buttonrect.collidepoint(event.pos):
-                        self.gamescene = 2
+                        self.gamescene = 2 # boss stageへ
+                        numberguess.make_1ans() #新しい答えの生成
+                        pygame.mixer.Channel(0).play(pygame.mixer.Sound(self.se_dict["start"]))
+                        self.load_show()# ロード画面
+                        # bossが解く
+                        time.sleep(2)
+
                     if self.how_to_play_buttonrect.collidepoint(event.pos):
                         self.gamescene = 5 #how to playへ
+
+    def load_show(self):
+        self.screen.fill((0, 0, 0))
+        font = pygame.font.SysFont(None, 40)
+        load_message = font.render("Now Loading...", True, (255,255,255))
+        self.screen.blit(load_message, (150,450))
+        pygame.display.update()
 
     def error_show(self):
         """エラー画面の描画
@@ -323,17 +347,54 @@ class ShowGame:
                 if self.prev_buttonrect.collidepoint(event.pos):
                     self.history_count -= 1
 
-    def normal_stage(self, enemy_level:int=0):
+    def stage_select(self):
+        """ステージセレクト画面
+        """
+        font = pygame.font.SysFont("bizudminchomediumbizudpminchomediumtruetype", 30)
+        level = font.render("ステージを選んで下さい",True, "WHITE")
+        self.screen.blit(level, (11,10))
+        font2 = pygame.font.SysFont("algerian", 40)
+        for i in range(self.stage_num): # ステージの数だけ描画
+            level = font2.render("LEVEL:{}".format(i+1),True, "WHITE")
+            self.screen.blit(level, (100,100+100*i))
+        self.screen.blit(self.return_button_img, self.return_buttonrect)
+
+    def judge_stage_select(self):
+        """ステージセレクト画面のボタンの判定
+        """
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT: 
+                self.running = False
+            if (event.type == pygame.MOUSEBUTTONUP) and (event.button == 1):
+                for i in range(self.stage_num):
+                    if self.stage_select_buttonrect[i].collidepoint(event.pos):
+                        self.enemy_level = i+1
+                        pygame.mixer.Channel(0).play(pygame.mixer.Sound(self.se_dict["start"]))
+                        time.sleep(2)
+                        if self.gamescene == 1:
+                            pygame.mixer.music.load(self.bgm_dict["normal"])
+                            pygame.mixer.music.set_volume(0.3)
+                            pygame.mixer.music.play(loops=-1)
+                        elif self.gamescene ==2:
+                            pygame.mixer.music.load(self.bgm_dict["boss"])
+                            pygame.mixer.music.set_volume(0.3)
+                            pygame.mixer.music.play(loops=-1)
+                if self.return_buttonrect.collidepoint(event.pos):
+                    self.gamescene = 0
+
+
+
+    def normal_stage(self):
         """通常ステージの描画
         """
-        self.screen.blit(self.enemy_list[enemy_level],self.enemyrect) # 敵の描画
+        self.screen.blit(self.enemy_list[self.enemy_level],self.enemyrect) # 敵の描画
         font2 = pygame.font.SysFont(None, 30) # turnの表示
         stage = font2.render("turn:{}".format(self.turn), True, (255,255,255))
         pygame.draw.line(self.screen,(0,200,0),(30,40),(30+self.hp,40),10) # HPの表示
         font3 = pygame.font.SysFont(None, 20)
         hp_word = font3.render("HP", True, (255,255,255))
         hp_value = font3.render("{}".format(self.hp), True, (255,255,255))
-        damage = (self.turn-1)*self.damage_list[enemy_level]
+        damage = (self.turn-1)*self.damage_list[self.enemy_level-1]
         if damage != 0:
             pygame.draw.line(self.screen,(200,0,0),(30+self.hp,40),(30+self.hp+damage,40),10)
         font4 = pygame.font.SysFont(None, 50)
@@ -346,7 +407,7 @@ class ShowGame:
         self.screen.blit(self.history_button_img, self.history_buttonrect)
         self.mark_show()
 
-    def normal_stage_judge(self,enemy_level:int=0):
+    def normal_stage_judge(self):
         """ノーマルステージでのボタンの判定
         """
         for event in pygame.event.get():
@@ -414,13 +475,13 @@ class ShowGame:
                             pygame.mixer.music.play(loops=-1)
                             pygame.mixer.Channel(0).play(pygame.mixer.Sound(self.se_dict["clear"]))
                         else:
-                            self.hp -= self.damage_list[enemy_level]
+                            self.hp -= self.damage_list[self.enemy_level-1]
                             pygame.mixer.Channel(0).play(pygame.mixer.Sound(self.se_dict["attack"]))
                             for i in range(2):
-                                self.screen.blit(self.enemy_damage_list[enemy_level],self.enemyrect)
+                                self.screen.blit(self.enemy_damage_list[self.enemy_level],self.enemyrect)
                                 pygame.display.update()
                                 time.sleep(0.1)
-                                self.screen.blit(self.enemy_list[enemy_level],self.enemyrect)
+                                self.screen.blit(self.enemy_list[self.enemy_level],self.enemyrect)
                                 pygame.display.update()
                                 time.sleep(0.1)
                         self.turn += 1
@@ -566,7 +627,12 @@ class ShowGame:
                 self.reset()
                 self.home_show()
                 self.home_judge()
-                
+            elif self.gamescene == 5: #how to play
+                self.how_to_play()
+                self.how_to_play_judje()
+            elif self.enemy_level == 0:
+                self.stage_select()
+                self.judge_stage_select()
 
             elif self.gamescene == 1: #Normal Stage
                 self.normal_stage()
@@ -590,9 +656,7 @@ class ShowGame:
                 self.clear()
                 self.result_judge()
 
-            elif self.gamescene == 5: #how to play
-                self.how_to_play()
-                self.how_to_play_judje()
+            
 
                 
             pygame.display.update() #スクリーン上のものを書き換えた時にはupdateが必要
