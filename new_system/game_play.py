@@ -97,7 +97,7 @@ class Commander(show_game4.ShowGame):
                 elif self.choice_dict["装備：手持ち"]["number"] != "False":
                     self.town_equip3(
                         self.choice_dict["装備：変更対象"]["number"], equip_list, self.choice_dict["装備：手持ち"]["number"])
-                    self.init_choice_info()
+                    self.init_town_info()
 
             elif self.choice_dict["初期画面"]["name"] == "ダンジョンへ行く":
                 if self.error_count == 1:
@@ -143,23 +143,39 @@ class Commander(show_game4.ShowGame):
                         self.run_count_battle[1] += 1
                     self.normal_stage()
                     self.normal_stage_judge()
+                    self.boss_action()
 
                 elif self.gamescene == 2:  # Boss Stage
                     if self.run_count_battle[2] == 0:
-                        self.dungeon_init(self.gamescene, self.dungeon_num)
+                        # ロード画面を挿入するならココ
+                        # ↓autoplayもやってくれる
+                        self.dungeon_init()
+                        self.boss_history = self.hist[1]
+                        print(self.boss_history)
                         self.second_init_showgame()
                         self.run_count_battle[2] += 1
-                    self.boss_stage()
-                    for event in pygame.event.get():
-                        if event.type == pygame.QUIT:
-                            self.running = False
-                        if (event.type == pygame.MOUSEBUTTONUP) and (event.button == 1):
-                            if self.return_buttonrect.collidepoint(event.pos):
-                                self.gamescene = 0
+                    if self.switch_judge("turn_switch", self.turn_switch, 0) == True:
+                        if self.jamming_judge("player") == "stop":
+                            print("調査を妨害された！")
+                            time.sleep(1)
+                            self.boss_action()
+
+                    self.turn_switch = 0
+
+                    self.normal_stage("boss")
+                    self.normal_stage_judge("boss")
+                    # for event in pygame.event.get():
+                    #     if event.type == pygame.QUIT:
+                    #         self.running = False
+                    #     if (event.type == pygame.MOUSEBUTTONUP) and (event.button == 1):
+                    #         if self.return_buttonrect.collidepoint(event.pos):
+                    #             self.gamescene = 0
 
                 elif self.gamescene == 3:  # game over
                     # システム側では特に何もしない
-                    print("YOU LOSE...")
+                    if self.run_count_battle[3] == 0:
+                        print("You lose...")
+                        self.run_count_battle[3] += 1
                     self.game_over()
                     self.result_judge()
 
@@ -171,7 +187,7 @@ class Commander(show_game4.ShowGame):
                     self.clear()
                     self.result_judge()
 
-                if self.switch_judge(self.gamescene, 0) == True:
+                if self.switch_judge("gamescene", self.gamescene, 0) == True:
                     self.init_battle_info()
 
             pygame.display.update()  # スクリーン上のものを書き換えた時にはupdateが必要
@@ -185,6 +201,7 @@ class Commander(show_game4.ShowGame):
 
     def init_battle_info(self):
         self.run_count_battle = [0, 0, 0, 0, 0, 0, 0]
+        self.turn_switch = 0
 
 
 def system_run():
@@ -193,8 +210,8 @@ def system_run():
     print("2:ダンジョン（現在、gui経由以外では使用不可）")
     print("3:gui")
     print("9:データ削除")
-    choice = input("どこ行く？->")
-    # choice = "3"
+    # choice = input("どこ行く？->")
+    choice = "3"
     if choice == "1":
         rest = town.Town()
         rest.main()

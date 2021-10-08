@@ -38,6 +38,7 @@ class ShowGame(battle.Battle, town.Town):
         self.demand = demand
         self.num = num
         self.turn = turn
+        self.boss_turn = turn
         self.screen = pygame.display.set_mode(display_size)
         self.dungeon_num = dungeon_num
         self.max_dungeon_num = max_dungeon_num
@@ -45,20 +46,24 @@ class ShowGame(battle.Battle, town.Town):
         self.error_count = 0  # 同じ数字入れたときのエラーカウント
         self.history_count = 0  # 履歴画面関連
         self.guess_list = []  # 推測した数字
+        self.boss_guess_list = []
         self.running = True
         self.hit = 0
         self.blow = 0
+        self.boss_hit = 0
+        self.boss_blow = 0
         self.ans_g = [0, 0, 0, 0, 0]
         self.flag = []
         self.lv_g = self.lv
+        self.turn_switch = 0
 
     def second_init_showgame(self):
         # GUIに対応
         # 進入ダンジョンが決定する前(initで強制的に実行される内容)のself設定は最小限にしておき、
         # ダンジョンに依存するステータス等はここで決めていく
 
-        self.max_hp = self.hp
-        self.damage = self.atk
+        self.max_hp = int(self.hp*3)
+        self.damage = self.e_atk
         self.exp_g = self.exp
         self.hp_g = self.max_hp
 
@@ -444,7 +449,7 @@ class ShowGame(battle.Battle, town.Town):
                 if self.return_buttonrect.collidepoint(event.pos):
                     self.gamescene = 0
 
-    def normal_stage(self):
+    def normal_stage(self, mode="normal"):
         """通常ステージの描画
         最大HP→self、残らない変数【残りHP＋累計ダメージで導出可】
         残りHP(「self.hp_g」)=毎ターン計算（ダメージを受けた値が保存される）
@@ -465,7 +470,16 @@ class ShowGame(battle.Battle, town.Town):
         font3 = pygame.font.SysFont(None, 20)
         hp_word = font3.render("HP", True, (255, 255, 255))
         hp_value = font3.render("{}".format(self.hp_g), True, (255, 255, 255))
-        damage = (self.turn-1)*self.damage
+        # if mode == "normal":
+        #     damage_ratio = (self.turn-1)
+        # elif mode == "boss":
+        #     if self.boss_hit == 5:
+        #         damage_ratio = 100
+        #     else:
+        #         damage_ratio = 0
+        # damage = damage_ratio*self.damage
+
+        damage = self.damage*(self.turn-1)
         if damage != 0:
             pygame.draw.line(self.screen, (200, 0, 0),
                              (30+self.hp_g, 40), (30+self.hp_g+damage, 40), 10)
@@ -480,7 +494,21 @@ class ShowGame(battle.Battle, town.Town):
         self.screen.blit(self.history_button_img, self.history_buttonrect)
         self.mark_show()
 
-    def normal_stage_judge(self):
+    def boss_action(self, mode="normal"):
+        if mode == "normal":
+            return
+        if self.jamming_judge("boss") == "stop":
+            print("敵の調査を妨害した！")
+            time.sleep(1)
+        else:
+            self.boss_guess_list = self.boss_history[self.boss_turn-1]["guess"]
+            self.boss_hit = self.boss_history[self.boss_turn-1]["hit"]
+            self.boss_blow = self.boss_history[self.boss_turn-1]["blow"]
+            self.boss_turn += 1
+            print([self.boss_guess_list, self.boss_hit, self.boss_blow])
+            time.sleep(1)
+
+    def normal_stage_judge(self, mode="normal"):
         """ノーマルステージでのボタンの判定
         【進数を16以外に設定できるようにしたい】
         同じ数字が含まれるとエラーカウント＋1
@@ -493,6 +521,7 @@ class ShowGame(battle.Battle, town.Town):
         Historyボタンが押されたらHistoryカウントを1に
 
         """
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:  # 上の×ボタンで閉じる
                 self.running = False
@@ -542,6 +571,7 @@ class ShowGame(battle.Battle, town.Town):
                     for i in self.num:
                         if self.num.count(i) > 1:
                             self.error_count = 1  # 同じ数字が１つ以上含まれるときにerror=1にする
+                    # 自分の攻撃プロセス
                     if self.error_count == 0:
                         guess_mark = [self.marks_s[self.num[0]], self.marks_s[self.num[1]],
                                       self.marks_s[self.num[2]], self.marks_s[self.num[3]], self.marks_s[self.num[4]]]
@@ -554,6 +584,8 @@ class ShowGame(battle.Battle, town.Town):
                             guess=self.num)  # 判定
                         self.hit_list.append(self.hit)
                         self.blow_list.append(self.blow)
+                        self.turn_switch += 1  # ボス用
+                        self.boss_action(mode)  # ボス用
                         if self.hit == 5:
                             self.gamescene = 4  # clear画面への遷移
                             pygame.mixer.music.stop()
@@ -562,7 +594,7 @@ class ShowGame(battle.Battle, town.Town):
                             pygame.mixer.music.play(loops=-1)
                             pygame.mixer.Channel(0).play(
                                 pygame.mixer.Sound(self.se_dict["clear"]))
-                        else:
+                        elif mode == "normal":
                             self.hp_g -= self.damage
                             pygame.mixer.Channel(0).play(
                                 pygame.mixer.Sound(self.se_dict["attack"]))
@@ -575,6 +607,23 @@ class ShowGame(battle.Battle, town.Town):
                                     self.enemy_list[self.dungeon_num], self.enemyrect)
                                 pygame.display.update()
                                 time.sleep(0.1)
+                        elif mode == "boss":
+                            if self.boss_hit == 3:
+                                print("演出はここに入れる")
+                            elif self.boss_hit == 5:
+                                self.hp_g -= self.damage*100
+                                self.hp_g -= self.damage
+                                pygame.mixer.Channel(0).play(
+                                    pygame.mixer.Sound(self.se_dict["attack"]))
+                                for i in range(3):
+                                    self.screen.blit(
+                                        self.enemy_damage_list[self.dungeon_num], self.enemyrect)
+                                    pygame.display.update()
+                                    time.sleep(0.25)
+                                    self.screen.blit(
+                                        self.enemy_list[self.dungeon_num], self.enemyrect)
+                                    pygame.display.update()
+                                    time.sleep(0.25)
                         self.turn += 1
                         if self.hp_g <= 0:
                             self.gamescene = 3
