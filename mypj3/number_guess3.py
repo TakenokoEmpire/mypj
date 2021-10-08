@@ -179,6 +179,22 @@ class NumberGuess:
                     count += 1
                 else:
                     check = 0
-        print(ans16) #あらかじめ答えを知りたいときのみ有効化する
+        #print(ans16) #あらかじめ答えを知りたいときのみ有効化する
         return ans16
+
+    def make_1ans(self):
+        nums = list(range(16))
+        return random.sample(nums, 5)
+    
+    def judge_guess(self,guess:List[int],ans:List[int]):
+        h = 0
+        b = 0
+        for i in range( len(guess) ):
+            if guess[i] == ans[i]:
+                h += 1 # hがヒットの数
+            else:
+                if guess[i] in ans:
+                    b += 1 # bがブローの数
+        return h,b
+
 

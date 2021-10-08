@@ -29,7 +29,7 @@ class ShowGame:
         self.num = num
         self.turn = turn
         self.max_hp = max_hp
-        self.screen = pygame.display.set_mode(display_size)
+        self.screen = pygame.display.set_mode(display_size,HWSURFACE | FULLSCREEN)
         self.damage_list = [stage1_damage,20,30]
         self.exp_list = [stage1_exp,20,30]
         self.enemy_level = enemy_level
@@ -42,6 +42,7 @@ class ShowGame:
         self.hit = 0
         self.blow = 0
         self.ans = [0,0,0,0,0]
+        self.screen_size = 0
 
 
 
@@ -587,6 +588,25 @@ class ShowGame:
                     if self.return_buttonrect.collidepoint(event.pos):
                         self.gamescene = 0
 
+    def screen_select(self):
+        w, h = pygame.display.get_surface().get_size()
+        font = pygame.font.SysFont("bizudminchomediumbizudpminchomediumtruetype", 100)
+        pc = font.render("PC",True, "WHITE")
+        self.screen.blit(pc, (50,10))
+        pcrect = Rect(0,10,w,h/2-50)
+        smartphone = font.render("スマホ",True, "WHITE")
+        self.screen.blit(smartphone, (10,h/2+10))
+        smartphonerect = Rect(0,h/2+10,w,h/2-50)
+        for event in pygame.event.get():
+                    if event.type == pygame.QUIT: 
+                        self.running = False
+                    if (event.type == pygame.MOUSEBUTTONUP) and (event.button == 1):
+                        if pcrect.collidepoint(event.pos):
+                            self.screen = pygame.display.set_mode((360,640))
+                            self.screen_size = 1
+                        if smartphonerect.collidepoint(event.pos):
+                            self.screen = pygame.display.set_mode((1080,1920))
+                            self.screen_size = 3
 
 
     def run(self):
@@ -603,7 +623,9 @@ class ShowGame:
         pygame.mixer.music.play(loops=-1)
         while self.running:
             self.screen.fill((0, 0, 0))
-            if self.error_count == 1:
+            if self.screen_size == 0:
+                self.screen_select()
+            elif self.error_count == 1:
                 self.error_show()
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT: 

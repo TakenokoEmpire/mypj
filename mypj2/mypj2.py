@@ -3,7 +3,7 @@
 
 """
 import argparse
-from . import number_guess2
+from number_guess2 import NumberGuess
 
 
 
@@ -34,11 +34,13 @@ def main() -> None:
 
     if args.ans is not None:
         ans = int(args.ans)
-        runner = number_guess2.NumberGuess(
+        runner = NumberGuess(
             min_ans=min_ans, max_ans=max_ans, max_stage=max_stage, ans=ans)
     else:
-        runner = number_guess2.NumberGuess(
+        runner = NumberGuess(
             min_ans=min_ans, max_ans=max_ans, max_stage=max_stage)
     stage, history = runner.run(mode=mode)
 
     """ここで、ansを決める"""
+
+main()
