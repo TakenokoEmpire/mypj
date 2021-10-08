@@ -135,13 +135,15 @@ class Battle(Function):
     主にエクセルファイルとやり取りする
     """
 
-    def __init__(self):
+    def __init__(self, place: str = "battle"):
         # 「プレイヤー」の「レベル」だけダンジョン選択前に必要なので、それだけ先に得る
         self.book = openpyxl.load_workbook('systems/base.xlsx', data_only=True)
         self.mysheet = self.book["プレイヤーステータス"]
         self.lv = [self.vlookup(self.mysheet, "lv", 2), False]
-        # for num, sheet in enumerate(self.vs_sheet):
-        #     self.lv[0] = self.vlookup(sheet, "lv", 2)
+        if place == "concole":
+            self.second_init_battle(place)
+            # for num, sheet in enumerate(self.vs_sheet):
+            #     self.lv[0] = self.vlookup(sheet, "lv", 2)
 
     def second_init_battle(self, place: str = "battle"):
         # GUIに対応
@@ -150,7 +152,11 @@ class Battle(Function):
 
         # 戦闘時だけでなく、Townからもここにアクセスする。
         # その場合は、通常ダンジョンのダンジョン番号1にアクセスしたものとして扱う（便宜上、敵も設定する必要がある）
-        if place != "battle":
+        if place == "concole":
+            print("notice: second_init_battle has accessed by concole")
+            self.gamescene = int(input("Normal:1,Boss:2 ->"))
+            self.dungeon_num = int(input("dungeon num ->"))
+        elif place != "battle":
             print("notice: second_init_battle has accessed by safe area")
             self.gamescene = 1
             self.dungeon_num = 1
@@ -236,9 +242,9 @@ class Battle(Function):
         for i in range(self.equip_qty):
             equip_name = self.vhlookup(
                 self.mysheet, self.equip_position[i], 1, "name", self.equip_index_rownum)
-            for j in range(len(update_stat)):
-                self.mysheet[self.xy_index(self.mysheet, self.equip_position[i], 1, update_stat[j], self.equip_index_rownum, "excel")] = self.vhlookup(
-                    self.book["装備"], equip_name, self.equip_sheetsoubi_name_columnnum, update_stat[j], 1)
+            for stat in update_stat:
+                self.mysheet[self.xy_index(self.mysheet, self.equip_position[i], 1, stat, self.equip_index_rownum, "excel")] = self.vhlookup(
+                    self.book["装備"], equip_name, self.equip_sheetsoubi_name_columnnum, stat, 1)
         # 装備欄に記録されたhp,atkの補正値をステータスに反映する(補正値の合計sum_statを計算し、該当する位置に貼り付ける)
         for j in range(len(update_stat)):
             for i in range(self.equip_qty):

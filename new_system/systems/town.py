@@ -1,6 +1,6 @@
 from typing import List, Tuple, Optional
 import random
-
+import openpyxl
 from . import battle
 
 from . import show_game4
@@ -38,24 +38,28 @@ class Town(show_game4.ShowGame):
             elif choice == "6":
                 self.town_quest()
             elif choice == "7":
-                self.town_debug()
+                self.town_test()
             elif choice == "9":
                 self.save()
                 exit()
 
+    def print_equip(self):
+        for i in range(self.vlookup(self.mysheet, "equip_qty", 2)):
+            print(("{} {} :{} (hp:+{}, atk:+{})").format(i, self.equip_position[i], self.vhlookup(self.mysheet, self.equip_position[i], 1, "name", self.equip_index_rownum), self.vhlookup(
+                self.mysheet, self.equip_position[i], 1, "hp", self.equip_index_rownum), self.vhlookup(self.mysheet, self.equip_position[i], 1, "atk", self.equip_index_rownum)))
+
     def town_status(self):
-        print(1)
+        self.second_init_battle("town")
         self.status_checker()
-        self.status_printer("town")
+        self.print_equip()
+        self.status_printer()
 
     def town_equip(self):
         # 装備の情報更新
         self.equip_checker()
         equip_list = []
         # 今の装備を表示
-        for i in range(self.vlookup(self.mysheet, "equip_qty", 2)):
-            print(("{} {} :{} (hp:+{}, atk:+{})").format(i, self.equip_position[i], self.vhlookup(self.mysheet, self.equip_position[i], 1, "name", self.equip_index_rownum), self.vhlookup(
-                self.mysheet, self.equip_position[i], 1, "hp", self.equip_index_rownum), self.vhlookup(self.mysheet, self.equip_position[i], 1, "atk", self.equip_index_rownum)))
+        self.print_equip()
         # 装備変更
         s_pos = self.hindex(self.book["装備"], "position")
         s_name = self.hindex(self.book["装備"], "name")
@@ -76,54 +80,62 @@ class Town(show_game4.ShowGame):
                                    1, "name", self.equip_index_rownum, "excel")] = equip_list[choice_equips]
 
         # 変更した状態を表示
-        self.equip_checker()
+        self.second_init_battle("town")
+        self.status_checker()
+        self.print_equip()
+        self.status_printer()
         print("装備を変更しました。")
-        for i in range(self.vlookup(self.mysheet, "equip_qty", 2)):
-            print(("{} {} :{} (hp:+{}, atk:+{})").format(i, self.equip_position[i], self.vhlookup(self.mysheet, self.equip_position[i], 1, "name", self.equip_index_rownum), self.vhlookup(
-                self.mysheet, self.equip_position[i], 1, "hp", self.equip_index_rownum), self.vhlookup(self.mysheet, self.equip_position[i], 1, "atk", self.equip_index_rownum)))
+
+        # self.save()
+        # self.book.close
+        # self.book = openpyxl.load_workbook('systems/base.xlsx', data_only=True)
 
     def town_equip1(self):
+        """"現在の全身装備をリストで返す"""
         # 装備の情報更新
         self.equip_checker()
-        equip_list = []
         # 今の装備を表示
-        output_list = []
+        position_choice_list = []
+        position_detail_list = []
         for i in range(self.vlookup(self.mysheet, "equip_qty", 2)):
-            output_list.append(("{} {} :{} (hp:+{}, atk:+{})").format(i, self.equip_position[i], self.vhlookup(self.mysheet, self.equip_position[i], 1, "name", self.equip_index_rownum), self.vhlookup(
-                self.mysheet, self.equip_position[i], 1, "hp", self.equip_index_rownum), self.vhlookup(self.mysheet, self.equip_position[i], 1, "atk", self.equip_index_rownum)))
-        # print(output_list)
-        return output_list
-        # # 装備変更
-        # s_pos = self.hindex(self.book["装備"], "position")
-        # s_name = self.hindex(self.book["装備"], "name")
-        # s_qty = self.hindex(self.book["装備"], "qty")
-        # choice_position = int(
-        #     input("どの装備を変更しますか？[0~{}]->".format(self.equip_qty-1)))
-        # for i in range(500):
-        #     # 部位が一致する装備を一覧表示するためにリストに追加
-        #     # 所持数が空白だとエラー起きる
-        #     if self.book["装備"].cell(row=i+1, column=s_pos).value == self.equip_position[choice_position] and self.book["装備"].cell(row=i+1, column=s_qty).value >= 1:
-        #         equip_list.append(self.book["装備"].cell(
-        #             row=i+1, column=s_name).value)
-        # for i in range(len(equip_list)):
-        #     print("{}:{}".format(i, equip_list[i]))
-        # choice_equips = int(
-        #     input("どれと交換しますか？[0~{}]->".format(len(equip_list)-1)))
-        # self.mysheet[self.xy_index(self.mysheet, self.equip_position[choice_position],
-        #                            1, "name", self.equip_index_rownum, "excel")] = equip_list[choice_equips]
+            choice = (("{} :{}").format(self.equip_position[i], self.vhlookup(
+                self.mysheet, self.equip_position[i], 1, "name", self.equip_index_rownum)))
+            detail = ((("hp:+{}, atk: +{}").format(self.vhlookup(self.mysheet, self.equip_position[i], 1, "hp", self.equip_index_rownum), self.vhlookup(
+                self.mysheet, self.equip_position[i], 1, "atk", self.equip_index_rownum))))
+            position_choice_list.append(choice)
+            position_detail_list.append(choice+" : "+detail)
+        return position_choice_list, position_detail_list
 
-        #     def cul_pow2(self, num):
-        #         return num ** 2
+    def town_equip2(self, choice_position):
+        """手持ちの装備のうち、指定された部位のものをリストで返す"""
+        # 装備変更
+        equip_choice_list = []
+        s_pos = self.hindex(self.book["装備"], "position")
+        s_name = self.hindex(self.book["装備"], "name")
+        s_qty = self.hindex(self.book["装備"], "qty")
+        for i in range(500):
+            # 部位が一致する装備を一覧表示するためにリストに追加
+            # 所持数が空白だとエラー起きる
+            if self.book["装備"].cell(row=i+1, column=s_pos).value == self.equip_position[choice_position] and self.book["装備"].cell(row=i+1, column=s_qty).value >= 1:
+                equip_choice_list.append(self.book["装備"].cell(
+                    row=i+1, column=s_name).value)
+        return equip_choice_list
 
-        # class classB(classA):
-        #     def __init__(self):
-        #         self.ans = ans
-
-        #     def cul_pow3(self, num):
-        #         return num ** 3
-
-        # subClass = classB()
-        # print(subClass.cul_pow3(3))
+    def town_equip3(self, choice_position, equip_list, choice_equips):
+        """指定された部位の装備品リストの中から、指定された装備を現在装備と交換する"""
+        self.mysheet[self.xy_index(self.mysheet, self.equip_position[choice_position],
+                                   1, "name", self.equip_index_rownum, "excel")] = equip_list[choice_equips]
+        print(self.mysheet[self.xy_index(self.mysheet, self.equip_position[choice_position],
+                                         1, "name", self.equip_index_rownum, "excel")].value)
+        print("装備が変更されました！")
+        self.second_init_battle("town")
+        self.status_checker()
+        self.print_equip()
+        self.status_printer()
+        print(self.book["プレイヤーステータス"]["B4"].value)
+        self.book.save("systems/base.xlsx")
+        self.save
 
     def town_test(self):
-        return "aaaaaaa"
+        self.mysheet["G6"].value += 1
+        print("value:{}".format(self.mysheet["G6"].value))

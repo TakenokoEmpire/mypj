@@ -698,9 +698,9 @@ class ShowGame(battle.Battle):
         self.choice_dict = {}
         for dict_name in self.dict_name_list:
             self.choice_dict.update(
-                {dict_name: {"number": False, "name": False}})
+                {dict_name: {"number": "False", "name": "False"}})
 
-    def choice_screen(self, title, choice: List[str], message: List[str], dict_name):
+    def choice_screen(self, title, choice: List[str], message: List[str], dict_name, delete_dict_list_when_return: List[str] = []):
         """選択肢を表示させるためのモジュール
         タイトルは28文字まで、選択肢は7つまで、メッセージは5行まで対応。
         選択が行われた場合、選択肢の番号と名前を、self.choice_dictのdict_nameに登録する
@@ -714,6 +714,7 @@ class ShowGame(battle.Battle):
             "bizudminchomediumbizudpminchomediumtruetype", 18)
         # titleを表示
         # titleが長すぎたら改行して2行にする
+        title = str(title)
         if len(title) >= 14:
             title2 = title[14:len(title)]
             title = title[0:14]
@@ -752,7 +753,13 @@ class ShowGame(battle.Battle):
                         print(self.choice_dict)
                 # Returnボタンが押されたときの動作
                 if self.return_buttonrect.collidepoint(event.pos):
-                    self.gamescene = 0
+                    # 何も設定されてない場合はホーム画面まで戻る
+                    if delete_dict_list_when_return == []:
+                        delete_dict_list_when_return = self.dict_name_list
+                    time.sleep(0.5)
+                    for dicts in delete_dict_list_when_return:
+                        self.choice_dict.update(
+                            {dicts: {"number": "False", "name": "False"}})
 
     # def judge_choice_screen(self):
         """
