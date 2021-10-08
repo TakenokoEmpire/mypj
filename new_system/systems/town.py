@@ -3,15 +3,13 @@ import random
 import openpyxl
 from . import battle
 
-from . import show_game4
 
-
-class Town(show_game4.ShowGame):
+class Town(battle.Core):
     """街"""
 
     def __init__(self):
         super().__init__()
-        self.second_init_battle("town")
+        # battle.Core()
 
     def main(self):
 
@@ -49,12 +47,13 @@ class Town(show_game4.ShowGame):
                 self.mysheet, self.equip_position[i], 1, "hp", self.equip_index_rownum), self.vhlookup(self.mysheet, self.equip_position[i], 1, "atk", self.equip_index_rownum)))
 
     def town_status(self):
-        self.second_init_battle("town")
+        # battle.Battle("town")
         self.status_checker()
         self.print_equip()
-        self.status_printer()
+        self.print_status()
 
     def town_equip(self):
+        # battle.Battle("town")
         # 装備の情報更新
         self.equip_checker()
         equip_list = []
@@ -80,10 +79,10 @@ class Town(show_game4.ShowGame):
                                    1, "name", self.equip_index_rownum, "excel")] = equip_list[choice_equips]
 
         # 変更した状態を表示
-        self.second_init_battle("town")
+        # battle.Battle("town")
         self.status_checker()
         self.print_equip()
-        self.status_printer()
+        self.print_status()
         print("装備を変更しました。")
 
         # self.save()
@@ -128,13 +127,12 @@ class Town(show_game4.ShowGame):
         print(self.mysheet[self.xy_index(self.mysheet, self.equip_position[choice_position],
                                          1, "name", self.equip_index_rownum, "excel")].value)
         print("装備が変更されました！")
-        self.second_init_battle("town")
+        # battle.Battle("town")
         self.status_checker()
         self.print_equip()
-        self.status_printer()
+        self.print_status()
         print(self.book["プレイヤーステータス"]["B4"].value)
-        self.book.save("systems/base.xlsx")
-        self.save
+        self.save()
 
     def town_test(self):
         self.mysheet["G6"].value += 1

@@ -43,7 +43,7 @@ class Commander(show_game4.ShowGame):
         self.set_mark_entry()
         self.set_sound()
         # choice関連
-        self.dict_name_list = ["初期画面", "街の選択", "装備部位選択", "変更後装備選択"]
+        self.dict_name_list = ["初期画面", "街の入り口", "装備：変更対象", "装備：手持ち"]
         # ↑【重要】選択肢を使う場合、そのdict_nameは必ずこのリストにいれる
         self.choice_dict_initialize()
 
@@ -74,32 +74,30 @@ class Commander(show_game4.ShowGame):
                 self.run_count_battle = [0, 0, 0, 0, 0, 0, 0]
 
             elif self.choice_dict["初期画面"]["name"] == "街へ行く":
-                if self.choice_dict["街の選択"]["number"] == "False":
-                    if self.run_count_town[0] == 0:
-                        self.second_init_battle("town")
-                        self.run_count_town[0] += 1
+                if self.choice_dict["街の入り口"]["number"] == "False":
                     self.choice_screen(
-                        "何をする？", ["クエスト", "ステータスチェック", "スキル", "装備", "アイテム", "ショップ",  "セーブして戻る"], ["「装備」のみ対応"], "街の選択")
-                elif self.choice_dict["街の選択"]["name"] == "装備" and self.choice_dict["装備部位選択"]["number"] == "False":
+                        "何をする？", ["クエスト", "ステータスチェック", "スキル", "装備", "アイテム", "ショップ",  "セーブして戻る"], ["「装備」のみ対応"], "街の入り口")
+                # 装備変更
+                elif self.choice_dict["街の入り口"]["name"] == "装備" and self.choice_dict["装備：変更対象"]["number"] == "False":
                     # 装備の情報更新
                     if self.run_count_town[1] == 0:
                         self.equip_checker()
                         # equip_list = []
-                        rest = town.Town()
-                        position_choice_list, position_detail_list = rest.town_equip1()
+                        print(self.basic_status_index)
+                        position_choice_list, position_detail_list = self.town_equip1()
                         # print(current_equip_list)
                         self.run_count_town[1] += 1
                     self.choice_screen(
-                        "どの部位を変更する？", position_choice_list, position_detail_list, "装備部位選択", ["街の選択"])
-                elif self.choice_dict["装備部位選択"]["number"] != "False" and self.choice_dict["変更後装備選択"]["number"] == "False":
-                    equip_list = rest.town_equip2(
-                        self.choice_dict["装備部位選択"]["number"])
+                        "どの部位を変更する？", position_choice_list, position_detail_list, "装備：変更対象", ["街の入り口"])
+                elif self.choice_dict["装備：変更対象"]["number"] != "False" and self.choice_dict["装備：手持ち"]["number"] == "False":
+                    equip_list = self.town_equip2(
+                        self.choice_dict["装備：変更対象"]["number"])
                     self.choice_screen(
-                        self.choice_dict["変更後装備選択"]["number"], equip_list, ["ここに現在の装備の情報を表示させたい"], "変更後装備選択", ["装備部位選択"])
-                elif self.choice_dict["変更後装備選択"]["number"] != "False":
-                    rest.town_equip3(
-                        self.choice_dict["装備部位選択"]["number"], equip_list, self.choice_dict["変更後装備選択"]["number"])
-                    self.init_choice_town()
+                        self.choice_dict["装備：手持ち"]["number"], equip_list, ["ここに現在の装備の情報を表示させたい"], "装備：手持ち", ["装備：変更対象"])
+                elif self.choice_dict["装備：手持ち"]["number"] != "False":
+                    self.town_equip3(
+                        self.choice_dict["装備：変更対象"]["number"], equip_list, self.choice_dict["装備：手持ち"]["number"])
+                    self.init_choice_info()
 
             elif self.choice_dict["初期画面"]["name"] == "ダンジョンへ行く":
                 if self.error_count == 1:
@@ -136,17 +134,19 @@ class Commander(show_game4.ShowGame):
                 elif self.gamescene == 1:  # Normal Stage
                     if self.run_count_battle[1] == 0:
                         print("second_init")
+                        print(self.gamescene)
                         # 各戦闘毎に一回のみ動作させたい
-                        self.second_init_battle()
+
+                        self.dungeon_init()
                         self.second_init_showgame()
-                        self.status_printer()
+                        self.print_status()
                         self.run_count_battle[1] += 1
                     self.normal_stage()
                     self.normal_stage_judge()
 
                 elif self.gamescene == 2:  # Boss Stage
                     if self.run_count_battle[2] == 0:
-                        self.second_init_battle()
+                        self.dungeon_init(self.gamescene, self.dungeon_num)
                         self.second_init_showgame()
                         self.run_count_battle[2] += 1
                     self.boss_stage()
@@ -171,99 +171,20 @@ class Commander(show_game4.ShowGame):
                     self.clear()
                     self.result_judge()
 
+                if self.switch_judge(self.gamescene, 0) == True:
+                    self.init_battle_info()
+
             pygame.display.update()  # スクリーン上のものを書き換えた時にはupdateが必要
 
-    def init_choice_town(self):
-        init_list = ["街の選択", "装備部位選択", "変更後装備選択"]
+    def init_town_info(self):
+        init_list = ["街の入り口", "装備：変更対象", "装備：手持ち"]
         for i in init_list:
             self.choice_dict[i]["number"] = "False"
             self.choice_dict[i]["name"] = "False"
-            self.run_count_town = [0, 0, 0, 0, 0, 0, 0]
+        self.run_count_town = [0, 0, 0, 0, 0, 0, 0]
 
-
-def automation_test():
-    woven = City()
-    woven.city_run()
-
-
-class City(show_game4.ShowGame):
-
-    def __init__(self):
-        super().__init__()
-
-    def city_run(self):
-        pygame.display.set_caption("Hit, Blow and Dragons")
-        self.set_player()
-        self.set_mark()
-        self.set_enemy()
-        self.set_button()
-        self.set_mark_entry()
-        self.set_sound()
-
-        pygame.mixer.music.load(self.bgm_dict["home"])
-        pygame.mixer.music.set_volume(0.3)
-        pygame.mixer.music.play(loops=-1)
-        while self.running:
-            self.screen.fill((0, 0, 0))
-            if self.error_count == 1:
-                self.error_show()
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        self.running = False
-                    if (event.type == pygame.MOUSEBUTTONUP) and (event.button == 1):
-                        if self.return_buttonrect.collidepoint(event.pos):
-                            self.error_count = 0
-            elif self.history_count == 1:
-                self.history_show()
-                self.history_judge()
-            elif self.history_count == 2:
-                self.history2_show()
-                self.history2_judge()
-            elif self.history_count == 3:
-                self.history2_show()
-                self.history2_judge()
-            elif self.history_count == 4:
-                self.historylast_show()
-                self.historylast_judge()
-            elif self.gamescene == 0:  # ホーム画面
-                self.dict_name_list = ["装備", "装備2"]
-                # ↑【重要】選択肢を使う場合、そのdict_nameは必ずこのリストにいれる
-                self.choice_dict_initialize()
-                self.reset()
-                self.home_show()
-                self.home_judge()
-            elif self.gamescene == 5:  # how to play
-                self.how_to_play()
-                self.how_to_play_judje()
-            elif self.dungeon_num == 0:
-                """「選択肢」の使い方
-                まず、self.dict_name_listに【選択肢の名称】を追加
-                次に、「if self.choice_dict["装備"]["number"] == "False":」の["装備"]を、【選択肢の名称】に変更する
-                最後に、self.choice_screenの最後の引数に【選択肢の名称】を入力する。
-                選択結果は、self.choice_dictに保存される。
-                何かおかしいと思ったら、
-                ・self.dict_name_listに【選択肢の名称】を追加したか
-                ・3箇所の【選択肢の名称】が全て同じであるか
-                をチェック
-                """
-                if self.choice_dict["装備"]["number"] == "False":
-                    self.choice_screen(
-                        "全角で最大２８文字まで入力可能で、１５字目以降は自動改行される", ["木の剣 ATK+10", "鉄の剣：ATK+25", "鉄の剣",
-                                                            "鉄の剣", "鉄の剣", "鉄の剣", "選択肢は最大7つまで"], ["現在装備：木の剣(攻撃力+10,防御力+0)",
-                                                                                                 "攻撃力：25(+15)、防御力：0(+0)", "あ", "あ", "メッセージは最大5行まで"], "装備")
-                elif self.choice_dict["装備2"]["number"] == "False":
-                    self.choice_screen(
-                        "装備変更するぞ", ["木の剣 ATK+10", "鉄の剣：ATK+25", "選択肢は最大7つまで"], ["現在装備：木の剣(攻撃力+10,防御力+0)", "メッセージは最大5行まで"], "装備2")
-                else:
-
-                    rest = town.Town()
-                    rest.town_status()
-                    print("a")
-                    time.sleep(1)
-
-                # self.judge_choice_screen()
-
-            pygame.display.update()  # スクリーン上のものを書き換えた時にはupdateが必要
+    def init_battle_info(self):
+        self.run_count_battle = [0, 0, 0, 0, 0, 0, 0]
 
 
 def system_run():
@@ -271,7 +192,6 @@ def system_run():
     print("1:街")
     print("2:ダンジョン（現在、gui経由以外では使用不可）")
     print("3:gui")
-    print("4:自動化テスト")
     print("9:データ削除")
     choice = input("どこ行く？->")
     # choice = "3"
@@ -283,14 +203,11 @@ def system_run():
         # dungeon_type = input("choose dungeon type [boss/normal] ->")
         # dungeon_num = input("choose dungeon number ->")
         # vs = battle.Battle(dungeon_type, int(dungeon_num))
-        vs = battle.Battle("concole")
+        vs = battle.Battle("console")
         vs.main()
 
     if choice == "3":
         gui_title()
-
-    if choice == "4":
-        automation_test()
 
     if choice == "9":
         delete = initialize.Initialize()

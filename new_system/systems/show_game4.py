@@ -9,6 +9,7 @@ import random
 import sys
 
 from . import battle
+from . import town
 
 
 # mixer.Sound("--.mp3") #音の再生
@@ -20,7 +21,7 @@ mixer.init()
 # numberguess = game_number_guess.NumberGuess()
 
 
-class ShowGame(battle.Battle):
+class ShowGame(battle.Battle, town.Town):
     # stage_num　→　max_dungeon_num（変数名変更）：最大ダンジョン数
     # enemy_level　→　dungeon_num（変数名変更）：選択ダンジョン番号
 
@@ -32,6 +33,7 @@ class ShowGame(battle.Battle):
                  max_dungeon_num: int = 3,
                  gamescene: int = 0,
                  demand: int = 1,):
+        print("showgame init")
         super().__init__()
         self.demand = demand
         self.num = num
@@ -48,16 +50,16 @@ class ShowGame(battle.Battle):
         self.blow = 0
         self.ans_g = [0, 0, 0, 0, 0]
         self.flag = []
-        self.lv_g = self.lv[0]
+        self.lv_g = self.lv
 
     def second_init_showgame(self):
         # GUIに対応
         # 進入ダンジョンが決定する前(initで強制的に実行される内容)のself設定は最小限にしておき、
         # ダンジョンに依存するステータス等はここで決めていく
 
-        self.max_hp = self.hp[0]
-        self.damage = self.atk[1]
-        self.exp_g = self.exp[1]
+        self.max_hp = self.hp
+        self.damage = self.atk
+        self.exp_g = self.exp
         self.hp_g = self.max_hp
 
     def set_player(self, X: int = 118, Y: int = 50):
@@ -641,7 +643,7 @@ class ShowGame(battle.Battle):
         clear = font.render("Clear!", True, (230, 180, 34))
         self.screen.blit(clear, (98, 100))
         exp = font2.render("EXP:{}".format(
-            self.exp_g), True, (255, 255, 255))
+            self.e_exp), True, (255, 255, 255))
         self.screen.blit(exp, (130, 200))
         self.screen.blit(self.return_button_img, self.return_buttonrect)
         self.screen.blit(self.history_button_img, Rect(120, 500, 120, 30))

@@ -6,6 +6,7 @@ import copy
 from systems import judge_manual
 import try_1003
 import send_recieve
+import time
 # from systems import testtry
 
 """よくやるミス
@@ -39,7 +40,7 @@ special mode→クリティカル攻撃
 
 class Function():
     def __init__(self):
-        pass
+        self.switch_judge_box = [None, None]
 
     def vlookup(self, sheet, index, column_order):
         """excelのvlookup関数を再現。
@@ -129,111 +130,88 @@ class Function():
         else:
             return True
 
+    def switch_judge(self, target, switch_value):
+        """
+        前回実行時targetの値がswitch_valueと一致せず、かつ今回一致した場合にTrueを返す、
+        GUI再生時を想定している"""
+        if switch_value == None:
+            print("switch_value should not be None")
+            exit()
+        self.switch_judge_box[0] = target
+        if self.switch_judge_box[0] != self.switch_judge_box[1] and self.switch_judge_box[0] == switch_value:
+            print("switch_value:TRUE")
+            self.switch_judge_box[1] = self.switch_judge_box[0]
+            self.switch_judge_box[0] = None
+            return True
+        else:
+            self.switch_judge_box[1] = self.switch_judge_box[0]
+            self.switch_judge_box[0] = None
+            return False
 
-class Battle(Function):
-    """ダメージを入力し、その結果を出力するように子クラスを設計中
-    主にエクセルファイルとやり取りする
+
+class Core(Function):
     """
+    変数：複数の場面で使用されるもの
+    関数：複数の場面で使用されるもの
+    Battleクラスから、ダンジョン情報が必要ないものでかつ他でも使うものをこちらに移管した。
+    街での作業、ダンジョンでの戦闘を完了すると、再起動するように設定されている。"""
 
-    def __init__(self, place: str = "battle"):
-        # 「プレイヤー」の「レベル」だけダンジョン選択前に必要なので、それだけ先に得る
-        self.book = openpyxl.load_workbook('systems/base.xlsx', data_only=True)
+    def __init__(self):
+        super().__init__()
+        print("CORE")
+        # エクセルファイルの呼び出し
+        try:
+            self.book = openpyxl.load_workbook(
+                'systems/base.xlsx', data_only=True)
+        except:
+            self.book = openpyxl.load_workbook(
+                'C:/Users/wolke/git1008/new_system/systems/base.xlsx', data_only=True)
         self.mysheet = self.book["プレイヤーステータス"]
-        self.lv = [self.vlookup(self.mysheet, "lv", 2), False]
-        if place == "concole":
-            self.second_init_battle(place)
-            # for num, sheet in enumerate(self.vs_sheet):
-            #     self.lv[0] = self.vlookup(sheet, "lv", 2)
 
-    def second_init_battle(self, place: str = "battle"):
-        # GUIに対応
-        # ダンジョンに依存するステータス等は、この段階まで待つ必要があるため、
-        # 進入ダンジョンが決定する前(initで強制的に実行される内容)と後でself設定を分割する。
-
-        # 戦闘時だけでなく、Townからもここにアクセスする。
-        # その場合は、通常ダンジョンのダンジョン番号1にアクセスしたものとして扱う（便宜上、敵も設定する必要がある）
-        if place == "concole":
-            print("notice: second_init_battle has accessed by concole")
-            self.gamescene = int(input("Normal:1,Boss:2 ->"))
-            self.dungeon_num = int(input("dungeon num ->"))
-        elif place != "battle":
-            print("notice: second_init_battle has accessed by safe area")
-            self.gamescene = 1
-            self.dungeon_num = 1
-        dungeon_type_list = ["none", "normal", "boss"]
-        self.dungeon_type = dungeon_type_list[self.gamescene]
-        self.ans = ["12345", "abcde"]
-        self.turn_count = [0, 0]
-        self.hist = [[], []]
-        self.max_ans = 16
-        self.length = 5
-
-        self.mobname = self.vlookup(
-            self.choose_dungeon(), str(self.dungeon_num), 3)
-        self.mobsheet = self.book[self.mobname]
-        self.vs_sheet = [self.mysheet, self.mobsheet]
-        if place == "battle":
-            print("野生の{}が現れた！".format(self.mobname))
-
+        # 装備関連
         self.equip_position = ["右手", "左手", "鎧", "靴", "装飾品"]
         self.equip_index_rownum = self.vindex(self.mysheet, "position")
         self.equip_sheetsoubi_name_columnnum = self.hindex(
             self.book["装備"], "name")
         self.equip_qty = self.vlookup(self.mysheet, "equip_qty", 2)
-
+        # ステータス関連
         """
-        lv,hp,atk,skill[0]~[2],exp,moneyはリストとなっており、[0]がプレイヤーの値、[1]が敵の値
+        lv,hp,atk,skill1~3,exp,moneyは、プレイヤーの値を返すint（スキルはstr）にする。（スキルも[0]~[2]ではなく、それぞれのstrとなっている）
+        敵のステータスは、全て頭にe_をつける。
+        対戦時はリストとなっており、[0]がプレイヤーの値、[1]が敵の値。
         """
+        # 便利な一覧表
         self.basic_status_index = ["lv", "hp", "atk"]
+        self.all_status_index = ["lv", "hp", "atk", "exp", "money",
+                                 "skill1", "skill2", "skill3"]
+        # self.basic_status_index_var = [self.lv, self.hp, self.atk]
+        # self.all_status_index_var = [self.lv, self.hp, self.atk, self.exp, self.money, self.skill1, self.skill2, self.skill3]
+
+        # ステータス取得
         self.status_checker()  # ステータス取得前にステータスを更新しておく
-        self.lv = [0, 0]
-        self.hp = [0, 0]
-        self.atk = [0, 0]
-        self.skill = [[0, 0] for j in range(3)]
-        self.exp = [0, 0]
-        self.money = [0, 0]
-        for num, sheet in enumerate(self.vs_sheet):
-            self.lv[num] = self.vlookup(sheet, "lv", 2)
-            self.hp[num] = self.vlookup(sheet, "hp", 2)
-            self.atk[num] = self.vlookup(sheet, "atk", 2)
-            for j in range(3):
-                self.skill[j][num] = self.vlookup(
-                    sheet, "skill{}".format(j), 2)
-            self.exp[num] = self.vlookup(sheet, "exp", 2)
-            self.money[num] = self.vlookup(sheet, "money", 2)
-        self.droplist = []
 
-    def choose_dungeon(self):
-        # 小文字化させたい
-        while True:
-            if self.dungeon_type == "normal":
-                return self.book["通常ダンジョン"]
-            elif self.dungeon_type == "boss":
-                # ボス戦の場合、この段階でアルゴリズムを最後まで回す。
-                # なお、16進5桁以外は非対応である。
-                self.autoplay()
-                return self.book["ボスダンジョン"]
-            else:
-                self.dungeon_type = "normal"
-                print("normalダンジョンに入ります。")
-                return self.book["通常ダンジョン"]
+    # def equip_index_of_position(self, position):
 
-    def main(self):
-        self.second_init_battle()
-        self.status_printer()
-        print(self.hist)
-        while True:
-            if self.my_turn() == "finish":
-                break
-            if self.mob_turn() == "finish":
-                break
-            self.end_of_turn()
+    #     return equip_index_list, equip_sepc_list
 
     def status_checker(self):
         self.equip_checker()
         for stat in self.basic_status_index:
             self.mysheet[self.xy_index(self.mysheet, stat, 1, "total", 1, "excel")] = self.vhlookup(
                 self.mysheet, stat, 1, "raw", 1) + self.vhlookup(self.mysheet, stat, 1, "equip", 1)
+        status_box = []
+        for num in range(len(self.all_status_index)):
+            status_box.append(self.vlookup(
+                self.mysheet, self.all_status_index[num], 2))
+        # ステータス定義
+        self.lv = status_box[0]
+        self.hp = status_box[1]
+        self.atk = status_box[2]
+        self.exp = status_box[3]
+        self.money = status_box[4]
+        self.skill1 = status_box[5]
+        self.skill2 = status_box[6]
+        self.skill3 = status_box[7]
 
     def equip_checker(self):
         # 装備欄に登録された名前から、hp,atkの値を「装備」ブックから参照し記録する
@@ -253,15 +231,127 @@ class Battle(Function):
             self.mysheet[self.xy_index(
                 self.mysheet, update_stat[j], 1, "equip", 1, "excel")] = sum_stat[j]
 
-    def status_printer(self, place: str = "battle"):
+    def print_status(self):
         print("my status")
         print("lv,hp,atk,exp")
-        print([self.lv[0], self.hp[0], self.atk[0], self.exp[0]])
-        # Townで敵情報を表示させないため分離
-        if place == "battle":
-            print("mob status")
-            print("lv,hp,atk,exp")
-            print([self.lv[1], self.hp[1], self.atk[1], self.exp[1]])
+        print([self.lv, self.hp, self.atk, self.exp])
+
+    def save(self):
+        """開いてる途中だとエラー出るよ"""
+        try:
+            self.book.save("systems/base.xlsx")
+        except FileNotFoundError:
+            self.book.save(
+                'C:/Users/wolke/git1008/new_system/systems/base.xlsx')
+        except PermissionError:
+            print("エクセルファイルを閉じてください")  # これ戦闘前に欲しい
+            exit()
+
+
+class Battle(Core):
+    """ダメージを入力し、その結果を出力するように子クラスを設計中
+    主にエクセルファイルとやり取りする
+    """
+
+    def __init__(self, place: str = "battle"):
+        super().__init__()
+        """
+        戦闘関連の情報処理全般を扱う。
+        ダンジョン以外でも使うものは、Coreへ移管した。
+        """
+
+        # GUIに対応
+        # ダンジョンに依存するステータス等は、この段階まで待つ必要があるため、
+        # 進入ダンジョンが決定する前(initで強制的に実行される内容)と後でself設定を分割する。
+
+        # 戦闘時だけでなく、Townからもここにアクセスする。
+        # その場合は、通常ダンジョンのダンジョン番号1にアクセスしたものとして扱う（便宜上、敵も設定する必要がある）
+        if place == "console":
+            print("NOTICE: class Battle is being accessed by console")
+            self.gamescene = int(input("Normal:1,Boss:2 ->"))
+            self.dungeon_num = int(input("dungeon num 1~ (not 0)->"))
+            self.dungeon_init()
+
+    def dungeon_init(self):
+        # ダンジョン情報と初期設定
+        print("gamescene:{},dungeon_num:{}".format(
+            self.gamescene, self.dungeon_num))
+        dungeon_type_list = ["none", "normal", "boss"]
+        self.dungeon_type = dungeon_type_list[self.gamescene]
+        self.ans = ["12345", "abcde"]
+        self.turn_count = [0, 0]
+        self.hist = [[], []]
+        self.max_ans = 16
+        self.length = 5
+
+        self.mobname = self.vlookup(
+            self.choose_dungeon(), str(self.dungeon_num), 3)
+        self.mobsheet = self.book[self.mobname]
+        self.vs_sheet = [self.mysheet, self.mobsheet]
+        print("野生の{}が現れた！".format(self.mobname))
+        self.droplist = []
+
+        # 敵ステータス取得
+        status_box = []
+        for num in range(len(self.all_status_index)):
+            status_box.append(self.vlookup(
+                self.mobsheet, self.all_status_index[num], 2))
+        # ステータス定義
+        self.e_lv = status_box[0]
+        self.e_hp = status_box[1]
+        self.e_atk = status_box[2]
+        self.e_exp = status_box[3]
+        self.e_money = status_box[4]
+        self.e_skill1 = status_box[5]
+        self.e_skill2 = status_box[6]
+        self.e_skill3 = status_box[7]
+
+        # """
+        # lv,hp,atk,skill[0]~[2],exp,moneyはリストとなっており、[0]がプレイヤーの値、[1]が敵の値
+        # """
+        # self.basic_status_index = ["lv", "hp", "atk"]
+        # self.status_checker()  # ステータス取得前にステータスを更新しておく
+        # self.lv = [0, 0]
+        # self.hp = [0, 0]
+        # self.atk = [0, 0]
+        # self.skill = [[0, 0] for j in range(3)]
+        # self.exp = [0, 0]
+        # self.money = [0, 0]
+        # for num, sheet in enumerate(self.vs_sheet):
+        #     self.lv[num] = self.vlookup(sheet, "lv", 2)
+        #     self.hp[num] = self.vlookup(sheet, "hp", 2)
+        #     self.atk[num] = self.vlookup(sheet, "atk", 2)
+        #     for j in range(3):
+        #         self.skill[j][num] = self.vlookup(
+        #             sheet, "skill{}".format(j), 2)
+        #     self.exp[num] = self.vlookup(sheet, "exp", 2)
+        #     self.money[num] = self.vlookup(sheet, "money", 2)
+
+    def choose_dungeon(self):
+        # 小文字化させたい
+        while True:
+            if self.dungeon_type == "normal":
+                return self.book["通常ダンジョン"]
+            elif self.dungeon_type == "boss":
+                # ボス戦の場合、この段階でアルゴリズムを最後まで回す。
+                # なお、16進5桁以外は非対応である。
+                self.autoplay()
+                return self.book["ボスダンジョン"]
+            else:
+                self.dungeon_type = "normal"
+                print("normalダンジョンに入ります。")
+                return self.book["通常ダンジョン"]
+
+    def main(self):
+        # self.second_init_battle()
+        self.print_status()
+        print(self.hist)
+        while True:
+            if self.my_turn() == "finish":
+                break
+            if self.mob_turn() == "finish":
+                break
+            self.end_of_turn()
 
     def end_of_turn(self):
         if len(self.hist[0]) == min(self.turn_count)-1:
@@ -279,6 +369,12 @@ class Battle(Function):
         #     self.hist[0].append({"guess": "-----", "hit": "0", "blow": "0"})
         #     self.print_out_history()
         # print("残りHP{}".format(self.hp))
+
+    def print_enemy_status(self):
+        # 敵情報と自分のステータスを分離するために関数を分離させた
+        print("mob status")
+        print("lv,hp,atk,exp")
+        print([self.e_lv, self.e_hp, self.e_atk, self.e_exp])
 
     def print_history(self):
         for i in range(min(self.turn_count)):
@@ -299,8 +395,8 @@ class Battle(Function):
             if act == "0":
                 if self.jamming_judge() == "stop":
                     return "continue"
-                self.hp[1] -= int(self.atk[0] * self.my_atk_ratio())
-                if self.hp[1] <= 0:
+                self.e_hp -= int(self.atk * self.my_atk_ratio())
+                if self.e_hp <= 0:
                     self.win()
                     return "finish"
                 else:
@@ -309,7 +405,7 @@ class Battle(Function):
                 print("未対応です")
 
     def jamming_judge(self):
-        lv_ratio = self.lv[0] / self.lv[1]
+        lv_ratio = self.lv / self.e_lv
         print("level ratio:{}".format(lv_ratio))
         if random.random() > lv_ratio and self.dungeon_type == "boss":
             print("調査を妨害された！")
@@ -365,8 +461,8 @@ class Battle(Function):
         self.hist[1] = vs.run()
 
     def mob_turn(self):
-        self.hp[0] -= int(self.atk[1] * self.mob_atk_ratio())
-        if self.hp[0] <= 0:
+        self.hp -= int(self.e_atk * self.mob_atk_ratio())
+        if self.hp <= 0:
             self.lose()
             return "finish"
         else:
@@ -398,8 +494,8 @@ class Battle(Function):
 
     def win(self):
         print("敵を撃破した！")
-        self.exp[0] += self.exp[1]
-        self.money[0] += self.money[1]
+        self.exp += self.e_exp
+        self.money += self.e_money
         self.level_up_judge()
         self.drop()
         self.after_battle()
@@ -409,13 +505,13 @@ class Battle(Function):
 
     def level_up_judge(self):
         while True:
-            if self.exp[0] > self.vlookup(self.book["level_table"], str(self.lv[0] + 1), 2):
-                print("おめでとう！レベルが{}に上がった！".format(self.lv[0] + 1))
+            if self.exp > self.vlookup(self.book["level_table"], str(self.lv + 1), 2):
+                print("おめでとう！レベルが{}に上がった！".format(self.lv + 1))
                 print("HPが{}上がった！".format(self.vlookup(
-                    self.book["level_table"], str(self.lv[0] + 1), 7)))
+                    self.book["level_table"], str(self.lv + 1), 7)))
                 print("攻撃が{}上がった！".format(self.vlookup(
-                    self.book["level_table"], str(self.lv[0] + 1), 8)))
-                self.lv[0] += 1
+                    self.book["level_table"], str(self.lv + 1), 8)))
+                self.lv += 1
             else:
                 break
 
@@ -439,7 +535,7 @@ class Battle(Function):
         以上の情報をエクセルファイルに更新・保存
         """
         # ステータス更新
-        new_lv = self.lv[0]
+        new_lv = self.lv
         new_hp = self.vlookup(self.book["level_table"], str(new_lv), 3)
         new_atk = self.vlookup(self.book["level_table"], str(new_lv), 4)
         new_stats = [new_lv, new_hp, new_atk]
@@ -455,9 +551,9 @@ class Battle(Function):
         self.status_checker()
         # 経験値、金の更新
         self.mysheet.cell(row=self.vindex(
-            self.mysheet, "exp"), column=2, value=self.exp[0])
+            self.mysheet, "exp"), column=2, value=self.exp)
         self.mysheet.cell(row=self.vindex(
-            self.mysheet, "money"), column=2, value=self.money[0])
+            self.mysheet, "money"), column=2, value=self.money)
         # ドロップアイテム数は1のみ対応。
         # 解説：ゲットしたアイテムがまだ道具箱に1個もない→新しくインデックスを追加し個数を1増やす(実際に行う順序は、個数を1にしてからインデックス追加)
         # 　　　そうでない（すでにある）→個数を1増やす
@@ -473,13 +569,16 @@ class Battle(Function):
         """開いてる途中だとエラー出るよ"""
         self.save()
 
-    def save(self):
-        """開いてる途中だとエラー出るよ"""
-        try:
-            self.book.save("systems/base.xlsx")
-        except PermissionError:
-            print("エクセルファイルを閉じてください")  # これ戦闘前に欲しい
-            exit()
+    # def save(self):
+    #     """開いてる途中だとエラー出るよ"""
+    #     try:
+    #         self.book.save("systems/base.xlsx")
+    #     except FileNotFoundError:
+    #         self.book.save(
+    #             'C:/Users/wolke/git1008/new_system/systems/base.xlsx')
+    #     except PermissionError:
+    #         print("エクセルファイルを閉じてください")  # これ戦闘前に欲しい
+    #         exit()
 
 
 class Initialize(Battle):
