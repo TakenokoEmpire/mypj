@@ -3,6 +3,7 @@ import pygame
 from pygame import Surface, mixer
 from pygame.locals import *
 from typing import List, Tuple
+import math
 import time
 import random
 # from . import game_number_guess
@@ -69,10 +70,20 @@ class ShowGame(battle.Battle, town.Town):
         self.boss_blow = 0
         self.guess_list = []  # 推測した数字
         self.boss_guess_list = []
-        self.max_hp = int(self.hp*3)
+        self.max_hp = self.hp
         self.damage = self.e_atk
         self.exp_g = self.exp
         self.hp_g = self.max_hp
+        # hpバーを表示する大きさ
+        # 100まではリニアに、1000までは緩やかに、長さが増加し、1000以上で固定（300ピクセル）
+        if self.hp_g <= 100:
+            self.hp_bar_ratio = 1.5
+        elif self.hp_g <= 1000:
+            self.hp_bar_ratio = 150/self.hp_g * \
+                (self.hp_g/100)**(math.log(2)/math.log(1000/100))
+        else:
+            self.hp_bar_ratio = 300 / self.hp_g
+        print(self.hp_bar_ratio)
 
     def set_player(self, X: int = 118, Y: int = 50):
         """ホーム画面の立ち絵の設定
@@ -155,11 +166,11 @@ class ShowGame(battle.Battle, town.Town):
     def set_button(self,
                    normal_button_place: Tuple[int] = (80, 300, 200, 50),
                    boss_button_place: Tuple[int] = (80, 375, 200, 50),
-                   how_to_play_button_place: Tuple[int] = (80, 550, 200, 50),
-                   return_button_place: Tuple[int] = (80, 550, 200, 50),
+                   how_to_play_button_place: Tuple[int] = (80, 490, 200, 50),
+                   return_button_place: Tuple[int] = (80, 565, 200, 50),
                    prev_button_place: Tuple[int] = (50, 500, 120, 30),
                    next_button_place: Tuple[int] = (190, 500, 120, 30),
-                   history_button_place: Tuple[int] = (120, 570, 120, 30)):
+                   history_button_place: Tuple[int] = (120, 580, 120, 30)):
         """ボタンの設定
         Rect(ボタンの位置とサイズ)
         """
@@ -238,6 +249,8 @@ class ShowGame(battle.Battle, town.Town):
         self.screen.blit(self.boss_button_img, self.boss_buttonrect)
         self.screen.blit(self.how_to_play_button_img,
                          self.how_to_play_buttonrect)
+        self.screen.blit(self.return_button_img,
+                         self.return_buttonrect)
 
     def home_judge(self):
         for event in pygame.event.get():
@@ -249,7 +262,7 @@ class ShowGame(battle.Battle, town.Town):
                     self.make_1ans()    # 新しい答えの生成が必要
                     pygame.mixer.Channel(0).play(
                         pygame.mixer.Sound(self.se_dict["start"]))
-                    time.sleep(2)
+                    time.sleep(1)
                 if self.boss_buttonrect.collidepoint(event.pos):
                     self.gamescene = 2  # boss stageへ
                     self.make_1ans()  # 新しい答えの生成
@@ -257,10 +270,14 @@ class ShowGame(battle.Battle, town.Town):
                         pygame.mixer.Sound(self.se_dict["start"]))
                     self.load_show()  # ロード画面
                     # bossが解く
-                    time.sleep(2)
+                    time.sleep(1)
 
-                    if self.how_to_play_buttonrect.collidepoint(event.pos):
-                        self.gamescene = 5  # how to playへ
+                if self.how_to_play_buttonrect.collidepoint(event.pos):
+                    self.gamescene = 5  # how to playへ
+                if self.return_buttonrect.collidepoint(event.pos):
+                    self.gamescene = 0
+                    self.choice_dict["初期画面"] = {
+                        "number": "False", "name": "False"}
 
     # BOSS用ロード画面
     def load_show(self):
@@ -444,7 +461,11 @@ class ShowGame(battle.Battle, town.Town):
                         self.dungeon_num = i+1
                         pygame.mixer.Channel(0).play(
                             pygame.mixer.Sound(self.se_dict["start"]))
-                        time.sleep(2)
+                        time.sleep(1)
+                        # 音楽関連
+                        # loops:繰り返す回数　loops+1回流れる、-1で無限ループ
+                        # load+playでセット
+                        # mixerで音楽をミックスできる（主にSEのとき）
                         if self.gamescene == 1:
                             pygame.mixer.music.load(self.bgm_dict["normal"])
                             pygame.mixer.music.set_volume(0.3)
@@ -473,7 +494,7 @@ class ShowGame(battle.Battle, town.Town):
         stage = font2.render("turn:{}".format(
             self.turn), True, (255, 255, 255))
         pygame.draw.line(self.screen, (0, 200, 0), (30, 40),
-                         (30+self.hp_g, 40), 10)  # HPの表示
+                         (30+self.hp_g*self.hp_bar_ratio, 40), 10)  # HPの表示
         font3 = pygame.font.SysFont(None, 20)
         hp_word = font3.render("HP", True, (255, 255, 255))
         hp_value = font3.render("{}".format(self.hp_g), True, (255, 255, 255))
@@ -489,13 +510,14 @@ class ShowGame(battle.Battle, town.Town):
         damage = self.damage*(self.turn-1)
         if damage != 0:
             pygame.draw.line(self.screen, (200, 0, 0),
-                             (30+self.hp_g, 40), (30+self.hp_g+damage, 40), 10)
+                             (30+self.hp_g*self.hp_bar_ratio, 40), (30+(self.hp_g+damage)*self.hp_bar_ratio, 40), 10)
         font4 = pygame.font.SysFont(None, 50)
         hit_blow = font4.render("Hit:{}   Blow:{}".format(
             self.hit, self.blow), True, (255, 255, 255))
         self.screen.blit(stage, (5, 5))
         self.screen.blit(hp_word, (5, 35))
-        self.screen.blit(hp_value, (30+self.hp_g+damage+2, 35))
+        self.screen.blit(
+            hp_value, (30+(self.hp_g+damage)*self.hp_bar_ratio+2, 35))
         self.screen.blit(hit_blow, (80, 360))
         self.screen.blit(self.enter_button_img, self.enter_buttonrect)
         self.screen.blit(self.history_button_img, self.history_buttonrect)
@@ -763,13 +785,28 @@ class ShowGame(battle.Battle, town.Town):
         タイトルは28文字まで、選択肢は7つまで、メッセージは5行まで対応。
         選択が行われた場合、選択肢の番号と名前を、self.choice_dictのdict_nameに登録する
         dict_name="装備"のとき、選択肢の番号はself.choice_dict["装備"]["number"]に、選択肢の名前をself.choice_dict["装備"]["name"]に登録する
+
+        【使い方】
+        まず、self.dict_name_listに【選択肢の名称】を追加
+        次に、引っ掛ける条件を「if self.choice_dict["【選択肢の名称】"]["number"] == "False":」とする。
+        さらに、self.choice_screenの最後の引数に【選択肢の名称】を入力する。
+        【10/8-14:30追加】：「RETURN」ボタンを押した際に、削除するべき｛ 前 の 選択肢の名称｝を決定する(設定がなければ、ホーム画面に戻る)
+        選択結果は、self.choice_dictに保存される。
+
+        何かおかしいと思ったら、
+        ・self.dict_name_listに【選択肢の名称】を追加したか
+        ・3箇所の【選択肢の名称】が全て同じであるか
+        ・dict検索時のnumberとnameを間違えてないか
+        をチェック
         """
         self.choice_buttonrect = []
         choice_answer = False
-        font = pygame.font.SysFont(
+        font_title = pygame.font.SysFont(
             "bizudminchomediumbizudpminchomediumtruetype", 24)
+        font = pygame.font.SysFont(
+            "bizudminchomediumbizudpminchomediumtruetype", 21)
         font2 = pygame.font.SysFont(
-            "bizudminchomediumbizudpminchomediumtruetype", 18)
+            "bizudminchomediumbizudpminchomediumtruetype", 16)
         # titleを表示
         # titleが長すぎたら改行して2行にする
         title = str(title)
@@ -778,21 +815,21 @@ class ShowGame(battle.Battle, town.Town):
             title = title[0:14]
         else:
             title2 = ""
-        print_title = font.render(title, True, "WHITE")
+        print_title = font_title.render(title, True, "WHITE")
         self.screen.blit(print_title, (11, 12))
-        print_title2 = font.render(title2, True, "WHITE")
+        print_title2 = font_title.render(title2, True, "WHITE")
         self.screen.blit(print_title2, (11, 44))
         # 選択肢を表示
         for i in range(len(choice)):
             self.choice_buttonrect.append(Rect(30, 90+47*i, 260, 30))
         for i, name in enumerate(choice):  # 選択肢の数だけ描画
             print_choice = font.render(name, True, "WHITE")
-            self.screen.blit(print_choice, (30, 93+47*i))
+            self.screen.blit(print_choice, (24, 93+47*i))
         self.screen.blit(self.return_button_img, self.return_buttonrect)
         # メッセージを表示
         for i, name in enumerate(message):
             print_message = font2.render(name, True, "WHITE")
-            self.screen.blit(print_message, (11, 430+22*i))
+            self.screen.blit(print_message, (11, 375+22*i))
 
         # 以下、本来は別関数（judge_～～～）となるはずだった部分
         for event in pygame.event.get():

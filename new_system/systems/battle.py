@@ -169,7 +169,7 @@ class Core(Function):
                 'systems/base.xlsx', data_only=True)
         except:
             self.book = openpyxl.load_workbook(
-                'C:/Users/wolke/git1008/new_system/systems/base.xlsx', data_only=True)
+                'C:/Users/wolke/git1009/new_system/systems/base.xlsx', data_only=True)
         self.mysheet = self.book["プレイヤーステータス"]
 
         # 装備関連
@@ -246,7 +246,7 @@ class Core(Function):
             self.book.save("systems/base.xlsx")
         except FileNotFoundError:
             self.book.save(
-                'C:/Users/wolke/git1008/new_system/systems/base.xlsx')
+                'C:/Users/wolke/git1009/new_system/systems/base.xlsx')
         except PermissionError:
             print("エクセルファイルを閉じてください")  # これ戦闘前に欲しい
             exit()
