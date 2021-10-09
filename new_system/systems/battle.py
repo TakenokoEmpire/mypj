@@ -40,7 +40,7 @@ special mode→クリティカル攻撃
 
 class Function():
     def __init__(self):
-        self.switch_judge_box = [None, None]
+        self.switch_judge_box = {}
 
     def vlookup(self, sheet, index, column_order):
         """excelのvlookup関数を再現。
@@ -130,22 +130,26 @@ class Function():
         else:
             return True
 
-    def switch_judge(self, target, switch_value):
+    def switch_judge(self, target_var_name_str, target_var_value, switch_value):
         """
         前回実行時targetの値がswitch_valueと一致せず、かつ今回一致した場合にTrueを返す、
-        GUI再生時を想定している"""
+        GUI再生時を想定している
+        複数の関数を対象にしてもバグらないように、判定対象の関数名(str)を引数として取る（識別できれば関数名はなんでもよい）"""
+        # ↓のやり方すれば、「選択肢」モジュールをもうちょっと簡単にできそう
+        if (target_var_name_str in self.switch_judge_box) == False:
+            self.switch_judge_box[target_var_name_str] = [None, None]
         if switch_value == None:
             print("switch_value should not be None")
             exit()
-        self.switch_judge_box[0] = target
-        if self.switch_judge_box[0] != self.switch_judge_box[1] and self.switch_judge_box[0] == switch_value:
+        self.switch_judge_box[target_var_name_str][0] = target_var_value
+        if self.switch_judge_box[target_var_name_str][0] != self.switch_judge_box[target_var_name_str][1] and self.switch_judge_box[target_var_name_str][0] == switch_value:
             print("switch_value:TRUE")
-            self.switch_judge_box[1] = self.switch_judge_box[0]
-            self.switch_judge_box[0] = None
+            self.switch_judge_box[target_var_name_str][1] = self.switch_judge_box[target_var_name_str][0]
+            self.switch_judge_box[target_var_name_str][0] = None
             return True
         else:
-            self.switch_judge_box[1] = self.switch_judge_box[0]
-            self.switch_judge_box[0] = None
+            self.switch_judge_box[target_var_name_str][1] = self.switch_judge_box[target_var_name_str][0]
+            self.switch_judge_box[target_var_name_str][0] = None
             return False
 
 
@@ -393,7 +397,7 @@ class Battle(Core):
             self.turn_count[0] += 1
             act = input("0:攻撃,1:スキル,2:アイテム,3:逃げる ->")
             if act == "0":
-                if self.jamming_judge() == "stop":
+                if self.jamming_judge("player") == "stop":
                     return "continue"
                 self.e_hp -= int(self.atk * self.my_atk_ratio())
                 if self.e_hp <= 0:
@@ -404,11 +408,18 @@ class Battle(Core):
             else:
                 print("未対応です")
 
-    def jamming_judge(self):
-        lv_ratio = self.lv / self.e_lv
+    def jamming_judge(self, defendant):
+        """defandant: プレイヤーのターンならplayer、ボスのターンならboss"""
+        if defendant == "player":
+            lv_ratio = self.lv / self.e_lv
+        elif defendant == "enemy" or defendant == "boss":
+            lv_ratio = self.e_lv / self.lv
+        else:
+            print("defandant name error")
+            exit()
         print("level ratio:{}".format(lv_ratio))
         if random.random() > lv_ratio and self.dungeon_type == "boss":
-            print("調査を妨害された！")
+            print("jamming_judge:STOP")
             return "stop"
         return "go"
 
