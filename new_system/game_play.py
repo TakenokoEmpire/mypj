@@ -34,6 +34,14 @@ class Commander(show_game4.ShowGame):
         super().__init__()
         self.place = "entrance"
 
+    # def choice_command(self, *cond):
+    #     cond_qty = len(cond)
+    #     for i in range(cond_qty):
+    #         if self.choice_dict([cond[i][0]][cond[i][1]] == cond[i][2]):
+    #             return True
+    #         else:
+    #             return False
+
     def gui_run(self):
         pygame.display.set_caption("Hit, Blow and Dragons")
         self.set_player()
@@ -43,7 +51,8 @@ class Commander(show_game4.ShowGame):
         self.set_mark_entry()
         self.set_sound()
         # choice関連
-        self.dict_name_list = ["初期画面", "街の入り口", "装備：変更対象", "装備：手持ち"]
+        self.dict_name_list = ["初期画面", "街の入り口", "装備：変更対象",
+                               "装備：手持ち", "aa", "bb", "cc", "dd", "ee", "ff", "gg"]
         # ↑【重要】選択肢を使う場合、そのdict_nameは必ずこのリストにいれる
         self.choice_dict_initialize()
 
@@ -54,7 +63,7 @@ class Commander(show_game4.ShowGame):
             self.screen.fill((0, 0, 0))
             """「選択肢」の使い方
             まず、self.dict_name_listに【選択肢の名称】を追加
-            次に、「if self.choice_dict["装備"]["number"] == "False":」の["装備"]を、【選択肢の名称】に変更する
+            次に、引っ掛ける条件を「if self.choice_dict["【選択肢の名称】"]["number"] == "False":」とする。
             さらに、self.choice_screenの最後の引数に【選択肢の名称】を入力する。
             【10/8-14:30追加】：「RETURN」ボタンを押した際に、削除するべき｛ 前 の 選択肢の名称｝を決定する(設定がなければ、ホーム画面に戻る)
             選択結果は、self.choice_dictに保存される。
@@ -76,7 +85,21 @@ class Commander(show_game4.ShowGame):
             elif self.choice_dict["初期画面"]["name"] == "街へ行く":
                 if self.choice_dict["街の入り口"]["number"] == "False":
                     self.choice_screen(
-                        "何をする？", ["クエスト", "ステータスチェック", "スキル", "装備", "アイテム", "ショップ",  "セーブして戻る"], ["「装備」のみ対応"], "街の入り口")
+                        "何をする？", ["クエスト", "ステータスチェック", "スキル", "装備", "アイテム", "ショップ",  "ガチャ"], ["「装備」のみ対応"], "街の入り口")
+
+                elif self.choice_dict["街の入り口"]["name"] == "ステータスチェック" and self.choice_dict["aa"]["number"] == "False":
+                    self.town_status()
+                    self.init_town_info()
+
+                elif self.choice_dict["街の入り口"]["name"] == "ショップ" and self.choice_dict["bb"]["number"] == "False":
+                    self.choice_screen(
+                        "ショップ", ["薬草", "回復薬", "叡智の実", "妨害の笛"], ["薬草:10G　HPを30回復する", "回復薬：50G　HPを80回復する", "叡智の実:100G 選択肢を4色から3色にする", "妨害の笛:1000G　敵BOSSの調査を1度だけ妨害する"], "bb")
+                elif self.choice_dict["bb"]["name"] != "False":
+                    self.choice_screen(
+                        "本当に{}を買いますか？".format("dict"), ["はい", "いいえ"], [""], "cc")
+                elif self.choice_dict["cc"]["name"] != "False":
+                    self.init_town_info()
+
                 # 装備変更
                 elif self.choice_dict["街の入り口"]["name"] == "装備" and self.choice_dict["装備：変更対象"]["number"] == "False":
                     # 装備の情報更新
@@ -158,7 +181,7 @@ class Commander(show_game4.ShowGame):
                         if self.jamming_judge("player") == "stop":
                             print("調査を妨害された！")
                             time.sleep(1)
-                            self.boss_action()
+                            self.boss_action("boss")
 
                     self.turn_switch = 0
 
@@ -193,7 +216,9 @@ class Commander(show_game4.ShowGame):
             pygame.display.update()  # スクリーン上のものを書き換えた時にはupdateが必要
 
     def init_town_info(self):
-        init_list = ["街の入り口", "装備：変更対象", "装備：手持ち"]
+        """街の入り口に戻る
+        「初期画面」以外のdict_name情報は（戦闘関連も含めて）すべて初期化される"""
+        init_list = self.dict_name_list[1:]
         for i in init_list:
             self.choice_dict[i]["number"] = "False"
             self.choice_dict[i]["name"] = "False"
