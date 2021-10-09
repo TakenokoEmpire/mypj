@@ -240,6 +240,18 @@ class Core(Function):
         print("lv,hp,atk,exp")
         print([self.lv, self.hp, self.atk, self.exp])
 
+    def gacha(self, sheet, gachaname):
+        rand = random.random()
+        gacha_qty = self.vlookup(self.book["ガチャ"], gachaname, 2)
+        for i in range(gacha_qty):
+            if rand < float(self.vlookup_plus(self.book["ガチャ"], "item" + str(i + 1), 4, 3)):
+                print("{}を手に入れた！".format(self.vlookup(
+                    self.book["ガチャ"], "item" + str(i + 1), 2)))
+                self.droplist.append(self.vlookup(
+                    self.book["ガチャ"], "item" + str(i + 1), 2))
+            return(self.droplist)
+        print(self.droplist)
+
     def save(self):
         """開いてる途中だとエラー出るよ"""
         try:

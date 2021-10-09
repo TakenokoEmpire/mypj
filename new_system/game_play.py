@@ -159,8 +159,10 @@ class Commander(show_game4.ShowGame):
                     atodekesu_count = 0
                 elif self.choice_dict["ガチャ確認画面"]["name"] == "はい":
                     if atodekesu_count == 0:
+                        # droplist = []
                         print("{}を購入".format(
                             self.choice_dict["ガチャ画面"]["name"]))
+                        # self.gacha("ガチャ", "ノーマルガチャ")
                         atodekesu_count += 1
                     self.choice_screen(
                         "演出画面、RETURNで戻る".format(self.choice_dict["ガチャ画面"]["name"]), [""], [""], "ガチャ確認画面", ["ガチャ画面", "ガチャ確認画面"])
