@@ -2,6 +2,7 @@ from systems import initialize
 from systems import town
 from systems import battle
 
+import random
 import pygame
 from pygame import Surface, mixer
 from pygame.locals import *
@@ -44,11 +45,6 @@ class Commander(show_game4.ShowGame):
 
     def gui_run(self):
         pygame.display.set_caption("Hit, Blow and Dragons")
-        self.set_player()
-        self.set_mark()
-        self.set_enemy()
-        self.set_button()
-        self.set_mark_entry()
         self.set_sound()
         # choice関連
         self.dict_name_list = ["初期画面", "街の入り口", "装備：変更対象",
@@ -67,14 +63,15 @@ class Commander(show_game4.ShowGame):
             さらに、self.choice_screenの最後の引数に【選択肢の名称】を入力する。
             【10/8-14:30追加】：「RETURN」ボタンを押した際に、削除するべき｛ 前 の 選択肢の名称｝を決定する(設定がなければ、ホーム画面に戻る)
             選択結果は、self.choice_dictに保存される。
-
             何かおかしいと思ったら、
             ・self.dict_name_listに【選択肢の名称】を追加したか
             ・3箇所の【選択肢の名称】が全て同じであるか
             ・dict検索時のnumberとnameを間違えてないか
             をチェック
             """
-            if self.choice_dict["初期画面"]["name"] == "False":
+            if self.screen_count == 0:
+                self.screen_select()
+            elif self.choice_dict["初期画面"]["name"] == "False":
                 self.reset()
                 # if self.choice_dict["初期画面"]["number"] == "False":
                 self.choice_screen("<Hit and blow タイトル画面>", ["街へ行く", "ダンジョンへ行く"], [
@@ -152,17 +149,22 @@ class Commander(show_game4.ShowGame):
 
                 elif self.choice_dict["街の入り口"]["name"] == "ガチャ" and self.choice_dict["ガチャ画面"]["number"] == "False":
                     self.choice_screen(
-                        "ガチャ", ["【期間限定】ハロウィンガチャ：¥300", "スーパーガチャ：¥300", "ノーマルガチャ：500G"], ["ハロウィン装備を入手できるのは今だけ！"], "ガチャ画面")
+                        "ガチャ", ["【期間限定】ハロウィンガチャ", "スーパーガチャ", "ノーマルガチャ"], ["【期間限定】ハロウィンガチャ：¥300", "10/31までの期間限定。ハロウィン装備を手に入れろ！", "フルセットで揃えると…？",
+                                                                          "スーパーガチャ：¥100", "限定装備や限定素材が盛りだくさん！", "ノーマルガチャ", "ゲーム内通貨で回せるお得なガチャ"], "ガチャ画面")
                 elif self.choice_dict["ガチャ画面"]["name"] != "False" and self.choice_dict["ガチャ確認画面"]["name"] == "False":
                     self.choice_screen(
                         "本当に{}を買いますか？".format(self.choice_dict["ガチャ画面"]["name"]), ["はい", "いいえ"], [""], "ガチャ確認画面", ["ガチャ画面"])
                     atodekesu_count = 0
                 elif self.choice_dict["ガチャ確認画面"]["name"] == "はい":
                     if atodekesu_count == 0:
-                        # droplist = []
-                        print("{}を購入".format(
+                        print("{}を回した！".format(
                             self.choice_dict["ガチャ画面"]["name"]))
-                        # self.gacha("ガチャ", "ノーマルガチャ")
+                        print(self.book["ガチャ"])
+                        print(self.choice_dict["ガチャ画面"]["name"])
+                        item_rarity, selected_item = self.gacha(self.book["ガチャ"],
+                                                                self.choice_dict["ガチャ画面"]["name"])
+                        print("{}:{}を手に入れた！".format(
+                            selected_item, item_rarity))
                         atodekesu_count += 1
                     self.choice_screen(
                         "演出画面、RETURNで戻る".format(self.choice_dict["ガチャ画面"]["name"]), [""], [""], "ガチャ確認画面", ["ガチャ画面", "ガチャ確認画面"])
@@ -296,6 +298,38 @@ class Commander(show_game4.ShowGame):
         self.turn_switch = 0
 
 
+class Debug(Commander):
+
+    def __init__(self):
+        super().__init__()
+
+    def hlookup_plus(self, sheet, index, row_order, top_index_position):
+        """excelのhlookup関数を再現。
+        スタート位置をずらせる
+        """
+        for i in range(10):
+            output = 0
+            if str(sheet.cell(row=top_index_position, column=i+1).value) == index:
+                output = sheet.cell(
+                    row=row_order+top_index_position-1, column=i+1).value
+                return output
+        return False
+
+    def debug(self):
+        rand = random.random()
+        top_index_position = self.vindex(self.book["ガチャ"], "ノーマルガチャ")
+        # gacha_qty = self.vlookup(sheet, gachaname, 2)
+        print(self.vlookup_plus(
+            self.book["プレイヤーステータス"], "鋼鉄の剣", 3, 2))
+
+        # for i in range(gacha_qty):
+        #     print(self.hlookup_plus(sheet, "sum_prob", i+1, top_index_position))
+        #     if rand < float(self.hlookup_plus(sheet, "sum_prob", i+1, top_index_position)):
+        #         selected_item = self.hlookup_plus(
+        #             sheet, "content", i+1, top_index_position)
+        # return(selected_item)
+
+
 def system_run():
     # システム起動後にターミナルに入力すると、ゲーム画面が前面に表示されなくなる
     print("1:街")
@@ -317,6 +351,10 @@ def system_run():
 
     if choice == "3":
         gui_title()
+
+    if choice == "4":
+        deb = Debug()
+        deb.debug()
 
     if choice == "9":
         delete = initialize.Initialize()

@@ -69,8 +69,20 @@ class Function():
         先頭行・列からスタートで固定"""
         for i in range(100):
             output = 0
-            if str(sheet.cell(row=i + 1, column=1).value) == index:
+            if str(sheet.cell(row=1, column=i+1).value) == index:
                 output = sheet.cell(row=row_order, column=i+1).value
+                return output
+        return False
+
+    def hlookup_plus(self, sheet, index, row_order, top_index_position):
+        """excelのhlookup関数を再現。
+        スタート位置をずらせる
+        """
+        for i in range(100):
+            output = 0
+            if str(sheet.cell(row=top_index_position, column=i+1).value) == index:
+                output = sheet.cell(
+                    row=row_order+top_index_position-1, column=i+1).value
                 return output
         return False
 
@@ -242,15 +254,15 @@ class Core(Function):
 
     def gacha(self, sheet, gachaname):
         rand = random.random()
-        gacha_qty = self.vlookup(self.book["ガチャ"], gachaname, 2)
+        top_index_position = self.vindex(sheet, gachaname)-1
+        gacha_qty = self.vlookup(sheet, gachaname, 2)
         for i in range(gacha_qty):
-            if rand < float(self.vlookup_plus(self.book["ガチャ"], "item" + str(i + 1), 4, 3)):
-                print("{}を手に入れた！".format(self.vlookup(
-                    self.book["ガチャ"], "item" + str(i + 1), 2)))
-                self.droplist.append(self.vlookup(
-                    self.book["ガチャ"], "item" + str(i + 1), 2))
-            return(self.droplist)
-        print(self.droplist)
+            if rand < float(self.hlookup_plus(sheet, "sum_prob", i+2, top_index_position)):
+                selected_item = self.hlookup_plus(
+                    sheet, "content", i+2, top_index_position)
+                item_rarity = self.hlookup_plus(
+                    sheet, "rarity", i+2, top_index_position)
+                return selected_item, item_rarity
 
     def save(self):
         """開いてる途中だとエラー出るよ"""
