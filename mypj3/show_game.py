@@ -444,7 +444,7 @@ class ShowGame:
         damage = (self.turn-1)*self.damage_list[self.enemy_level-1]
         if damage != 0:
             pygame.draw.line(self.screen,(200,0,0),((30+self.hp)*self.screen_size,40*self.screen_size),((30+self.hp+damage)*self.screen_size,40*self.screen_size),10*self.screen_size)
-        font4 = pygame.font.SysFont(None, 50)
+        font4 = pygame.font.SysFont(None, 50*self.screen_size)
         hit_blow = font4.render("Hit:{}   Blow:{}".format(self.hit,self.blow), True, (255,255,255))
         self.screen.blit(stage, (5*self.screen_size,5*self.screen_size))
         self.screen.blit(hp_word, (5*self.screen_size,35*self.screen_size))
