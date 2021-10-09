@@ -27,18 +27,18 @@ class ShowGame(battle.Battle, town.Town):
     # enemy_level　→　dungeon_num（変数名変更）：選択ダンジョン番号
 
     def __init__(self,
-                 num: List[int] = [0, 1, 2, 3, 4],
-                 #  turn: int = 1,
-                 display_size: Tuple[int] = (360, 640),
-                 dungeon_num: int = 0,
-                 max_dungeon_num: int = 3,
-                 gamescene: int = 0,
-                 demand: int = 1,):
+                num: List[int] = [0, 1, 2, 3, 4],
+                #  turn: int = 1,
+                display_size: Tuple[int] = (360, 640),
+                dungeon_num: int = 0,
+                max_dungeon_num: int = 3,
+                gamescene: int = 0,
+                demand: int = 1,):
         print("showgame init")
         super().__init__()
         self.demand = demand
         self.num = num
-        self.screen = pygame.display.set_mode(display_size)
+        self.screen = pygame.display.set_mode(display_size,HWSURFACE | FULLSCREEN)
         self.dungeon_num = dungeon_num
         self.max_dungeon_num = max_dungeon_num
         self.gamescene = gamescene
@@ -55,6 +55,10 @@ class ShowGame(battle.Battle, town.Town):
         self.flag = []
         self.turn_switch = 0
         # self.lv = self.lv
+        self.screen_size = 1
+        self.screen_count = 0
+        self.width = display_size[0]
+        self.height = display_size[1]
 
     def second_init_showgame(self):
         # GUIに対応
@@ -89,44 +93,78 @@ class ShowGame(battle.Battle, town.Town):
         """ホーム画面の立ち絵の設定
         """
         self.img = pygame.image.load("./mypj3/img/player.png")
-        self.player_place = (X, Y)
+        self.img = pygame.transform.rotozoom(self.img, 0, self.screen_size)
+        self.player_place = (X*self.screen_size, Y*self.screen_size)
 
     def set_mark(self):
         """入力用マークの設定
         """
         self.b_moon_img = pygame.image.load("./mypj3/img/b_moon.png")
+        self.b_moon_img = pygame.transform.rotozoom(self.b_moon_img, 0, self.screen_size)
         self.b_snow_img = pygame.image.load("./mypj3/img/b_snow.png")
+        self.b_snow_img = pygame.transform.rotozoom(self.b_snow_img, 0, self.screen_size)
         self.b_star_img = pygame.image.load("./mypj3/img/b_star.png")
+        self.b_star_img = pygame.transform.rotozoom(self.b_star_img, 0, self.screen_size)
         self.b_sun_img = pygame.image.load("./mypj3/img/b_sun.png")
+        self.b_sun_img = pygame.transform.rotozoom(self.b_sun_img, 0, self.screen_size)
         self.g_moon_img = pygame.image.load("./mypj3/img/g_moon.png")
+        self.g_moon_img = pygame.transform.rotozoom(self.g_moon_img, 0, self.screen_size)
         self.g_snow_img = pygame.image.load("./mypj3/img/g_snow.png")
+        self.g_snow_img = pygame.transform.rotozoom(self.g_snow_img, 0, self.screen_size)
         self.g_star_img = pygame.image.load("./mypj3/img/g_star.png")
+        self.g_star_img = pygame.transform.rotozoom(self.g_star_img, 0, self.screen_size)
         self.g_sun_img = pygame.image.load("./mypj3/img/g_sun.png")
+        self.g_sun_img = pygame.transform.rotozoom(self.g_sun_img, 0, self.screen_size)
         self.p_moon_img = pygame.image.load("./mypj3/img/p_moon.png")
+        self.p_moon_img = pygame.transform.rotozoom(self.p_moon_img, 0, self.screen_size)
         self.p_snow_img = pygame.image.load("./mypj3/img/p_snow.png")
+        self.p_snow_img = pygame.transform.rotozoom(self.p_snow_img, 0, self.screen_size)
         self.p_star_img = pygame.image.load("./mypj3/img/p_star.png")
+        self.p_star_img = pygame.transform.rotozoom(self.p_star_img, 0, self.screen_size)
         self.p_sun_img = pygame.image.load("./mypj3/img/p_sun.png")
+        self.p_sun_img = pygame.transform.rotozoom(self.p_sun_img, 0, self.screen_size)
         self.y_moon_img = pygame.image.load("./mypj3/img/y_moon.png")
+        self.y_moon_img = pygame.transform.rotozoom(self.y_moon_img, 0, self.screen_size)
         self.y_snow_img = pygame.image.load("./mypj3/img/y_snow.png")
+        self.y_snow_img = pygame.transform.rotozoom(self.y_snow_img, 0, self.screen_size)
         self.y_star_img = pygame.image.load("./mypj3/img/y_star.png")
+        self.y_star_img = pygame.transform.rotozoom(self.y_star_img, 0, self.screen_size)
         self.y_sun_img = pygame.image.load("./mypj3/img/y_sun.png")
+        self.y_sun_img = pygame.transform.rotozoom(self.y_sun_img, 0, self.screen_size)
 
         self.b_moon_s_img = pygame.image.load("./mypj3/img/b_moon_s.png")
+        self.b_moon_s_img = pygame.transform.rotozoom(self.b_moon_s_img, 0, self.screen_size)
         self.b_snow_s_img = pygame.image.load("./mypj3/img/b_snow_s.png")
+        self.b_snow_s_img = pygame.transform.rotozoom(self.b_snow_s_img, 0, self.screen_size)
         self.b_star_s_img = pygame.image.load("./mypj3/img/b_star_s.png")
+        self.b_star_s_img = pygame.transform.rotozoom(self.b_star_s_img, 0, self.screen_size)
         self.b_sun_s_img = pygame.image.load("./mypj3/img/b_sun_s.png")
+        self.b_sun_s_img = pygame.transform.rotozoom(self.b_sun_s_img, 0, self.screen_size)
         self.g_moon_s_img = pygame.image.load("./mypj3/img/g_moon_s.png")
+        self.g_moon_s_img = pygame.transform.rotozoom(self.g_moon_s_img, 0, self.screen_size)
         self.g_snow_s_img = pygame.image.load("./mypj3/img/g_snow_s.png")
+        self.g_snow_s_img = pygame.transform.rotozoom(self.g_snow_s_img, 0, self.screen_size)
         self.g_star_s_img = pygame.image.load("./mypj3/img/g_star_s.png")
+        self.g_star_s_img = pygame.transform.rotozoom(self.g_star_s_img, 0, self.screen_size)
         self.g_sun_s_img = pygame.image.load("./mypj3/img/g_sun_s.png")
+        self.g_sun_s_img = pygame.transform.rotozoom(self.g_sun_s_img, 0, self.screen_size)
         self.p_moon_s_img = pygame.image.load("./mypj3/img/p_moon_s.png")
+        self.p_moon_s_img = pygame.transform.rotozoom(self.p_moon_s_img, 0, self.screen_size)
         self.p_snow_s_img = pygame.image.load("./mypj3/img/p_snow_s.png")
+        self.p_snow_s_img = pygame.transform.rotozoom(self.p_snow_s_img, 0, self.screen_size)
         self.p_star_s_img = pygame.image.load("./mypj3/img/p_star_s.png")
+        self.p_star_s_img = pygame.transform.rotozoom(self.p_star_s_img, 0, self.screen_size)
         self.p_sun_s_img = pygame.image.load("./mypj3/img/p_sun_s.png")
+        self.p_sun_s_img = pygame.transform.rotozoom(self.p_sun_s_img, 0, self.screen_size)
         self.y_moon_s_img = pygame.image.load("./mypj3/img/y_moon_s.png")
+        self.y_moon_s_img = pygame.transform.rotozoom(self.y_moon_s_img, 0, self.screen_size)
         self.y_snow_s_img = pygame.image.load("./mypj3/img/y_snow_s.png")
+        self.y_snow_s_img = pygame.transform.rotozoom(self.y_snow_s_img, 0, self.screen_size)
         self.y_star_s_img = pygame.image.load("./mypj3/img/y_star_s.png")
+        self.y_star_s_img = pygame.transform.rotozoom(self.y_star_s_img, 0, self.screen_size)
         self.y_sun_s_img = pygame.image.load("./mypj3/img/y_sun_s.png")
+        self.y_sun_s_img = pygame.transform.rotozoom(self.y_sun_s_img, 0, self.screen_size)
+
         self.marks = {0: self.b_moon_img, 1: self.b_snow_img, 2: self.b_star_img, 3: self.b_sun_img,
                       4: self.g_moon_img, 5: self.g_snow_img, 6: self.g_star_img, 7: self.g_sun_img,
                       8: self.p_moon_img, 9: self.p_snow_img, 10: self.p_star_img, 11: self.p_sun_img,
@@ -139,7 +177,7 @@ class ShowGame(battle.Battle, town.Town):
                         }
         self.mark_buttonrect = []
         for n in range(5):
-            self.mark_buttonrect.append(Rect(10+n*70, 425, 60, 25))  # マークの位置
+            self.mark_buttonrect.append(Rect((10+n*70)*self.screen_size,425*self.screen_size,60*self.screen_size,25*self.screen_size))
 
     def set_enemy(self):
         """敵の設定
@@ -149,66 +187,68 @@ class ShowGame(battle.Battle, town.Town):
         # 【】敵画像の名称は、変数を用いたい
         # 【】点滅用敵画像を作るのがめんどくさいなら、他にいい方法ありそう
         self.enemy1_img = pygame.image.load("./mypj3/img/enemy1.png")
-        self.enemy1_damage_img = pygame.image.load(
-            "./mypj3/img/enemy1_damage.png")
+        self.enemy1_img = pygame.transform.rotozoom(self.enemy1_img, 0, self.screen_size)
+        self.enemy1_damage_img = pygame.image.load("./mypj3/img/enemy1_damage.png")
+        self.enemy1_damage_img = pygame.transform.rotozoom(self.enemy1_damage_img, 0, self.screen_size)
         self.enemy2_img = pygame.image.load("./mypj3/img/enemy2.png")
-        self.enemy2_damage_img = pygame.image.load(
-            "./mypj3/img/enemy2_damage.png")
+        self.enemy2_img = pygame.transform.rotozoom(self.enemy2_img, 0, self.screen_size)
+        self.enemy2_damage_img = pygame.image.load("./mypj3/img/enemy2_damage.png")
+        self.enemy2_damage_img = pygame.transform.rotozoom(self.enemy2_damage_img, 0, self.screen_size)
         self.enemy3_img = pygame.image.load("./mypj3/img/enemy3.png")
-        self.enemy3_damage_img = pygame.image.load(
-            "./mypj3/img/enemy3_damage.png")
-        self.enemy_list = {1: self.enemy1_img,
-                           2: self.enemy2_img, 3: self.enemy3_img}
-        self.enemy_damage_list = {1: self.enemy1_damage_img,
-                                  2: self.enemy2_damage_img, 3: self.enemy3_damage_img}
-        self.enemyrect = Rect(93, 60, 187, 250)
+        self.enemy3_img = pygame.transform.rotozoom(self.enemy3_img, 0, self.screen_size)
+        self.enemy3_damage_img = pygame.image.load("./mypj3/img/enemy3_damage.png")
+        self.enemy3_damage_img = pygame.transform.rotozoom(self.enemy3_damage_img, 0, self.screen_size)
+        self.enemy_list = {1:self.enemy1_img, 2:self.enemy2_img, 3:self.enemy3_img}
+        self.enemy_damage_list = {1:self.enemy1_damage_img, 2:self.enemy2_damage_img, 3:self.enemy3_damage_img}
+        self.enemyrect = Rect(93*self.screen_size,60*self.screen_size,187*self.screen_size,250*self.screen_size)
 
-    def set_button(self,
-                   normal_button_place: Tuple[int] = (80, 300, 200, 50),
-                   boss_button_place: Tuple[int] = (80, 375, 200, 50),
-                   how_to_play_button_place: Tuple[int] = (80, 490, 200, 50),
-                   return_button_place: Tuple[int] = (80, 565, 200, 50),
-                   prev_button_place: Tuple[int] = (50, 500, 120, 30),
-                   next_button_place: Tuple[int] = (190, 500, 120, 30),
-                   history_button_place: Tuple[int] = (120, 580, 120, 30)):
+    def set_button(self):
         """ボタンの設定
         Rect(ボタンの位置とサイズ)
         """
-        self.normal_buttonrect = Rect(normal_button_place)
-        self.boss_buttonrect = Rect(boss_button_place)
-        self.how_to_play_buttonrect = Rect(how_to_play_button_place)
-        self.return_buttonrect = Rect(return_button_place)
-        self.prev_buttonrect = Rect(prev_button_place)
-        self.next_buttonrect = Rect(next_button_place)
-        self.history_buttonrect = Rect(history_button_place)
+        self.normal_buttonrect = Rect(80*self.screen_size, 300*self.screen_size, 200*self.screen_size, 50*self.screen_size)
+        self.boss_buttonrect = Rect(80*self.screen_size, 375*self.screen_size, 200*self.screen_size, 50*self.screen_size)
+        self.how_to_play_buttonrect = Rect(80*self.screen_size, 490*self.screen_size, 200*self.screen_size, 50*self.screen_size)
+        self.return_buttonrect = Rect(80*self.screen_size,565*self.screen_size,200*self.screen_size,50*self.screen_size)
+        self.prev_buttonrect = Rect(50*self.screen_size,500*self.screen_size,120*self.screen_size,30*self.screen_size)
+        self.next_buttonrect = Rect(190*self.screen_size,500*self.screen_size,120*self.screen_size,30*self.screen_size)
+        self.history_buttonrect = Rect(120*self.screen_size,580*self.screen_size,120*self.screen_size,30*self.screen_size)
         self.stage_select_buttonrect = []
-        for i in range(self.max_dungeon_num):
-            self.stage_select_buttonrect.append(Rect(80, 100+100*i, 200, 50))
-        self.normal_button_img = pygame.image.load(
-            "./mypj3/img/normal_button.png")
+        for i in range(self.stage_num):
+            self.stage_select_buttonrect.append(Rect(80*self.screen_size,(100+100*i)*self.screen_size,200*self.screen_size,50*self.screen_size))
+        self.normal_button_img = pygame.image.load("./mypj3/img/normal_button.png")
+        self.normal_button_img = pygame.transform.rotozoom(self.normal_button_img, 0, self.screen_size)
         self.boss_button_img = pygame.image.load("./mypj3/img/boss_button.png")
-        self.how_to_play_button_img = pygame.image.load(
-            "./mypj3/img/how_to_button.png")
+        self.boss_button_img = pygame.transform.rotozoom(self.boss_button_img, 0, self.screen_size)
+        self.how_to_play_button_img = pygame.image.load("./mypj3/img/how_to_button.png")
+        self.how_to_play_button_img = pygame.transform.rotozoom(self.how_to_play_button_img, 0, self.screen_size)
         self.return_button_img = pygame.image.load("./mypj3/img/return.png")
+        self.return_button_img = pygame.transform.rotozoom(self.return_button_img, 0, self.screen_size)
         self.prev_button_img = pygame.image.load("./mypj3/img/prev.png")
+        self.prev_button_img = pygame.transform.rotozoom(self.prev_button_img, 0, self.screen_size)
         self.next_button_img = pygame.image.load("./mypj3/img/next.png")
-        self.history_button_img = pygame.image.load(
-            "./mypj3/img/history_button.png")
+        self.next_button_img = pygame.transform.rotozoom(self.next_button_img, 0, self.screen_size)
+        self.history_button_img = pygame.image.load("./mypj3/img/history_button.png")
+        self.history_button_img = pygame.transform.rotozoom(self.history_button_img, 0, self.screen_size)
         self.how_to_play_img = pygame.image.load("./mypj3/img/how_to_play.png")
+        self.how_to_play_img = pygame.transform.rotozoom(self.how_to_play_img, 0, self.screen_size)
 
     def set_mark_entry(self):
         """マーク入力用の設定
         """
         self.up_button_img = pygame.image.load("./mypj3/img/up.png")
+        self.up_button_img = pygame.transform.rotozoom(self.up_button_img, 0, self.screen_size)
         self.down_button_img = pygame.image.load("./mypj3/img/down.png")
+        self.down_button_img = pygame.transform.rotozoom(self.down_button_img, 0, self.screen_size)
         self.up_buttonrect = []
         for n in range(5):
-            self.up_buttonrect.append(Rect(10+n*70, 400, 60, 25))
+            self.up_buttonrect.append(Rect((10+n*70)*self.screen_size,400*self.screen_size,60*self.screen_size,25*self.screen_size))
         self.down_buttonrect = []
         for n in range(5):
-            self.down_buttonrect.append(Rect(10+n*70, 485, 60, 25))
+            self.down_buttonrect.append(Rect((10+n*70)*self.screen_size,485*self.screen_size,60*self.screen_size,25*self.screen_size))
         self.enter_button_img = pygame.image.load("./mypj3/img/enter.png")
-        self.enter_buttonrect = Rect(120, 520, 120, 32)
+        self.enter_button_img = pygame.transform.rotozoom(self.enter_button_img, 0, self.screen_size)
+        self.enter_buttonrect = Rect(120*self.screen_size,520*self.screen_size,120*self.screen_size,32*self.screen_size)
 
     def set_sound(self):
         self.bgm_dict = {"normal": "./mypj3/sound/normal_BGM.mp3",
@@ -239,18 +279,13 @@ class ShowGame(battle.Battle, town.Town):
     def home_show(self):
         """ホーム画面の描画
         """
-        self.screen.blit(self.img, self.player_place)  # imgの描画・updateされてるから
-        self.font = pygame.font.SysFont(None, 40)  # フォントの指定
-        lv_display = self.font.render("Lv {}".format(
-            self.lv), True, (255, 255, 255))  # 文字・色の指定
-        # screen.blit→指定された位置に画像を表示
-        self.screen.blit(lv_display, (150, 220))  # テキストの位置
+        self.screen.blit(self.img, self.player_place) #imgの描画・updateされてるから
+        self.font = pygame.font.SysFont(None, 40*self.screen_size) #フォントの指定
+        lv_display = self.font.render("Lv {}".format(self.lv), True, (255,255,255))  #文字・色の指定
+        self.screen.blit(lv_display, (150*self.screen_size,220*self.screen_size)) #テキストの位置
         self.screen.blit(self.normal_button_img, self.normal_buttonrect)
         self.screen.blit(self.boss_button_img, self.boss_buttonrect)
-        self.screen.blit(self.how_to_play_button_img,
-                         self.how_to_play_buttonrect)
-        self.screen.blit(self.return_button_img,
-                         self.return_buttonrect)
+        self.screen.blit(self.how_to_play_button_img, self.how_to_play_buttonrect)
 
     def home_judge(self):
         for event in pygame.event.get():
@@ -282,53 +317,45 @@ class ShowGame(battle.Battle, town.Town):
     # BOSS用ロード画面
     def load_show(self):
         self.screen.fill((0, 0, 0))
-        font = pygame.font.SysFont(None, 40)
-        load_message = font.render("Now Loading...", True, (255, 255, 255))
-        self.screen.blit(load_message, (150, 450))
+        font = pygame.font.SysFont(None, 40*self.screen_size)
+        load_message = font.render("Now Loading...", True, (255,255,255))
+        self.screen.blit(load_message, (150*self.screen_size,450*self.screen_size))
         pygame.display.update()
 
     def error_show(self):
         """エラー画面の描画
         """
-        self.font4 = pygame.font.SysFont(None, 33)
-        error_message = self.font4.render(
-            "! Cannot enter the same mark !", True, (255, 0, 0))
-        self.screen.blit(error_message, (18, 300))
+        self.font4 = pygame.font.SysFont(None, 33*self.screen_size)
+        error_message = self.font4.render("! Cannot enter the same mark !", True, (255,0,0)) 
+        self.screen.blit(error_message, (18*self.screen_size,300*self.screen_size))
         self.screen.blit(self.return_button_img, self.return_buttonrect)
+
 
     def history_show(self):
         """履歴の描画1ページ目
         """
-        font = pygame.font.SysFont(None, 30)
+        font = pygame.font.SysFont(None, 30*self.screen_size)
         if self.turn > 10:
             for i in range(10):
                 for j in range(5):
-                    self.screen.blit(
-                        self.guess_list[i][j], (30+j*40, 55+i*40, 30, 30))
-                turn = font.render("{}".format(i+1), True, (255, 255, 255))
-                self.screen.blit(turn, (3, 60+i*40))
-                pygame.draw.line(self.screen, (100, 100, 100),
-                                 (25, 50+i*40), (25, 90+i*40), 1)
-                pygame.draw.line(self.screen, (100, 100, 100),
-                                 (0, 90+i*40), (360, 90+i*40), 1)
-                hit_blow = font.render("Hit:{} Blow:{}".format(
-                    self.hit_list[i], self.blow_list[i]), True, (255, 255, 255))
-                self.screen.blit(hit_blow, (230, 60+i*40))
-
+                    self.screen.blit(self.guess_list[i][j], ((30+j*40)*self.screen_size,(55+i*40)*self.screen_size,30*self.screen_size,30*self.screen_size))
+                turn = font.render("{}".format(i+1), True, (255,255,255))
+                self.screen.blit(turn, (3*self.screen_size,(60+i*40)*self.screen_size))
+                pygame.draw.line(self.screen,(100,100,100),(25*self.screen_size,(50+i*40)*self.screen_size),(25*self.screen_size,(90+i*40)*self.screen_size),1)
+                pygame.draw.line(self.screen,(100,100,100),(0,(90+i*40)*self.screen_size),(360*self.screen_size,(90+i*40)*self.screen_size),1)
+                hit_blow = font.render("Hit:{} Blow:{}".format(self.hit_list[i], self.blow_list[i]), True, (255,255,255))
+                self.screen.blit(hit_blow, (230*self.screen_size,(60+i*40)*self.screen_size))
+                
         else:
             for i in range(self.turn-1):
                 for j in range(5):
-                    self.screen.blit(
-                        self.guess_list[i][j], (30+j*40, 55+i*40, 30, 30))
-                turn = font.render("{}".format(i+1), True, (255, 255, 255))
-                self.screen.blit(turn, (3, 60+i*40))
-                pygame.draw.line(self.screen, (100, 100, 100),
-                                 (25, 50+i*40), (25, 90+i*40), 1)
-                pygame.draw.line(self.screen, (100, 100, 100),
-                                 (0, 90+i*40), (360, 90+i*40), 1)
-                hit_blow = font.render("Hit:{} Blow:{}".format(
-                    self.hit_list[i], self.blow_list[i]), True, (255, 255, 255))
-                self.screen.blit(hit_blow, (230, 60+i*40))
+                    self.screen.blit(self.guess_list[i][j], ((30+j*40)*self.screen_size,(55+i*40)*self.screen_size,30*self.screen_size,30*self.screen_size))
+                turn = font.render("{}".format(i+1), True, (255,255,255))
+                self.screen.blit(turn, (3*self.screen_size,(60+i*40)*self.screen_size))
+                pygame.draw.line(self.screen,(100,100,100),(25*self.screen_size,(50+i*40)*self.screen_size),(25*self.screen_size,(90+i*40)*self.screen_size),1)
+                pygame.draw.line(self.screen,(100,100,100),(0,(90+i*40)*self.screen_size),(360*self.screen_size,(90+i*40)*self.screen_size),1)
+                hit_blow = font.render("Hit:{} Blow:{}".format(self.hit_list[i], self.blow_list[i]), True, (255,255,255))
+                self.screen.blit(hit_blow, (230*self.screen_size,(60+i*40)*self.screen_size))
         if self.turn > 11:
             self.screen.blit(self.next_button_img, self.next_buttonrect)
         self.screen.blit(self.return_button_img, self.return_buttonrect)
@@ -349,44 +376,35 @@ class ShowGame(battle.Battle, town.Town):
     def history2_show(self):
         """履歴の描画2,3ページ目
         """
-        font = pygame.font.SysFont(None, 30)
+        font = pygame.font.SysFont(None, 30*self.screen_size)
         if self.turn > self.history_count*10:
-            for i in range((self.history_count-1)*10, self.history_count*10):
+            for i in range((self.history_count-1)*10,self.history_count*10):
                 for j in range(5):
-                    self.screen.blit(
-                        self.guess_list[i][j], (30+j*40, 55+(i-(self.history_count-1)*10)*40, 30, 30))
-                turn = font.render("{}".format(i+1), True, (255, 255, 255))
-                self.screen.blit(
-                    turn, (3, 60+(i-(self.history_count-1)*10)*40))
-                pygame.draw.line(self.screen, (100, 100, 100), (25, 50+(
-                    i-(self.history_count-1)*10)*40), (25, 90+(i-(self.history_count-1)*10)*40), 1)
-                pygame.draw.line(self.screen, (100, 100, 100), (0, 90+(
-                    i-(self.history_count-1)*10)*40), (360, 90+(i-(self.history_count-1)*10)*40), 1)
-                hit_blow = font.render("Hit:{} Blow:{}".format(
-                    self.hit_list[i], self.blow_list[i]), True, (255, 255, 255))
-                self.screen.blit(
-                    hit_blow, (230, 60+(i-(self.history_count-1)*10)*40))
-
+                    self.screen.blit(self.guess_list[i][j], ((30+j*40)*self.screen_size,(55+(i-(self.history_count-1)*10)*40)*self.screen_size,30*self.screen_size,30*self.screen_size))
+                turn = font.render("{}".format(i+1), True, (255,255,255))
+                self.screen.blit(turn, (3*self.screen_size,(60+(i-(self.history_count-1)*10)*40)*self.screen_size))
+                pygame.draw.line(self.screen,(100,100,100),(25*self.screen_size,(50+(i-(self.history_count-1)*10)*40)*self.screen_size),(25*self.screen_size,(90+(i-(self.history_count-1)*10)*40)*self.screen_size),1)
+                pygame.draw.line(self.screen,(100,100,100),(0,(90+(i-(self.history_count-1)*10)*40)*self.screen_size),(360*self.screen_size,(90+(i-(self.history_count-1)*10)*40)*self.screen_size),1)
+                hit_blow = font.render("Hit:{} Blow:{}".format(self.hit_list[i], self.blow_list[i]), True, (255,255,255))
+                self.screen.blit(hit_blow, (230*self.screen_size,(60+(i-(self.history_count-1)*10)*40)*self.screen_size))
+                
         else:
-            for i in range((self.history_count-1)*10, self.turn-1):
+            for i in range((self.history_count-1)*10,self.turn-1):
                 for j in range(5):
-                    self.screen.blit(
-                        self.guess_list[i][j], (30+j*40, 55+(i-(self.history_count-1)*10)*40, 30, 30))
-                turn = font.render("{}".format(i+1), True, (255, 255, 255))
-                self.screen.blit(
-                    turn, (3, 60+(i-(self.history_count-1)*10)*40))
-                pygame.draw.line(self.screen, (100, 100, 100), (25, 50+(
-                    i-(self.history_count-1)*10)*40), (25, 90+(i-(self.history_count-1)*10)*40), 1)
-                pygame.draw.line(self.screen, (100, 100, 100), (0, 90+(
-                    i-(self.history_count-1)*10)*40), (360, 90+(i-(self.history_count-1)*10)*40), 1)
-                hit_blow = font.render("Hit:{} Blow:{}".format(
-                    self.hit_list[i], self.blow_list[i]), True, (255, 255, 255))
-                self.screen.blit(
-                    hit_blow, (230, 60+(i-(self.history_count-1)*10)*40))
+                    self.screen.blit(self.guess_list[i][j], ((30+j*40)*self.screen_size,(55+(i-(self.history_count-1)*10)*40)*self.screen_size,30*self.screen_size,30*self.screen_size))
+                turn = font.render("{}".format(i+1), True, (255,255,255))
+                self.screen.blit(turn, (3*self.screen_size,(60+(i-(self.history_count-1)*10)*40)*self.screen_size))
+                pygame.draw.line(self.screen,(100,100,100),(25*self.screen_size,(50+(i-(self.history_count-1)*10)*40)*self.screen_size),(25*self.screen_size,(90+(i-(self.history_count-1)*10)*40)*self.screen_size),1)
+                pygame.draw.line(self.screen,(100,100,100),(0,(90+(i-(self.history_count-1)*10)*40)*self.screen_size),(360*self.screen_size,(90+(i-(self.history_count-1)*10)*40)*self.screen_size),1)
+                hit_blow = font.render("Hit:{} Blow:{}".format(self.hit_list[i], self.blow_list[i]), True, (255,255,255))
+                self.screen.blit(hit_blow, (230*self.screen_size,(60+(i-(self.history_count-1)*10)*40)*self.screen_size))
         if self.turn > self.history_count*10+1:
             self.screen.blit(self.next_button_img, self.next_buttonrect)
         self.screen.blit(self.prev_button_img, self.prev_buttonrect)
         self.screen.blit(self.return_button_img, self.return_buttonrect)
+
+
+        
 
     def history2_judge(self):
         """履歴のボタンの判別2,3ページ目
@@ -406,21 +424,16 @@ class ShowGame(battle.Battle, town.Town):
     def historylast_show(self):
         """履歴の描画最終ページ
         """
-        font = pygame.font.SysFont(None, 30)
-        for i in range((self.history_count-1)*10, self.turn-1):
+        font = pygame.font.SysFont(None, 30*self.screen_size)
+        for i in range((self.history_count-1)*10,self.turn-1):
             for j in range(5):
-                self.screen.blit(
-                    self.guess_list[i][j], (30+j*40, 55+(i-(self.history_count-1)*10)*40, 30, 30))
-            turn = font.render("{}".format(i+1), True, (255, 255, 255))
-            self.screen.blit(turn, (3, 60+(i-(self.history_count-1)*10)*40))
-            pygame.draw.line(self.screen, (100, 100, 100), (25, 50+(
-                i-(self.history_count-1)*10)*40), (25, 90+(i-(self.history_count-1)*10)*40), 1)
-            pygame.draw.line(self.screen, (100, 100, 100), (0, 90+(
-                i-(self.history_count-1)*10)*40), (360, 90+(i-(self.history_count-1)*10)*40), 1)
-            hit_blow = font.render("Hit:{} Blow:{}".format(
-                self.hit_list[i], self.blow_list[i]), True, (255, 255, 255))
-            self.screen.blit(
-                hit_blow, (230, 60+(i-(self.history_count-1)*10)*40))
+                self.screen.blit(self.guess_list[i][j], ((30+j*40)*self.screen_size,(55+(i-(self.history_count-1)*10)*40)*self.screen_size,30*self.screen_size,30*self.screen_size))
+            turn = font.render("{}".format(i+1), True, (255,255,255))
+            self.screen.blit(turn, (3*self.screen_size,(60+(i-(self.history_count-1)*10)*40)*self.screen_size))
+            pygame.draw.line(self.screen,(100,100,100),(25*self.screen_size,(50+(i-(self.history_count-1)*10)*40)*self.screen_size),(25*self.screen_size,(90+(i-(self.history_count-1)*10)*40)*self.screen_size),1)
+            pygame.draw.line(self.screen,(100,100,100),(0,(90+(i-(self.history_count-1)*10)*40)*self.screen_size),(360*self.screen_size,(90+(i-(self.history_count-1)*10)*40)*self.screen_size),1)
+            hit_blow = font.render("Hit:{} Blow:{}".format(self.hit_list[i], self.blow_list[i]), True, (255,255,255))
+            self.screen.blit(hit_blow, (230*self.screen_size,(60+(i-(self.history_count-1)*10)*40)*self.screen_size))
         self.screen.blit(self.prev_button_img, self.prev_buttonrect)
         self.screen.blit(self.return_button_img, self.return_buttonrect)
 
@@ -439,14 +452,13 @@ class ShowGame(battle.Battle, town.Town):
     def stage_select(self):
         """ステージセレクト画面
         """
-        font = pygame.font.SysFont(
-            "bizudminchomediumbizudpminchomediumtruetype", 30)
-        level = font.render("ステージを選んで下さい", True, "WHITE")
-        self.screen.blit(level, (11, 10))
-        font2 = pygame.font.SysFont("algerian", 40)
-        for i in range(self.max_dungeon_num):  # ステージの数だけ描画
-            level = font2.render("LEVEL:{}".format(i+1), True, "WHITE")
-            self.screen.blit(level, (100, 100+100*i))
+        font = pygame.font.SysFont("bizudminchomediumbizudpminchomediumtruetype", 30*self.screen_size)
+        level = font.render("ステージを選んで下さい",True, "WHITE")
+        self.screen.blit(level, (11*self.screen_size,10*self.screen_size))
+        font2 = pygame.font.SysFont("algerian", 40*self.screen_size)
+        for i in range(self.stage_num): # ステージの数だけ描画
+            level = font2.render("LEVEL:{}".format(i+1),True, "WHITE")
+            self.screen.blit(level, (100*self.screen_size,(100+100*i)*self.screen_size))
         self.screen.blit(self.return_button_img, self.return_buttonrect)
 
     def judge_stage_select(self):
@@ -490,12 +502,12 @@ class ShowGame(battle.Battle, town.Town):
         """
         self.screen.blit(
             self.enemy_list[self.dungeon_num], self.enemyrect)  # 敵の描画
-        font2 = pygame.font.SysFont(None, 30)  # turnの表示
+        font2 = pygame.font.SysFont(None, 30*self.screen_size)  # turnの表示
         stage = font2.render("turn:{}".format(
             self.turn), True, (255, 255, 255))
-        pygame.draw.line(self.screen, (0, 200, 0), (30, 40),
-                         (30+self.hp_g*self.hp_bar_ratio, 40), 10)  # HPの表示
-        font3 = pygame.font.SysFont(None, 20)
+        pygame.draw.line(self.screen, (0, 200, 0), (30*self.screen_size, 40*self.screen_size),
+                         (30*self.screen_size+self.hp_g*self.hp_bar_ratio*self.screen_size, 40*self.screen_size), 10*self.screen_size)  # HPの表示
+        font3 = pygame.font.SysFont(None, 20*self.screen_size)
         hp_word = font3.render("HP", True, (255, 255, 255))
         hp_value = font3.render("{}".format(self.hp_g), True, (255, 255, 255))
         # if mode == "normal":
@@ -510,15 +522,15 @@ class ShowGame(battle.Battle, town.Town):
         damage = self.damage*(self.turn-1)
         if damage != 0:
             pygame.draw.line(self.screen, (200, 0, 0),
-                             (30+self.hp_g*self.hp_bar_ratio, 40), (30+(self.hp_g+damage)*self.hp_bar_ratio, 40), 10)
-        font4 = pygame.font.SysFont(None, 50)
+                             (30*self.screen_size+self.hp_g*self.hp_bar_ratio*self.screen_size, 40*self.screen_size), (30*self.screen_size+(self.hp_g+damage)*self.hp_bar_ratio*self.screen_size, 40*self.screen_size), 10*self.screen_size)
+        font4 = pygame.font.SysFont(None, 50*self.screen_size)
         hit_blow = font4.render("Hit:{}   Blow:{}".format(
             self.hit, self.blow), True, (255, 255, 255))
-        self.screen.blit(stage, (5, 5))
-        self.screen.blit(hp_word, (5, 35))
+        self.screen.blit(stage, (5*self.screen_size, 5*self.screen_size))
+        self.screen.blit(hp_word, (5*self.screen_size, 35*self.screen_size))
         self.screen.blit(
-            hp_value, (30+(self.hp_g+damage)*self.hp_bar_ratio+2, 35))
-        self.screen.blit(hit_blow, (80, 360))
+            hp_value, (30*self.screen_size+(self.hp_g+damage)*self.hp_bar_ratio*self.screen_size+2*self.screen_size, 35*self.screen_size))
+        self.screen.blit(hit_blow, (80*self.screen_size, 360*self.screen_size))
         self.screen.blit(self.enter_button_img, self.enter_buttonrect)
         self.screen.blit(self.history_button_img, self.history_buttonrect)
         self.mark_show()
@@ -697,35 +709,35 @@ class ShowGame(battle.Battle, town.Town):
     def boss_stage(self):
         """ボスステージの描画
         """
-        font2 = pygame.font.SysFont(None, 80)
+        font2 = pygame.font.SysFont(None, 80*self.screen_size)
         stage = font2.render("Boss Stage", True, (255, 255, 255))
-        self.screen.blit(stage, (25, 30))
+        self.screen.blit(stage, (25*self.screen_size, 30*self.screen_size))
         self.screen.blit(self.return_button_img, self.return_buttonrect)
 
     def game_over(self):
         """ゲームオーバー画面の描画
         """
-        font = pygame.font.SysFont(None, 80)
-        game = font.render("Game", True, (150, 0, 0))
-        over = font.render("Over", True, (150, 0, 0))
-        self.screen.blit(game, (105, 200))
-        self.screen.blit(over, (120, 250))
+        font = pygame.font.SysFont(None, 80*self.screen_size)
+        game = font.render("Game", True, (150,0,0))
+        over = font.render("Over", True, (150,0,0))
+        self.screen.blit(game, (105*self.screen_size,200*self.screen_size))
+        self.screen.blit(over, (120*self.screen_size,250*self.screen_size))
         self.screen.blit(self.return_button_img, self.return_buttonrect)
-        self.screen.blit(self.history_button_img, Rect(120, 500, 120, 30))
+        self.screen.blit(self.history_button_img, Rect(120*self.screen_size,500*self.screen_size,120*self.screen_size,30*self.screen_size))
+
 
     def clear(self, dungeon_num: int = 0):
         """クリア画面の描画
         """
-        font = pygame.font.SysFont(None, 80)
-        font2 = pygame.font.SysFont(None, 40)
-        clear = font.render("Clear!", True, (230, 180, 34))
-        self.screen.blit(clear, (98, 100))
-        exp = font2.render("EXP:{}".format(
-            self.e_exp), True, (255, 255, 255))
-        self.screen.blit(exp, (130, 200))
+        font = pygame.font.SysFont(None, 80*self.screen_size)
+        font2 = pygame.font.SysFont(None, 40*self.screen_size)
+        clear = font.render("Clear!", True, (230,180,34))
+        self.screen.blit(clear, (98*self.screen_size,100*self.screen_size))
+        exp = font2.render("EXP:{}".format(self.e_exp), True, (255,255,255))
+        self.screen.blit(exp, (130*self.screen_size,200*self.screen_size))
         self.screen.blit(self.return_button_img, self.return_buttonrect)
-        self.screen.blit(self.history_button_img, Rect(120, 500, 120, 30))
-
+        self.screen.blit(self.history_button_img, Rect(120*self.screen_size,500*self.screen_size,120*self.screen_size,30*self.screen_size))
+    
     def result_judge(self):
         """結果画面でのボタンの判定
         """
@@ -740,11 +752,11 @@ class ShowGame(battle.Battle, town.Town):
                     pygame.mixer.music.load(self.bgm_dict["home"])
                     pygame.mixer.music.set_volume(0.3)
                     pygame.mixer.music.play(loops=-1)
-                if Rect(120, 500, 120, 30).collidepoint(event.pos):
+                if Rect(120*self.screen_size,500*self.screen_size,120*self.screen_size,30*self.screen_size).collidepoint(event.pos):
                     self.history_count = 1
 
     def how_to_play(self):  # how to play 画面の描画
-        self.screen.blit(self.how_to_play_img, Rect(0, 0, 360, 640))
+        self.screen.blit(self.how_to_play_img, Rect(0,0,360*self.screen_size,640*self.screen_size))
         self.screen.blit(self.return_button_img, self.return_buttonrect)
 
     def how_to_play_judje(self):
@@ -754,6 +766,37 @@ class ShowGame(battle.Battle, town.Town):
             if (event.type == pygame.MOUSEBUTTONUP) and (event.button == 1):
                 if self.return_buttonrect.collidepoint(event.pos):
                     self.gamescene = 0
+
+    def screen_select(self):
+        w, h = pygame.display.get_surface().get_size()
+        font = pygame.font.SysFont("bizudminchomediumbizudpminchomediumtruetype", 100)
+        pc = font.render("PC",True, "WHITE")
+        self.screen.blit(pc, (50,10))
+        pcrect = Rect(0,10,w,h/2-50)
+        smartphone = font.render("スマホ",True, "WHITE")
+        self.screen.blit(smartphone, (10,h/2+10))
+        smartphonerect = Rect(0,h/2+10,w,h/2-50)
+        for event in pygame.event.get():
+                    if event.type == pygame.QUIT: 
+                        self.running = False
+                    if (event.type == pygame.MOUSEBUTTONUP) and (event.button == 1):
+                        if pcrect.collidepoint(event.pos):
+                            self.screen = pygame.display.set_mode((360,640))
+                            self.screen_count = 1
+                            self.set_player()
+                            self.set_mark()
+                            self.set_enemy()
+                            self.set_button()
+                            self.set_mark_entry()
+                        if smartphonerect.collidepoint(event.pos):
+                            self.screen = pygame.display.set_mode((1080,1920))
+                            self.screen_size = 3
+                            self.screen_count = 1
+                            self.set_player()
+                            self.set_mark()
+                            self.set_enemy()
+                            self.set_button()
+                            self.set_mark_entry()
 
     def make_1ans(self):
         if self.demand == 1:
@@ -802,11 +845,11 @@ class ShowGame(battle.Battle, town.Town):
         self.choice_buttonrect = []
         choice_answer = False
         font_title = pygame.font.SysFont(
-            "bizudminchomediumbizudpminchomediumtruetype", 24)
+            "bizudminchomediumbizudpminchomediumtruetype", 24*self.screen_size)
         font = pygame.font.SysFont(
-            "bizudminchomediumbizudpminchomediumtruetype", 21)
+            "bizudminchomediumbizudpminchomediumtruetype", 21*self.screen_size)
         font2 = pygame.font.SysFont(
-            "bizudminchomediumbizudpminchomediumtruetype", 16)
+            "bizudminchomediumbizudpminchomediumtruetype", 16*self.screen_size)
         # titleを表示
         # titleが長すぎたら改行して2行にする
         title = str(title)
@@ -816,20 +859,20 @@ class ShowGame(battle.Battle, town.Town):
         else:
             title2 = ""
         print_title = font_title.render(title, True, "WHITE")
-        self.screen.blit(print_title, (11, 12))
+        self.screen.blit(print_title, (11*self.screen_size, 12*self.screen_size))
         print_title2 = font_title.render(title2, True, "WHITE")
-        self.screen.blit(print_title2, (11, 44))
+        self.screen.blit(print_title2, (11*self.screen_size, 44*self.screen_size))
         # 選択肢を表示
         for i in range(len(choice)):
-            self.choice_buttonrect.append(Rect(30, 90+47*i, 260, 30))
+            self.choice_buttonrect.append(Rect(30*self.screen_size, (90+47*i)*self.screen_size, 260*self.screen_size, 30*self.screen_size))
         for i, name in enumerate(choice):  # 選択肢の数だけ描画
             print_choice = font.render(name, True, "WHITE")
-            self.screen.blit(print_choice, (24, 93+47*i))
+            self.screen.blit(print_choice, (24*self.screen_size, (93+47*i)*self.screen_size))
         self.screen.blit(self.return_button_img, self.return_buttonrect)
         # メッセージを表示
         for i, name in enumerate(message):
             print_message = font2.render(name, True, "WHITE")
-            self.screen.blit(print_message, (11, 375+22*i))
+            self.screen.blit(print_message, (11*self.screen_size, (375+22*i)*self.screen_size))
 
         # 以下、本来は別関数（judge_～～～）となるはずだった部分
         for event in pygame.event.get():

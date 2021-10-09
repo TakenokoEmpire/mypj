@@ -44,11 +44,6 @@ class Commander(show_game4.ShowGame):
 
     def gui_run(self):
         pygame.display.set_caption("Hit, Blow and Dragons")
-        self.set_player()
-        self.set_mark()
-        self.set_enemy()
-        self.set_button()
-        self.set_mark_entry()
         self.set_sound()
         # choice関連
         self.dict_name_list = ["初期画面", "街の入り口", "装備：変更対象",
@@ -74,7 +69,9 @@ class Commander(show_game4.ShowGame):
             ・dict検索時のnumberとnameを間違えてないか
             をチェック
             """
-            if self.choice_dict["初期画面"]["name"] == "False":
+            if self.screen_count == 0:
+                self.screen_select()
+            elif self.choice_dict["初期画面"]["name"] == "False":
                 self.reset()
                 # if self.choice_dict["初期画面"]["number"] == "False":
                 self.choice_screen("<Hit and blow タイトル画面>", ["街へ行く", "ダンジョンへ行く"], [
