@@ -419,7 +419,7 @@ class Battle(Core):
             exit()
         print("level ratio:{}".format(lv_ratio))
         if random.random() > lv_ratio and self.dungeon_type == "boss":
-            print("調査が妨害された！")
+            print("jamming_judge:STOP")
             return "stop"
         return "go"
 

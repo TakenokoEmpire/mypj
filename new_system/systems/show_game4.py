@@ -27,7 +27,7 @@ class ShowGame(battle.Battle, town.Town):
 
     def __init__(self,
                  num: List[int] = [0, 1, 2, 3, 4],
-                 turn: int = 1,
+                 #  turn: int = 1,
                  display_size: Tuple[int] = (360, 640),
                  dungeon_num: int = 0,
                  max_dungeon_num: int = 3,
@@ -37,31 +37,38 @@ class ShowGame(battle.Battle, town.Town):
         super().__init__()
         self.demand = demand
         self.num = num
-        self.turn = turn
-        self.boss_turn = turn
         self.screen = pygame.display.set_mode(display_size)
         self.dungeon_num = dungeon_num
         self.max_dungeon_num = max_dungeon_num
         self.gamescene = gamescene
         self.error_count = 0  # 同じ数字入れたときのエラーカウント
         self.history_count = 0  # 履歴画面関連
-        self.guess_list = []  # 推測した数字
-        self.boss_guess_list = []
+        # self.guess_list = []  # 推測した数字
+        # self.boss_guess_list = []
         self.running = True
-        self.hit = 0
-        self.blow = 0
-        self.boss_hit = 0
-        self.boss_blow = 0
+        # self.hit = 0
+        # self.blow = 0
+        # self.boss_hit = 0
+        # self.boss_blow = 0
         self.ans_g = [0, 0, 0, 0, 0]
         self.flag = []
-        self.lv_g = self.lv
         self.turn_switch = 0
+        # self.lv = self.lv
 
     def second_init_showgame(self):
         # GUIに対応
         # 進入ダンジョンが決定する前(initで強制的に実行される内容)のself設定は最小限にしておき、
         # ダンジョンに依存するステータス等はここで決めていく
 
+        # ステータス更新した？
+        self.turn = 1
+        self.boss_turn = 1
+        self.hit = 0
+        self.blow = 0
+        self.boss_hit = 0
+        self.boss_blow = 0
+        self.guess_list = []  # 推測した数字
+        self.boss_guess_list = []
         self.max_hp = int(self.hp*3)
         self.damage = self.e_atk
         self.exp_g = self.exp
@@ -224,7 +231,7 @@ class ShowGame(battle.Battle, town.Town):
         self.screen.blit(self.img, self.player_place)  # imgの描画・updateされてるから
         self.font = pygame.font.SysFont(None, 40)  # フォントの指定
         lv_display = self.font.render("Lv {}".format(
-            self.lv_g), True, (255, 255, 255))  # 文字・色の指定
+            self.lv), True, (255, 255, 255))  # 文字・色の指定
         # screen.blit→指定された位置に画像を表示
         self.screen.blit(lv_display, (150, 220))  # テキストの位置
         self.screen.blit(self.normal_button_img, self.normal_buttonrect)
