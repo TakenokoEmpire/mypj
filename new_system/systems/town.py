@@ -132,7 +132,6 @@ class Town(battle.Core):
         self.print_equip()
         self.print_status()
         print(self.book["プレイヤーステータス"]["B4"].value)
-        self.save()
 
     def town_test(self):
         self.mysheet["G6"].value += 1

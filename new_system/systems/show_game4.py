@@ -33,7 +33,7 @@ class ShowGame(battle.Battle, town.Town):
                  dungeon_num: int = 0,
                  max_dungeon_num: int = 3,
                  gamescene: int = 0,
-                 demand: List[int] = [1, 0]):
+                 demand: List[int] = [1, 1]):
         print("showgame init")
         super().__init__()
         self.demand = demand
@@ -260,9 +260,13 @@ class ShowGame(battle.Battle, town.Town):
         self.boss_buttonrect = Rect(
             80*self.screen_size, 375*self.screen_size, 200*self.screen_size, 50*self.screen_size)
         self.how_to_play_buttonrect = Rect(
-            80*self.screen_size, 490*self.screen_size, 200*self.screen_size, 50*self.screen_size)
+            80*self.screen_size, 500*self.screen_size, 200*self.screen_size, 50*self.screen_size)
         self.return_buttonrect = Rect(
-            80*self.screen_size, 565*self.screen_size, 200*self.screen_size, 50*self.screen_size)
+            80*self.screen_size, 575*self.screen_size, 200*self.screen_size, 50*self.screen_size)
+        self.left_buttonrect = Rect(
+            10*self.screen_size, 570*self.screen_size, 60*self.screen_size, 60*self.screen_size)
+        self.right_buttonrect = Rect(
+            290*self.screen_size, 570*self.screen_size, 60*self.screen_size, 60*self.screen_size)
         self.prev_buttonrect = Rect(
             50*self.screen_size, 500*self.screen_size, 120*self.screen_size, 30*self.screen_size)
         self.next_buttonrect = Rect(
@@ -300,6 +304,12 @@ class ShowGame(battle.Battle, town.Town):
         self.how_to_play_img = pygame.image.load("./mypj3/img/how_to_play.png")
         self.how_to_play_img = pygame.transform.rotozoom(
             self.how_to_play_img, 0, self.screen_size)
+        # self.left_img = pygame.image.load("./mypj3/img/left.png")
+        # self.left_img = pygame.transform.rotozoom(
+        #     self.left_img, 0, self.screen_size)
+        # self.right_img = pygame.image.load("./mypj3/img/right.png")
+        # self.right_img = pygame.transform.rotozoom(
+        #     self.right_img, 0, self.screen_size)
 
     def set_mark_entry(self):
         """マーク入力用の設定
@@ -940,10 +950,11 @@ class ShowGame(battle.Battle, town.Town):
         for dict_name in self.dict_name_list:
             self.choice_dict.update(
                 {dict_name: {"number": "False", "name": "False"}})
+        self.choice_current_page = 0
 
-    def choice_screen(self, title, choice: List[str], message: List[str], dict_name, delete_dict_list_when_return: List[str] = []):
+    def choice_screen(self, title, choice: List[str], message: List[str], dict_name, delete_dict_list_when_return: List[str] = [], multi_page_checker: str = "single"):
         """選択肢を表示させるためのモジュール
-        タイトルは28文字まで、選択肢は7つまで、メッセージは5行まで対応。
+        タイトルは28文字まで、選択肢は6つまで、メッセージは8行まで対応（それを超える場合はchoice_screen_multiを使う）
         選択が行われた場合、選択肢の番号と名前を、self.choice_dictのdict_nameに登録する
         dict_name="装備"のとき、選択肢の番号はself.choice_dict["装備"]["number"]に、選択肢の名前をself.choice_dict["装備"]["name"]に登録する
         【使い方】
@@ -983,17 +994,20 @@ class ShowGame(battle.Battle, town.Town):
         # 選択肢を表示
         for i in range(len(choice)):
             self.choice_buttonrect.append(Rect(
-                30*self.screen_size, (90+47*i)*self.screen_size, 260*self.screen_size, 30*self.screen_size))
+                24*self.screen_size, (80+46*i)*self.screen_size, 300*self.screen_size, 33*self.screen_size))
         for i, name in enumerate(choice):  # 選択肢の数だけ描画
             print_choice = font.render(name, True, "WHITE")
             self.screen.blit(
-                print_choice, (24*self.screen_size, (93+47*i)*self.screen_size))
+                print_choice, (24*self.screen_size, (86+46*i)*self.screen_size))
         self.screen.blit(self.return_button_img, self.return_buttonrect)
+        if multi_page_checker == "multi":
+            self.screen.blit(self.g_snow_img, self.right_buttonrect)
+            self.screen.blit(self.g_moon_img, self.left_buttonrect)
         # メッセージを表示
         for i, name in enumerate(message):
             print_message = font2.render(name, True, "WHITE")
             self.screen.blit(
-                print_message, (11*self.screen_size, (375+22*i)*self.screen_size))
+                print_message, (11*self.screen_size, (310+21*i)*self.screen_size))
 
         # 以下、本来は別関数（judge_～～～）となるはずだった部分
         for event in pygame.event.get():
@@ -1006,7 +1020,7 @@ class ShowGame(battle.Battle, town.Town):
                             pygame.mixer.Sound(self.se_dict["start"]))
                         print("選択肢：{}".format(i))
                         self.choice_judge = 1
-                        time.sleep(0.5)
+                        time.sleep(0.25)
                         self.choice_dict.update({dict_name: {"number": i,
                                                              "name": choice[i]}})
                         print(self.choice_dict)
@@ -1019,8 +1033,24 @@ class ShowGame(battle.Battle, town.Town):
                     for dicts in delete_dict_list_when_return:
                         self.choice_dict.update(
                             {dicts: {"number": "False", "name": "False"}})
+                if multi_page_checker == "multi":
+                    if self.left_buttonrect.collidepoint(event.pos):
+                        self.choice_current_page -= 1
+                    if self.right_buttonrect.collidepoint(event.pos):
+                        self.choice_current_page += 1
 
-    # def judge_choice_screen(self):
+    def choice_screen_multi(self, title, choice: List[str], message: List[str], dict_name, delete_dict_list_when_return: List[str] = []):
+        """選択肢が複数ページに跨る場合はこちらを使用する
+        choice,message以外はchoice_screenと同様。
+        上記2つについては、二重のリストとする。最も外側のリストのlengthは、それぞれ等しくすること。"""
+        page_qty = len(message)
+        page_num = self.choice_current_page % page_qty
+        self.choice_screen(title, choice[page_num], message[page_num], dict_name,
+                           delete_dict_list_when_return, "multi")
+
+    def historylast_show(self):
+
+        # def judge_choice_screen(self):
         """
         """
 
