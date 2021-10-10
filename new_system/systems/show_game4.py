@@ -631,7 +631,7 @@ class ShowGame(battle.Battle, town.Town):
         stage = font2.render("turn:{}".format(
             self.turn), True, (255, 255, 255))
         pygame.draw.line(self.screen, (0, 200, 0), (30*self.screen_size, 40*self.screen_size),
-                         (30*self.screen_size+self.hp_g*self.hp_bar_ratio*self.screen_size, 40*self.screen_size), 10*self.screen_size)  # HPの表示
+                        (30*self.screen_size+self.hp_g*self.hp_bar_ratio*self.screen_size, 40*self.screen_size), 10*self.screen_size)  # HPの表示
         font3 = pygame.font.SysFont(None, 20*self.screen_size)
         hp_word = font3.render("HP", True, (255, 255, 255))
         hp_value = font3.render("{}".format(self.hp_g), True, (255, 255, 255))
@@ -658,6 +658,9 @@ class ShowGame(battle.Battle, town.Town):
         self.screen.blit(hit_blow, (80*self.screen_size, 360*self.screen_size))
         self.screen.blit(self.enter_button_img, self.enter_buttonrect)
         self.screen.blit(self.history_button_img, self.history_buttonrect)
+        font = pygame.font.SysFont("algerian", 40*self.screen_size)
+        item_comand = font.render("ITEMS", True, (255,255,255))
+        self.screen.blit(item_comand,(130*self.screen_size, 310*self.screen_size))
         self.mark_show()
 
     def boss_action(self, mode="normal"):
@@ -800,6 +803,8 @@ class ShowGame(battle.Battle, town.Town):
                                 pygame.mixer.Sound(self.se_dict["failed"]))
                 if self.history_buttonrect.collidepoint(event.pos):
                     self.history_count = 1
+                if Rect(130*self.screen_size,310*self.screen_size,120*self.screen, 50*self.screen):
+                    pass #アイテムコマンド押したときの処理を入れてほしい
 
     def mark_show(self):
         """入力画面の描画
