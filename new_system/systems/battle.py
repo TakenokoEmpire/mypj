@@ -139,7 +139,7 @@ class Function():
                 return i + 1
         return False
 
-    def xy_index(self, sheet, left_index, left_index_position, top_index, top_index_position, return_type):
+    def vhindex(self, sheet, left_index, left_index_position, top_index, top_index_position, return_type):
         """excelのindex関数もどきを再現
         縦横両方向に対応し、さらに先頭行（列）以外にも対応
         return_type:"excel"→セル番号形式
@@ -187,7 +187,6 @@ class Function():
             self.switch_judge_box[target_var_name_str][0] = None
             return False
 
-
     def text_length(self, text):
         """半角換算での文字列の長さを返す"""
         count = 0
@@ -197,7 +196,6 @@ class Function():
             else:
                 count += 1
         return count
-
 
     def line_break(self, text, line_length):
         """全角半角を考慮した自動改行ツール
@@ -267,7 +265,7 @@ class Core(Function):
     def status_checker(self):
         self.equip_checker()
         for stat in self.basic_status_index:
-            self.mysheet[self.xy_index(self.mysheet, stat, 1, "total", 1, "excel")] = self.vhlookup(
+            self.mysheet[self.vhindex(self.mysheet, stat, 1, "total", 1, "excel")] = self.vhlookup(
                 self.mysheet, stat, 1, "raw", 1) + self.vhlookup(self.mysheet, stat, 1, "equip", 1)
         status_box = []
         for num in range(len(self.all_status_index)):
@@ -291,14 +289,14 @@ class Core(Function):
             equip_name = self.vhlookup(
                 self.mysheet, self.equip_position[i], 1, "name", self.equip_index_rownum)
             for stat in update_stat:
-                self.mysheet[self.xy_index(self.mysheet, self.equip_position[i], 1, stat, self.equip_index_rownum, "excel")] = self.vhlookup(
+                self.mysheet[self.vhindex(self.mysheet, self.equip_position[i], 1, stat, self.equip_index_rownum, "excel")] = self.vhlookup(
                     self.book["装備"], equip_name, self.equip_sheetsoubi_name_columnnum, stat, 1)
         # 装備欄に記録されたhp,atkの補正値をステータスに反映する(補正値の合計sum_statを計算し、該当する位置に貼り付ける)
         for j in range(len(update_stat)):
             for i in range(self.equip_qty):
                 sum_stat[j] += self.vhlookup(self.mysheet, self.equip_position[i],
                                              1, update_stat[j], self.equip_index_rownum)
-            self.mysheet[self.xy_index(
+            self.mysheet[self.vhindex(
                 self.mysheet, update_stat[j], 1, "equip", 1, "excel")] = sum_stat[j]
 
     def print_status(self):
@@ -319,26 +317,55 @@ class Core(Function):
                 return selected_item, item_rarity
 
     def get_item(self, item: str, add_qty: int = 1):
+        if self.vindex_plus(self.book["装備"], item, 3) != False:
+            self.get_equip(item,add_qty)
+        elif self.vindex_plus(self.book["アイテム箱"], item, 2) != False:
+            self.get_nonequip_item(item,add_qty)
+        else:
+        # 登録されてないアイテムをゲットした場合、道具箱に投げる
+            print("登録されていないアイテムを取得しました。当該アイテムは道具箱に登録されます。")
+            if self.vindex(self.book["道具箱"], item) == False:
+                self.book["道具箱"].cell(row=self.vindex(self.book["道具箱"], "empty"), column=2, value=self.vlookup(self.book["道具箱"], "empty", 2)+1)
+                self.book["道具箱"].cell(row=self.vindex(self.book["道具箱"], "empty"), column=1, value=item)
+            else:
+                self.book["道具箱"].cell(row=self.vindex(self.book["道具箱"], item),column=2, value=self.vlookup(self.book["道具箱"], item, 2)+1)
+
+    def get_equip(self, item: str, add_qty: int = 1):
+        rand = random.random()
+        item_pos = self.vindex_plus(self.book["装備"], item, 3)
+        qty_pos = self.hindex(self.book["装備"], "qty")  # qtyではなく"qty"なので注意
+        # c_value = self.vlookup(self.book["装備"], item, 3)
+        equip_body_position = self.vhlookup(self.book["装備"], item, 3, "position_copy", 1)
+        equip_hp = self.vhlookup(self.book["装備"], item, 3, "hp", 1)
+        equip_atk = self.vhlookup(self.book["装備"], item, 3, "atk", 1)
+        equip_def = self.vhlookup(self.book["装備"], item, 3, "def", 1)
+        # 「装備」タブへの処理
+        self.book["装備"].cell(row=item_pos,column=qty_pos, value=self.vlookup_plus(self.book["装備"], item, 2, 3)+add_qty)
+        # 「個別装備情報」タブへの処理
+        equip_rownum = self.vindex_plus(self.book["装備個別情報"], "empty", 3)
+        for i in range(5):
+            if rand < float(self.hlookup(self.book["装備個別情報"], "sum_prob", i+2)):
+                slot = i+1
+                break
+        self.book["装備個別情報"].cell(row=equip_rownum, column=self.hindex(self.book["装備個別情報"],"position"), value=equip_body_position)
+        self.book["装備個別情報"].cell(row=equip_rownum, column=self.hindex(self.book["装備個別情報"],"name"), value=item)
+        self.book["装備個別情報"].cell(row=equip_rownum, column=self.hindex(self.book["装備個別情報"],"hp"), value=equip_hp)
+        self.book["装備個別情報"].cell(row=equip_rownum, column=self.hindex(self.book["装備個別情報"],"atk"), value=equip_atk)
+        self.book["装備個別情報"].cell(row=equip_rownum, column=self.hindex(self.book["装備個別情報"],"def"), value=equip_def)
+        self.book["装備個別情報"].cell(row=equip_rownum, column=self.hindex(self.book["装備個別情報"],"slot_qty"), value=slot)
+        print("{}:{}を入手した！slot:{}".format(equip_body_position,item,slot))
+
+    def get_nonequip_item(self, item: str, add_qty: int = 1):
         """item:アイテム名、add_qty:取得した数"""
         item_pos = self.vindex_plus(self.book["アイテム箱"], item, 2)
         qty_pos = self.hindex(self.book["アイテム箱"], "qty")  # qtyではなく"qty"なので注意
-        if item_pos != False:
-            self.book["アイテム箱"].cell(row=item_pos,
-                                    column=qty_pos, value=self.vlookup(self.book["アイテム箱"], item, 2)+add_qty)
-        else:
-            # 登録されてないアイテムをゲットした場合、道具箱に投げる
-            print("登録されていないアイテムを取得しました。当該アイテムは道具箱に登録されます。")
-            if self.vindex(self.book["道具箱"], item) == False:
-                self.book["道具箱"].cell(row=self.vindex(
-                    self.book["道具箱"], "empty"), column=2, value=self.vlookup(self.book["道具箱"], "empty", 2)+1)
-                self.book["道具箱"].cell(row=self.vindex(
-                    self.book["道具箱"], "empty"), column=1, value=item)
-            else:
-                self.book["道具箱"].cell(row=self.vindex(self.book["道具箱"], item),
-                                      column=2, value=self.vlookup(self.book["道具箱"], item, 2)+1)
+        self.book["アイテム箱"].cell(row=item_pos,
+                                column=qty_pos, value=self.vlookup(self.book["アイテム箱"], item, 2)+add_qty)
 
     def buy_item(self, item: str, value: int, diamond: int = 0, add_qty: int = 1):
         """item:アイテム名,value:価格,diamond:リアルマネー、add_qty:取得した数"""
+        if self.check_minus(value,diamond) == False:
+            return False
         self.money -= value
         self.diamond -= diamond
         self.get_item(item, add_qty)
@@ -352,8 +379,15 @@ class Core(Function):
         self.mysheet.cell(row=self.vindex(self.mysheet, "diamond"),
                           column=2, value=self.diamond)
 
-    # def check_minus_money():
-    #     if money is
+    def check_minus(self,money_qty_to_use,diamond_qty_to_use = 0):
+        if money_qty_to_use > self.money:
+            return False
+        elif diamond_qty_to_use > self.diamond:
+            return False
+        else:
+            return True
+
+    # def compound
 
     def save(self):
         """開いてる途中だとエラー出るよ"""
@@ -666,7 +700,7 @@ class Battle(Core):
         new_atk = self.vlookup(self.book["level_table"], str(new_lv), 4)
         new_stats = [new_lv, new_hp, new_atk]
         for i, stat in enumerate(self.basic_status_index):
-            self.mysheet[self.xy_index(
+            self.mysheet[self.vhindex(
                 self.mysheet, stat, 1, "raw", 1, "excel")] = new_stats[i]
         # self.mysheet[self.xy_index(
         #     self.mysheet, "lv", 1, "raw", 1, "excel")] = new_lv
