@@ -66,6 +66,10 @@ class ShowGame(battle.Battle, town.Town):
         self.height = display_size[1]
         self.message = ""
         self.message_checker = 0
+        self.clock = pygame.time.Clock()
+        self.FPS = 72
+        self.ball_img = pygame.image.load("./mypj3/img/ball.png")
+        self.ball_img = pygame.transform.rotozoom(self.ball_img, 0, self.screen_size)
 
     def second_init_showgame(self):
         # GUIに対応
@@ -929,7 +933,219 @@ class ShowGame(battle.Battle, town.Town):
                     self.set_button()
                     self.set_mark_entry()
 
+    def gacha_show(self):
+        """ガチャの演出画面の描画
+        """
+        for i in range(144):
+            self.screen.fill((0,0,0))
+            if i > 47 and i < 72:
+                pygame.draw.circle(self.screen, (240,248,255) ,(180*self.screen_size,320*self.screen_size),(i-47)*self.screen_size,0) # 白い円が中心から徐々に広がる
+            if i >= 72:
+                self.screen.blit(self.ball_img,Rect(155*self.screen_size,295*self.screen_size,50*self.screen_size,50*self.screen_size))
+            pygame.draw.circle(self.screen, (238,130,238),(180*self.screen_size,320*self.screen_size),(5+i)*self.screen_size,3*self.screen_size) # 円環が広がる
+            if i > 10:
+                pygame.draw.circle(self.screen, (238,130,238),(50*self.screen_size,240*self.screen_size),(i-10)*self.screen_size,3*self.screen_size)
+            if i > 15:
+                pygame.draw.circle(self.screen, (238,130,238),(300*self.screen_size,400*self.screen_size),(i-15)*self.screen_size,3*self.screen_size)
+            if i > 20:
+                pygame.draw.circle(self.screen, (238,130,238),(240*self.screen_size,300*self.screen_size),(i-20)*self.screen_size,3*self.screen_size)
+            if i > 23:
+                pygame.draw.circle(self.screen,(238,130,238),(120*self.screen_size,350*self.screen_size),(i-23)*self.screen_size,3*self.screen_size)
+            if i > 25:
+                pygame.draw.circle(self.screen, (238,130,238),(220*self.screen_size,150*self.screen_size),(i-25)*self.screen_size,3*self.screen_size)
+                pygame.draw.circle(self.screen,(238,130,238),(130*self.screen_size,450*self.screen_size),(i-25)*self.screen_size,3*self.screen_size)
+            if i >= 108:
+                pygame.draw.circle(self.screen, (240,248,255) ,(180*self.screen_size,320*self.screen_size),(25+(i-108)*15)*self.screen_size,0) # 画面全体を白く塗りつぶす
+            pygame.display.update()
+            self.clock.tick(self.FPS)
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+    def show_prologue(self):
+        """プロローグの表示
+        """
+        j = 0
+        self.screen.fill((0,0,0))
+        for i in range(108):
+            font = pygame.font.SysFont("bizudminchomediumbizudpminchomediumtruetype",25*self.screen_size)
+            line_1 = font.render("この世界ではみんな",True, (255*i/108,255*i/108,255*i/108))
+            line_2 = font.render("秘密のマークを持っています",True,  (255*i/108,255*i/108,255*i/108))
+            self.screen.blit(line_1, (10*self.screen_size,10*self.screen_size))
+            self.screen.blit(line_2, (10*self.screen_size,40*self.screen_size))
+            pygame.display.update()
+            self.clock.tick(self.FPS) 
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if (event.type == pygame.MOUSEBUTTONUP) and (event.button == 1):
+                    if Rect(0,0,360*self.screen_size,640*self.screen_size).collidepoint(event.pos):
+                        j = 1 # 画面を押せば飛ばせるようにしたほうがいいかも
+            if j == 1:
+                line_1 = font.render("この世界ではみんな",True, (255,255,255))
+                line_2 = font.render("秘密のマークを持っています",True,  (255,255,255))
+                self.screen.blit(line_1, (10*self.screen_size,10*self.screen_size))
+                self.screen.blit(line_2, (10*self.screen_size,40*self.screen_size))
+                pygame.display.update()
+                break
+        if j == 0:
+            time.sleep(1)
+
+        for i in range(108):
+            font = pygame.font.SysFont("bizudminchomediumbizudpminchomediumtruetype",25*self.screen_size)
+            line_1 = font.render("この秘密のマークは",True, (255*i/108,255*i/108,255*i/108))
+            line_2 = font.render("持ち主を守る",True,  (255*i/108,255*i/108,255*i/108))
+            line_3 = font.render("不思議な力の鍵です",True,  (255*i/108,255*i/108,255*i/108))
+            self.screen.blit(line_1, (10*self.screen_size,90*self.screen_size))
+            self.screen.blit(line_2, (10*self.screen_size,120*self.screen_size))
+            self.screen.blit(line_3, (10*self.screen_size,150*self.screen_size))
+            pygame.display.update()
+            self.clock.tick(self.FPS) 
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if (event.type == pygame.MOUSEBUTTONUP) and (event.button == 1):
+                    if Rect(0,0,360*self.screen_size,640*self.screen_size).collidepoint(event.pos):
+                        j = 1 # 画面を押せば飛ばせるようにしたほうがいいかも
+            
+            if j == 1:
+                line_1 = font.render("この秘密のマークは",True, (255,255,255))
+                line_2 = font.render("持ち主を守る",True,  (255,255,255))
+                line_3 = font.render("不思議な力の鍵です",True,  (255,255,255))
+                self.screen.blit(line_1, (10*self.screen_size,90*self.screen_size))
+                self.screen.blit(line_2, (10*self.screen_size,120*self.screen_size))
+                self.screen.blit(line_3, (10*self.screen_size,150*self.screen_size))
+                pygame.display.update()
+                break
+        if j == 0:
+            time.sleep(1)
+        
+        for i in range(108):
+            font = pygame.font.SysFont("bizudminchomediumbizudpminchomediumtruetype",25*self.screen_size)
+            line_1 = font.render("冒険者はモンスターの",True, (255*i/108,255*i/108,255*i/108))
+            line_2 = font.render("秘密のマークを解いて倒します",True,  (255*i/108,255*i/108,255*i/108))
+            self.screen.blit(line_1, (10*self.screen_size,200*self.screen_size))
+            self.screen.blit(line_2, (10*self.screen_size,230*self.screen_size))
+            pygame.display.update()
+            self.clock.tick(self.FPS) 
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if (event.type == pygame.MOUSEBUTTONUP) and (event.button == 1):
+                    if Rect(0,0,360*self.screen_size,640*self.screen_size).collidepoint(event.pos):
+                        j = 1 # 画面を押せば飛ばせるようにしたほうがいいかも
+            if j == 1:
+                line_1 = font.render("冒険者はモンスターの",True, (255,255,255))
+                line_2 = font.render("秘密のマークを解いて倒します",True,  (255,255,255))
+                self.screen.blit(line_1, (10*self.screen_size,200*self.screen_size))
+                self.screen.blit(line_2, (10*self.screen_size,230*self.screen_size))
+                pygame.display.update()
+                break
+        if j == 0:
+            time.sleep(1)
+
+        for i in range(108):
+            font = pygame.font.SysFont("bizudminchomediumbizudpminchomediumtruetype",25*self.screen_size)
+            line_1 = font.render("しかし知能の高いボスには",True, (255*i/108,255*i/108,255*i/108))
+            line_2 = font.render("気を付けなくてはいけません",True,  (255*i/108,255*i/108,255*i/108))
+            self.screen.blit(line_1, (10*self.screen_size,280*self.screen_size))
+            self.screen.blit(line_2, (10*self.screen_size,310*self.screen_size))
+            pygame.display.update()
+            self.clock.tick(self.FPS) 
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if (event.type == pygame.MOUSEBUTTONUP) and (event.button == 1):
+                    if Rect(0,0,360*self.screen_size,640*self.screen_size).collidepoint(event.pos):
+                        j = 1 # 画面を押せば飛ばせるようにしたほうがいいかも
+            if j == 1:
+                line_1 = font.render("しかし知能の高いボスには",True, (255,255,255))
+                line_2 = font.render("気を付けなくてはいけません",True,  (255,255,255))
+                self.screen.blit(line_1, (10*self.screen_size,280*self.screen_size))
+                self.screen.blit(line_2, (10*self.screen_size,310*self.screen_size))
+                pygame.display.update()
+                break
+        if j == 0:
+            time.sleep(1)
+
+        for i in range(108):
+            font = pygame.font.SysFont("bizudminchomediumbizudpminchomediumtruetype",25)
+            line_1 = font.render("ボスは冒険者の秘密のマークを",True, (255*i/108,255*i/108,255*i/108))
+            line_2 = font.render("解いてしまうのです",True,  (255*i/108,255*i/108,255*i/108))
+            self.screen.blit(line_1, (10*self.screen_size,360*self.screen_size))
+            self.screen.blit(line_2, (10*self.screen_size,390*self.screen_size))
+            pygame.display.update()
+            self.clock.tick(self.FPS) 
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if (event.type == pygame.MOUSEBUTTONUP) and (event.button == 1):
+                    if Rect(0,0,360*self.screen_size,640*self.screen_size).collidepoint(event.pos):
+                        j = 1 # 画面を押せば飛ばせるようにしたほうがいいかも
+            if j == 1:
+                line_1 = font.render("ボスは冒険者の秘密のマークを",True, (255,255,255))
+                line_2 = font.render("解いてしまうのです",True,  (255,255,255))
+                self.screen.blit(line_1, (10*self.screen_size,360*self.screen_size))
+                self.screen.blit(line_2, (10*self.screen_size,390*self.screen_size))
+                pygame.display.update()
+                break
+        if j == 0:
+            time.sleep(1)
+
+        for i in range(108):
+            font = pygame.font.SysFont("bizudminchomediumbizudpminchomediumtruetype",25*self.screen_size)
+            line_1 = font.render("ボスよりも早く",True, (255*i/108,255*i/108,255*i/108))
+            line_2 = font.render("秘密のマークを解きましょう",True,  (255*i/108,255*i/108,255*i/108))
+            self.screen.blit(line_1, (10*self.screen_size,440*self.screen_size))
+            self.screen.blit(line_2, (10*self.screen_size,470*self.screen_size))
+            pygame.display.update()
+            self.clock.tick(self.FPS) 
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if (event.type == pygame.MOUSEBUTTONUP) and (event.button == 1):
+                    if Rect(0,0,360*self.screen_size,640*self.screen_size).collidepoint(event.pos):
+                        j = 1 # 画面を押せば飛ばせるようにしたほうがいいかも
+            if j == 1:
+                line_1 = font.render("ボスよりも早く",True, (255,255,255))
+                line_2 = font.render("秘密のマークを解きましょう",True,  (255,255,255))
+                self.screen.blit(line_1, (10*self.screen_size,440*self.screen_size))
+                self.screen.blit(line_2, (10*self.screen_size,470*self.screen_size))
+                pygame.display.update()
+                break
+        if j == 0:
+            time.sleep(1)
+
+        for i in range(108):
+            font = pygame.font.SysFont("bizudminchomediumbizudpminchomediumtruetype",25*self.screen_size)
+            line_1 = font.render("あなたの冒険に祝福を",True, (255*i/108,255*i/108,255*i/108))
+            self.screen.blit(line_1, (100*self.screen_size,550*self.screen_size))
+            pygame.display.update()
+            self.clock.tick(self.FPS) 
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if (event.type == pygame.MOUSEBUTTONUP) and (event.button == 1):
+                    if Rect(0,0,360*self.screen_size,640*self.screen_size).collidepoint(event.pos):
+                        j = 1 # 画面を押せば飛ばせるようにしたほうがいいかも
+            if j == 1:
+                line_1 = font.render("あなたの冒険に祝福を",True, (255,255,255))
+                self.screen.blit(line_1, (100*self.screen_size,550*self.screen_size))
+                pygame.display.update()
+                break
+        time.sleep(2)
+
+
     def make_1ans(self):
+        
         if self.demand[0] == 1:
             self.ans_g = [0, 1, 2, 3, 5]
         else:
