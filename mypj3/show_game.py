@@ -166,11 +166,11 @@ class ShowGame:
         """
         self.normal_buttonrect = Rect(80*self.screen_size, 300*self.screen_size, 200*self.screen_size, 50*self.screen_size)
         self.boss_buttonrect = Rect(80*self.screen_size, 375*self.screen_size, 200*self.screen_size, 50*self.screen_size)
-        self.how_to_play_buttonrect = Rect(80*self.screen_size, 550*self.screen_size, 200*self.screen_size, 50*self.screen_size)
-        self.return_buttonrect = Rect(80*self.screen_size,550*self.screen_size,200*self.screen_size,50*self.screen_size)
+        self.how_to_play_buttonrect = Rect(80*self.screen_size, 490*self.screen_size, 200*self.screen_size, 50*self.screen_size)
+        self.return_buttonrect = Rect(80*self.screen_size,565*self.screen_size,200*self.screen_size,50*self.screen_size)
         self.prev_buttonrect = Rect(50*self.screen_size,500*self.screen_size,120*self.screen_size,30*self.screen_size)
         self.next_buttonrect = Rect(190*self.screen_size,500*self.screen_size,120*self.screen_size,30*self.screen_size)
-        self.history_buttonrect = Rect(120*self.screen_size,570*self.screen_size,120*self.screen_size,30*self.screen_size)
+        self.history_buttonrect = Rect(120*self.screen_size,580*self.screen_size,120*self.screen_size,30*self.screen_size)
         self.stage_select_buttonrect = []
         for i in range(self.stage_num):
             self.stage_select_buttonrect.append(Rect(80*self.screen_size,(100+100*i)*self.screen_size,200*self.screen_size,50*self.screen_size))
@@ -446,6 +446,9 @@ class ShowGame:
             pygame.draw.line(self.screen,(200,0,0),((30+self.hp)*self.screen_size,40*self.screen_size),((30+self.hp+damage)*self.screen_size,40*self.screen_size),10*self.screen_size)
         font4 = pygame.font.SysFont(None, 50*self.screen_size)
         hit_blow = font4.render("Hit:{}   Blow:{}".format(self.hit,self.blow), True, (255,255,255))
+        font = pygame.font.SysFont("algerian", 40*self.screen_size)
+        item_comand = font.render("ITEMS", True, (255,255,255))
+        self.screen.blit(item_comand,(130*self.screen_size, 310*self.screen_size))
         self.screen.blit(stage, (5*self.screen_size,5*self.screen_size))
         self.screen.blit(hp_word, (5*self.screen_size,35*self.screen_size))
         self.screen.blit(hp_value, ((30+self.hp+damage+2)*self.screen_size,35*self.screen_size))
@@ -541,6 +544,8 @@ class ShowGame:
                             pygame.mixer.Channel(0).play(pygame.mixer.Sound(self.se_dict["failed"]))
                 if self.history_buttonrect.collidepoint(event.pos):
                     self.history_count = 1
+                if Rect(130*self.screen_size,310*self.screen_size,120*self.screen, 50*self.screen):
+                    pass #アイテムコマンド押したときの処理を入れてほしい
 
 
 
