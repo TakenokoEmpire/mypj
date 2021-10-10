@@ -7,6 +7,8 @@ from systems import judge_manual
 import try_1003
 import send_recieve
 import time
+import unicodedata
+
 # from systems import testtry
 
 """よくやるミス
@@ -39,6 +41,9 @@ special mode→クリティカル攻撃
 # self.room_id = room_id
 
 class Function():
+    """計算で使う関数たち
+    ゲーム的要素を一切含まない、ただの計算用の関数"""
+
     def __init__(self):
         self.switch_judge_box = {}
 
@@ -107,12 +112,30 @@ class Function():
                 return i + 1
         return False
 
+    def vindex_plus(self, sheet, index, left_index_position):
+        """excelのindex関数もどきを再現
+        該当する文字がある行番号を返す"""
+        for i in range(500):
+            output = 0
+            if str(sheet.cell(row=i + 1, column=left_index_position).value) == index:
+                return i + 1
+        return False
+
     def hindex(self, sheet, index):
         """excelのindex関数もどきを再現
         該当する文字がある列番号を返す（先頭行に限る）"""
         for i in range(100):
             output = 0
             if str(sheet.cell(row=1, column=i+1).value) == index:
+                return i + 1
+        return False
+
+    def hindex_plus(self, sheet, index, top_index_number):
+        """excelのindex関数もどきを再現
+        該当する文字がある列番号を返す"""
+        for i in range(100):
+            output = 0
+            if str(sheet.cell(row=top_index_number, column=i+1).value) == index:
                 return i + 1
         return False
 
@@ -165,12 +188,41 @@ class Function():
             return False
 
 
+    def text_length(self, text):
+        """半角換算での文字列の長さを返す"""
+        count = 0
+        for c in text:
+            if unicodedata.east_asian_width(c) in 'FWA':
+                count += 2
+            else:
+                count += 1
+        return count
+
+
+    def line_break(self, text, line_length):
+        """全角半角を考慮した自動改行ツール
+        text:改行対象文字列
+        line_length:1行の長さ（半角換算）"""
+        text_box = []
+        while len(text) > 0:
+            for i in range(len(text)+1):
+                if self.text_length(text[:i]) > line_length-1:
+                    text_box.append(text[:i])
+                    text = text[i:]
+                    break
+                elif self.text_length(text) <= line_length-1:
+                    text_box.append(text)
+                    text = ""
+                    break
+        return text_box
+
+
 class Core(Function):
     """
     変数：複数の場面で使用されるもの
     関数：複数の場面で使用されるもの
     Battleクラスから、ダンジョン情報が必要ないものでかつ他でも使うものをこちらに移管した。
-    街での作業、ダンジョンでの戦闘を完了すると、再起動するように設定されている。"""
+    街での作業、ダンジョンでの戦闘を完了すると、再起動するように設定されている（本当に？）。"""
 
     def __init__(self):
         super().__init__()
@@ -184,6 +236,8 @@ class Core(Function):
                 'C:/Users/wolke/git1009/new_system/systems/base.xlsx', data_only=True)
         self.mysheet = self.book["プレイヤーステータス"]
 
+        # 課金関連
+        self.diamond = self.vlookup(self.mysheet, "diamond", 2)
         # 装備関連
         self.equip_position = ["右手", "左手", "鎧", "靴", "装飾品"]
         self.equip_index_rownum = self.vindex(self.mysheet, "position")
@@ -264,6 +318,43 @@ class Core(Function):
                     sheet, "rarity", i+2, top_index_position)
                 return selected_item, item_rarity
 
+    def get_item(self, item: str, add_qty: int = 1):
+        """item:アイテム名、add_qty:取得した数"""
+        item_pos = self.vindex_plus(self.book["アイテム箱"], item, 2)
+        qty_pos = self.hindex(self.book["アイテム箱"], "qty")  # qtyではなく"qty"なので注意
+        if item_pos != False:
+            self.book["アイテム箱"].cell(row=item_pos,
+                                    column=qty_pos, value=self.vlookup(self.book["アイテム箱"], item, 2)+add_qty)
+        else:
+            # 登録されてないアイテムをゲットした場合、道具箱に投げる
+            print("登録されていないアイテムを取得しました。当該アイテムは道具箱に登録されます。")
+            if self.vindex(self.book["道具箱"], item) == False:
+                self.book["道具箱"].cell(row=self.vindex(
+                    self.book["道具箱"], "empty"), column=2, value=self.vlookup(self.book["道具箱"], "empty", 2)+1)
+                self.book["道具箱"].cell(row=self.vindex(
+                    self.book["道具箱"], "empty"), column=1, value=item)
+            else:
+                self.book["道具箱"].cell(row=self.vindex(self.book["道具箱"], item),
+                                      column=2, value=self.vlookup(self.book["道具箱"], item, 2)+1)
+
+    def buy_item(self, item: str, value: int, diamond: int = 0, add_qty: int = 1):
+        """item:アイテム名,value:価格,diamond:リアルマネー、add_qty:取得した数"""
+        self.money -= value
+        self.diamond -= diamond
+        self.get_item(item, add_qty)
+        self.mysheet.cell(row=self.vindex(self.mysheet, "money"),
+                          column=2, value=self.money)
+        self.mysheet.cell(row=self.vindex(self.mysheet, "diamond"),
+                          column=2, value=self.diamond)
+
+    def buy_diamond(self, diamond_qty):
+        self.diamond += diamond_qty
+        self.mysheet.cell(row=self.vindex(self.mysheet, "diamond"),
+                          column=2, value=self.diamond)
+
+    # def check_minus_money():
+    #     if money is
+
     def save(self):
         """開いてる途中だとエラー出るよ"""
         try:
@@ -284,9 +375,9 @@ class Battle(Core):
     def __init__(self, place: str = "battle"):
         super().__init__()
         """
-        戦闘関連の情報処理全般を扱う。
-        ダンジョン以外でも使うものは、Coreへ移管した。
-        """
+    戦闘関連の情報処理全般を扱う。
+    ダンジョン以外でも使うものは、Coreへ移管した。
+    """
 
         # GUIに対応
         # ダンジョンに依存するステータス等は、この段階まで待つ必要があるため、
@@ -335,25 +426,25 @@ class Battle(Core):
         self.e_skill3 = status_box[7]
 
         # """
-        # lv,hp,atk,skill[0]~[2],exp,moneyはリストとなっており、[0]がプレイヤーの値、[1]が敵の値
-        # """
-        # self.basic_status_index = ["lv", "hp", "atk"]
-        # self.status_checker()  # ステータス取得前にステータスを更新しておく
-        # self.lv = [0, 0]
-        # self.hp = [0, 0]
-        # self.atk = [0, 0]
-        # self.skill = [[0, 0] for j in range(3)]
-        # self.exp = [0, 0]
-        # self.money = [0, 0]
-        # for num, sheet in enumerate(self.vs_sheet):
-        #     self.lv[num] = self.vlookup(sheet, "lv", 2)
-        #     self.hp[num] = self.vlookup(sheet, "hp", 2)
-        #     self.atk[num] = self.vlookup(sheet, "atk", 2)
-        #     for j in range(3):
-        #         self.skill[j][num] = self.vlookup(
-        #             sheet, "skill{}".format(j), 2)
-        #     self.exp[num] = self.vlookup(sheet, "exp", 2)
-        #     self.money[num] = self.vlookup(sheet, "money", 2)
+    # lv,hp,atk,skill[0]~[2],exp,moneyはリストとなっており、[0]がプレイヤーの値、[1]が敵の値
+    # """
+    # self.basic_status_index = ["lv", "hp", "atk"]
+    # self.status_checker()  # ステータス取得前にステータスを更新しておく
+    # self.lv = [0, 0]
+    # self.hp = [0, 0]
+    # self.atk = [0, 0]
+    # self.skill = [[0, 0] for j in range(3)]
+    # self.exp = [0, 0]
+    # self.money = [0, 0]
+    # for num, sheet in enumerate(self.vs_sheet):
+    #     self.lv[num] = self.vlookup(sheet, "lv", 2)
+    #     self.hp[num] = self.vlookup(sheet, "hp", 2)
+    #     self.atk[num] = self.vlookup(sheet, "atk", 2)
+    #     for j in range(3):
+    #         self.skill[j][num] = self.vlookup(
+    #             sheet, "skill{}".format(j), 2)
+    #     self.exp[num] = self.vlookup(sheet, "exp", 2)
+    #     self.money[num] = self.vlookup(sheet, "money", 2)
 
     def choose_dungeon(self):
         # 小文字化させたい

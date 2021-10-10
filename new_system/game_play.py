@@ -47,7 +47,7 @@ class Commander(show_game4.ShowGame):
         pygame.display.set_caption("Hit, Blow and Dragons")
         self.set_sound()
         # choice関連
-        self.dict_name_list = ["初期画面", "街の入り口", "装備：変更対象",
+        self.dict_name_list = ["初期画面", "ダイヤ購入", "ダイヤ購入確認", "街の入り口", "装備：変更対象",
                                "装備：手持ち", "ショップ画面", "ショップ確認画面", "ガチャ画面", "ガチャ確認画面", "クエスト画面", "クエスト確認画面"]
         # ↑【重要】選択肢を使う場合、そのdict_nameは必ずこのリストにいれる
         self.choice_dict_initialize()
@@ -71,13 +71,40 @@ class Commander(show_game4.ShowGame):
             """
             if self.screen_count == 0:
                 self.screen_select()
+
+            # 伝えたいメッセージを表示したい場合
+            elif self.message != "":
+                self.message_screen(self.message)
+
             elif self.choice_dict["初期画面"]["name"] == "False":
                 self.reset()
                 # self.save()
-                self.choice_screen("<Hit and blow タイトル画面>", ["街へ行く", "ダンジョンへ行く"], [
-                    "街へ行く：装備の調整", "ダンジョンへ行く：モンスターバトル"], "初期画面")
+                self.choice_screen("<Hit and blow タイトル画面>", ["街へ行く", "ダンジョンへ行く", "ダイヤ購入"],
+                                   ["街へ行く：装備の調整", "ダンジョンへ行く：モンスターバトル", "ダイヤ購入:課金"], "初期画面")
                 self.run_count_town = [0, 0, 0, 0, 0, 0, 0]
                 self.run_count_battle = [0, 0, 0, 0, 0, 0, 0]
+
+            elif self.choice_dict["初期画面"]["name"] == "ダイヤ購入" and self.choice_dict["ダイヤ購入"]["number"] == "False":
+                self.choice_screen(
+                    "何個購入しますか？", ["1個", "10個", "50個", "100個"], ["※現在は無料で購入できます", "1個:¥100", "10個:¥900", "50個:¥4000", "100個:¥7500"],  "ダイヤ購入")
+            elif self.choice_dict["ダイヤ購入"]["name"] != "False" and self.choice_dict["ダイヤ購入確認"]["name"] == "False":
+                diamond_qty = int(self.choice_dict["ダイヤ購入"]["name"][:-1])
+                self.choice_screen(
+                    "ダイヤを{}個購入します。本当によろしいですか？".format(diamond_qty), ["はい", "いいえ"], [""], "ダイヤ購入確認", ["ダイヤ購入"])
+            elif self.choice_dict["ダイヤ購入確認"]["name"] == "はい":
+                self.message = "ご購入ありがとうございます！"
+                self.buy_diamond(diamond_qty)
+                self.save()
+                print("ダイヤ{}個購入".format(diamond_qty))
+                self.choice_dict["ダイヤ購入確認"] = {
+                    "number": "False", "name": "False"}
+                self.choice_dict["ダイヤ購入"] = {
+                    "number": "False", "name": "False"}
+            elif self.choice_dict["ダイヤ購入確認"]["name"] == "いいえ":
+                self.choice_dict["ダイヤ購入確認"] = {
+                    "number": "False", "name": "False"}
+                self.choice_dict["ダイヤ購入"] = {
+                    "number": "False", "name": "False"}
 
             elif self.choice_dict["初期画面"]["name"] == "街へ行く":
                 if self.choice_dict["街の入り口"]["number"] == "False":
@@ -115,13 +142,18 @@ class Commander(show_game4.ShowGame):
                 elif self.choice_dict["街の入り口"]["name"] == "ショップ" and self.choice_dict["ショップ画面"]["number"] == "False":
                     self.choice_screen_multi(
                         "ショップ", [["薬草", "回復薬", "ハイポーション", "叡智の実", "妨害の笛"], [
-                            "水の砂", "木の砂", "闇の砂", "雷の砂", "虹の砂"]],
+                            "水の砂", "木の砂", "闇の砂", "雷の砂", "砂金"]],
                         [["戦闘用消耗品コーナー", "右下・左下のボタンで他のコーナーに行けるよ", "薬草:10G", "　HPを30回復する", "回復薬：100G", "　HPを100回復する", "ハイポーション:500G", "　HPを300回復する", "叡智の実:250G", "　選択肢を1つ減らす", "妨害の笛:1000G", "　敵BOSSの調査を1度だけ妨害する"],
                          ["属性の砂コーナー", "付与属性値が増えると、", "各々の色の選択肢が一定確率で減少する", "水の砂:400G,水属性+5~10", "木の砂:400G,木属性+5~10", "雷の砂:400G,雷属性+5~10", "闇の砂:400G,闇属性+5~10", "砂金:2500G 全属性+3~5"]], "ショップ画面")
                 elif self.choice_dict["ショップ画面"]["name"] != "False" and self.choice_dict["ショップ確認画面"]["name"] == "False":
                     self.choice_screen(
                         "本当に{}を買いますか？".format(self.choice_dict["ショップ画面"]["name"]), ["はい", "いいえ"], [""], "ショップ確認画面", ["ショップ画面"])
                 elif self.choice_dict["ショップ確認画面"]["name"] == "はい":
+                    # お金が足りないときの処理を忘れずに
+                    value = self.vhlookup(
+                        self.book["アイテム箱"], self.choice_dict["ショップ画面"]["name"], 2, "value", 1)
+                    self.buy_item(
+                        self.choice_dict["ショップ画面"]["name"], value)
                     print("{}を購入".format(self.choice_dict["ショップ画面"]["name"]))
                     self.choice_dict["ショップ確認画面"] = {
                         "number": "False", "name": "False"}
@@ -154,22 +186,23 @@ class Commander(show_game4.ShowGame):
 
                 elif self.choice_dict["街の入り口"]["name"] == "ガチャ" and self.choice_dict["ガチャ画面"]["number"] == "False":
                     self.choice_screen(
-                        "ガチャ", ["【期間限定】ハロウィンガチャ", "スーパーガチャ", "ノーマルガチャ"], ["【期間限定】ハロウィンガチャ：¥300", "10/31までの期間限定。ハロウィン装備を手に入れろ！", "フルセットで揃えると…？",
-                                                                          "スーパーガチャ：¥100", "限定装備や限定素材が盛りだくさん！", "ノーマルガチャ", "ゲーム内通貨で回せるお得なガチャ"], "ガチャ画面")
+                        "ガチャ", ["【期間限定】ハロウィンガチャ", "スーパーガチャ", "ノーマルガチャ"],
+                        ["【期間限定】ハロウィンガチャ：3ダイヤモンド", "10/31までの期間限定。ハロウィン装備を手に入れろ！", "フルセットで揃えると…？",
+                         "スーパーガチャ：1ダイヤモンド", "限定装備や限定素材が盛りだくさん！", "ノーマルガチャ", "ゲーム内通貨で回せるお得なガチャ"], "ガチャ画面")
                 elif self.choice_dict["ガチャ画面"]["name"] != "False" and self.choice_dict["ガチャ確認画面"]["name"] == "False":
                     self.choice_screen(
                         "本当に{}を買いますか？".format(self.choice_dict["ガチャ画面"]["name"]), ["はい", "いいえ"], [""], "ガチャ確認画面", ["ガチャ画面"])
                     atodekesu_count = 0
                 elif self.choice_dict["ガチャ確認画面"]["name"] == "はい":
                     if atodekesu_count == 0:
+                        self.save()
                         print("{}を回した！".format(
                             self.choice_dict["ガチャ画面"]["name"]))
-                        print(self.book["ガチャ"])
-                        print(self.choice_dict["ガチャ画面"]["name"])
-                        item_rarity, selected_item = self.gacha(self.book["ガチャ"],
+                        selected_item, item_rarity = self.gacha(self.book["ガチャ"],
                                                                 self.choice_dict["ガチャ画面"]["name"])
                         print("{}:{}を手に入れた！".format(
-                            selected_item, item_rarity))
+                            item_rarity, selected_item))
+                        self.get_item(selected_item)
                         atodekesu_count += 1
                     self.choice_screen(
                         "演出画面、RETURNで戻る".format(self.choice_dict["ガチャ画面"]["name"]), [""], [""], "ガチャ確認画面", ["ガチャ画面", "ガチャ確認画面"])

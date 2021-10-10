@@ -6,6 +6,7 @@ from typing import List, Tuple
 import math
 import time
 import random
+import unicodedata
 # from . import game_number_guess
 import sys
 
@@ -63,6 +64,8 @@ class ShowGame(battle.Battle, town.Town):
         self.screen_count = 0
         self.width = display_size[0]
         self.height = display_size[1]
+        self.message = ""
+        self.message_checker = 0
 
     def second_init_showgame(self):
         # GUIに対応
@@ -980,6 +983,7 @@ class ShowGame(battle.Battle, town.Town):
         # titleを表示
         # titleが長すぎたら改行して2行にする
         title = str(title)
+        # title_list = self.line_break(message, 32)
         if len(title) >= 14:
             title2 = title[14:len(title)]
             title = title[0:14]
@@ -994,11 +998,11 @@ class ShowGame(battle.Battle, town.Town):
         # 選択肢を表示
         for i in range(len(choice)):
             self.choice_buttonrect.append(Rect(
-                24*self.screen_size, (80+46*i)*self.screen_size, 300*self.screen_size, 33*self.screen_size))
+                24*self.screen_size, (77+46*i)*self.screen_size, 300*self.screen_size, 33*self.screen_size))
         for i, name in enumerate(choice):  # 選択肢の数だけ描画
             print_choice = font.render(name, True, "WHITE")
             self.screen.blit(
-                print_choice, (24*self.screen_size, (86+46*i)*self.screen_size))
+                print_choice, (24*self.screen_size, (83+46*i)*self.screen_size))
         self.screen.blit(self.return_button_img, self.return_buttonrect)
         if multi_page_checker == "multi":
             self.screen.blit(self.g_snow_img, self.right_buttonrect)
@@ -1047,6 +1051,36 @@ class ShowGame(battle.Battle, town.Town):
         page_num = self.choice_current_page % page_qty
         self.choice_screen(title, choice[page_num], message[page_num], dict_name,
                            delete_dict_list_when_return, "multi")
+
+    def message_screen(self, message: str):
+        """メッセーのみを表示したいときに使うモジュール
+        メッセージは自動改行される
+        """
+        self.choice_buttonrect = []
+        choice_answer = False
+        font_title = pygame.font.SysFont(
+            "bizudminchomediumbizudpminchomediumtruetype", 24*self.screen_size)
+        font = pygame.font.SysFont(
+            "bizudminchomediumbizudpminchomediumtruetype", 21*self.screen_size)
+        font2 = pygame.font.SysFont(
+            "bizudminchomediumbizudpminchomediumtruetype", 16*self.screen_size)
+        # 自動改行
+        message = str(message)
+        text_list = self.line_break(message, 32)
+        for i, name in enumerate(text_list):
+            print_message = font.render(name, True, "WHITE")
+            self.screen.blit(
+                print_message, (11*self.screen_size, (100+27*i)*self.screen_size))
+        self.screen.blit(self.return_button_img, self.return_buttonrect)
+
+        # 以下、本来は別関数（judge_～～～）となるはずだった部分
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+            if (event.type == pygame.MOUSEBUTTONUP) and (event.button == 1):
+                # Returnボタンが押されたときの動作
+                if self.return_buttonrect.collidepoint(event.pos):
+                    self.message = ""
 
     def historylast_show(self):
 
