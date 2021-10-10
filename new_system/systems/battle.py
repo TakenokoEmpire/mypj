@@ -5,6 +5,7 @@ import math
 import copy
 from systems import judge_manual
 import try_1003
+import try_1009
 import send_recieve
 import time
 import unicodedata
@@ -265,12 +266,10 @@ class Core(Function):
     def status_checker(self):
         self.equip_checker()
         for stat in self.basic_status_index:
-            self.mysheet[self.vhindex(self.mysheet, stat, 1, "total", 1, "excel")] = self.vhlookup(
-                self.mysheet, stat, 1, "raw", 1) + self.vhlookup(self.mysheet, stat, 1, "equip", 1)
+            self.mysheet[self.vhindex(self.mysheet, stat, 1, "total", 1, "excel")] = self.vhlookup(self.mysheet, stat, 1, "raw", 1) + self.vhlookup(self.mysheet, stat, 1, "equip", 1)
         status_box = []
         for num in range(len(self.all_status_index)):
-            status_box.append(self.vlookup(
-                self.mysheet, self.all_status_index[num], 2))
+            status_box.append(self.vlookup(self.mysheet, self.all_status_index[num], 2))
         # ステータス定義
         self.lv = status_box[0]
         self.hp = status_box[1]
@@ -387,7 +386,11 @@ class Core(Function):
         else:
             return True
 
-    # def compound
+
+    def compound(self,equip_num,material):
+        """装備に様々な能力を付与する成長合成を行う。
+        リリース段階では、武器に属性値を付与するもののみを実装する予定"""
+        
 
     def save(self):
         """開いてる途中だとエラー出るよ"""
@@ -399,6 +402,7 @@ class Core(Function):
         except PermissionError:
             print("エクセルファイルを閉じてください")  # これ戦闘前に欲しい
             exit()
+
 
 
 class Battle(Core):
@@ -617,7 +621,7 @@ class Battle(Core):
     """
 
     def autoplay(self):
-        vs = try_1003.AutoPlay("off")
+        vs = try_1009.AutoPlay("on")
         self.hist[1] = vs.run()
 
     def mob_turn(self):
@@ -708,26 +712,30 @@ class Battle(Core):
         #     self.mysheet, "hp", 1, "raw", 1, "excel")] = new_hp
         # self.mysheet[self.xy_index(
         #     self.mysheet, "atk", 1, "raw", 1, "excel")] = new_atk
-        self.status_checker()
+        # self.status_checker()
         # 経験値、金の更新
-        self.mysheet.cell(row=self.vindex(
-            self.mysheet, "exp"), column=2, value=self.exp)
-        self.mysheet.cell(row=self.vindex(
-            self.mysheet, "money"), column=2, value=self.money)
-        # ドロップアイテム数は1のみ対応。
-        # 解説：ゲットしたアイテムがまだ道具箱に1個もない→新しくインデックスを追加し個数を1増やす(実際に行う順序は、個数を1にしてからインデックス追加)
-        # 　　　そうでない（すでにある）→個数を1増やす
-        if self.vindex(self.book["道具箱"], self.droplist[0]) == False:
-            self.book["道具箱"].cell(row=self.vindex(
-                self.book["道具箱"], "empty"), column=2, value=self.vlookup(self.book["道具箱"], "empty", 2)+1)
-            self.book["道具箱"].cell(row=self.vindex(
-                self.book["道具箱"], "empty"), column=1, value=self.droplist[0])
-        else:
-            self.book["道具箱"].cell(row=self.vindex(self.book["道具箱"], self.droplist[0]),
-                                  column=2, value=self.vlookup(self.book["道具箱"], self.droplist[0], 2)+1)
-        print(self.vindex(self.book["道具箱"], "empty"))
-        """開いてる途中だとエラー出るよ"""
+        self.mysheet.cell(row=self.vindex(self.mysheet, "exp"), column=2, value=self.exp)
+        self.mysheet.cell(row=self.vindex(self.mysheet, "money"), column=2, value=self.money)
+        #ドロップアイテムの処理
+        self.get_item(self.droplist[0])
         self.save()
+
+
+        # # self.mysheet.cell(row=self.vindex(self.mysheet, "diamond"),column=2, value=self.diamond)
+        # # ドロップアイテム数は1のみ対応。
+        # # 解説：ゲットしたアイテムがまだ道具箱に1個もない→新しくインデックスを追加し個数を1増やす(実際に行う順序は、個数を1にしてからインデックス追加)
+        # # 　　　そうでない（すでにある）→個数を1増やす
+        # if self.vindex(self.book["道具箱"], self.droplist[0]) == False:
+        #     self.book["道具箱"].cell(row=self.vindex(
+        #         self.book["道具箱"], "empty"), column=2, value=self.vlookup(self.book["道具箱"], "empty", 2)+1)
+        #     self.book["道具箱"].cell(row=self.vindex(
+        #         self.book["道具箱"], "empty"), column=1, value=self.droplist[0])
+        # else:
+        #     self.book["道具箱"].cell(row=self.vindex(self.book["道具箱"], self.droplist[0]),
+        #                           column=2, value=self.vlookup(self.book["道具箱"], self.droplist[0], 2)+1)
+        # print(self.vindex(self.book["道具箱"], "empty"))
+        """開いてる途中だとエラー出るよ"""
+        # self.save()
 
     # def save(self):
     #     """開いてる途中だとエラー出るよ"""
@@ -741,75 +749,75 @@ class Battle(Core):
     #         exit()
 
 
-class Initialize(Battle):
-    """めんどくさいからinitはそのままコピーした
-    """
+# class Initialize(Battle):
+#     """めんどくさいからinitはそのままコピーした
+#     """
 
-    def __init__(self) -> None:
-        """コンストラクタ
-        lv,hp,atk,skill[0]~[2],exp,moneyはリストとなっており、[0]がプレイヤー、[1]が敵
-        """
-        self.basic_status_index = ["lv", "hp", "atk"]
-        self.mobname = "スライム"
-        self.book = openpyxl.load_workbook('systems/base.xlsx', data_only=True)
-        self.mobsheet = self.book[self.mobname]
-        self.mysheet = self.book["プレイヤーステータス"]
-        self.vs_sheet = [self.mysheet, self.mobsheet]
-        self.lv = [0, 0]
-        self.hp = [0, 0]
-        self.atk = [0, 0]
-        self.skill = [[0, 0] for j in range(3)]
-        self.exp = [0, 0]
-        self.money = [0, 0]
-        for num, sheet in enumerate(self.vs_sheet):
-            self.lv[num] = self.vlookup(sheet, "lv", 2)
-            self.hp[num] = self.vlookup(sheet, "hp", 2)
-            self.atk[num] = self.vlookup(sheet, "atk", 2)
-            for j in range(3):
-                self.skill[j][num] = self.vlookup(
-                    sheet, "skill{}".format(j), 2)
-            self.exp[num] = self.vlookup(sheet, "exp", 2)
-            self.money[num] = self.vlookup(sheet, "money", 2)
-        self.droplist = []
+#     def __init__(self) -> None:
+#         """コンストラクタ
+#         lv,hp,atk,skill[0]~[2],exp,moneyはリストとなっており、[0]がプレイヤー、[1]が敵
+#         """
+#         self.basic_status_index = ["lv", "hp", "atk"]
+#         self.mobname = "スライム"
+#         self.book = openpyxl.load_workbook('systems/base.xlsx', data_only=True)
+#         self.mobsheet = self.book[self.mobname]
+#         self.mysheet = self.book["プレイヤーステータス"]
+#         self.vs_sheet = [self.mysheet, self.mobsheet]
+#         self.lv = [0, 0]
+#         self.hp = [0, 0]
+#         self.atk = [0, 0]
+#         self.skill = [[0, 0] for j in range(3)]
+#         self.exp = [0, 0]
+#         self.money = [0, 0]
+#         for num, sheet in enumerate(self.vs_sheet):
+#             self.lv[num] = self.vlookup(sheet, "lv", 2)
+#             self.hp[num] = self.vlookup(sheet, "hp", 2)
+#             self.atk[num] = self.vlookup(sheet, "atk", 2)
+#             for j in range(3):
+#                 self.skill[j][num] = self.vlookup(
+#                     sheet, "skill{}".format(j), 2)
+#             self.exp[num] = self.vlookup(sheet, "exp", 2)
+#             self.money[num] = self.vlookup(sheet, "money", 2)
+#         self.droplist = []
 
-    def confirm(self):
-        confirm = input("これまでのプレイデータを削除します。本当によろしいですか？[Y/n] ->")
-        if confirm == "y" or confirm == "Y":
-            input("削除されたデータは戻りません。本当によろしいですか？[Y/n] ->")
-            if confirm == "y" or confirm == "Y":
-                self.all_zero()
-                print("データは削除されました m9(^Д^)")
+#     def confirm(self):
+#         confirm = input("これまでのプレイデータを削除します。本当によろしいですか？[Y/n] ->")
+#         if confirm == "y" or confirm == "Y":
+#             input("削除されたデータは戻りません。本当によろしいですか？[Y/n] ->")
+#             if confirm == "y" or confirm == "Y":
+#                 self.all_zero()
+#                 print("データは削除されました m9(^Д^)")
 
-    def all_zero(self):
-        """戦闘後の処理を参考にした
-        ステータスの更新
-        経験値の更新
-        金の更新
-        アイテムの更新
-        以上の情報をエクセルファイルに更新・保存
-        """
-        # ステータス更新
-        init_lv = 0
-        init_hp = 100
-        init_atk = 10
-        box = [init_lv, ]
-        for stat in self.basic_status_index:
-            for i in range(4):
-                self.mysheet.cell(row=self.vindex(
-                    self.mysheet, stat), column=i+2, value=init_lv)
-                self.mysheet.cell(row=self.vindex(
-                    self.mysheet, stat), column=i+2, value=init_hp)
-                self.mysheet.cell(row=self.vindex(
-                    self.mysheet, s), column=i+2, value=init_atk)
-        # 経験値、金の更新
-        self.mysheet.cell(row=self.vindex(
-            self.mysheet, "exp"), column=2, value=0)
-        self.mysheet.cell(row=self.vindex(
-            self.mysheet, "money"), column=2, value=0)
-        # ドロップアイテム数は1のみ対応。
-        # 解説：ゲットしたアイテムがまだ道具箱に1個もない→新しくインデックスを追加し個数を1増やす(実際に行う順序は、個数を1にしてからインデックス追加)
-        # 　　　そうでない（すでにある）→個数を1増やす
-        for i in range(39):
-            self.book["道具箱"].cell(row=i+2, column=1, value="empty")
-            self.book["道具箱"].cell(row=i+2, column=2, value=0)
-        self.save()
+#     def all_zero(self):
+#         """戦闘後の処理を参考にした
+#         ステータスの更新
+#         経験値の更新
+#         金の更新
+#         アイテムの更新
+#         以上の情報をエクセルファイルに更新・保存
+#         """
+#         # ステータス更新
+#         init_lv = 0
+#         init_hp = 100
+#         init_atk = 10
+#         box = [init_lv, ]
+#         for stat in self.basic_status_index:
+#             for i in range(4):
+#                 self.mysheet.cell(row=self.vindex(
+#                     self.mysheet, stat), column=i+2, value=init_lv)
+#                 self.mysheet.cell(row=self.vindex(
+#                     self.mysheet, stat), column=i+2, value=init_hp)
+#                 self.mysheet.cell(row=self.vindex(
+#                     self.mysheet, s), column=i+2, value=init_atk)
+#         # 経験値、金の更新
+#         self.mysheet.cell(row=self.vindex(
+#             self.mysheet, "exp"), column=2, value=0)
+#         self.mysheet.cell(row=self.vindex(
+#             self.mysheet, "money"), column=2, value=0)
+#         # ドロップアイテム数は1のみ対応。
+#         # 解説：ゲットしたアイテムがまだ道具箱に1個もない→新しくインデックスを追加し個数を1増やす(実際に行う順序は、個数を1にしてからインデックス追加)
+#         # 　　　そうでない（すでにある）→個数を1増やす
+#         for i in range(39):
+#             self.book["道具箱"].cell(row=i+2, column=1, value="empty")
+#             self.book["道具箱"].cell(row=i+2, column=2, value=0)
+#         self.save()
