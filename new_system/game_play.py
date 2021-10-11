@@ -55,7 +55,7 @@ class Commander(show_game4.ShowGame):
         self.set_sound()
         # choice関連
         self.dict_name_list = ["初期画面", "ダイヤ購入", "ダイヤ購入確認", "街の入口", "装備変更：変更対象",
-                               "装備変更：手持ち", "ショップ画面", "ショップ確認画面", "ガチャ画面", "ガチャ確認画面", "クエスト画面", "クエスト確認画面","戦闘中アイテム選択画面","戦闘中アイテム使用確認画面"]
+                               "装備変更：手持ち", "ショップ画面", "ショップ確認画面", "ガチャ画面", "ガチャ確認画面", "クエスト画面", "クエスト確認画面","成長合成1","成長合成2","成長合成3","成長合成4","成長合成5","成長合成6","成長合成7","戦闘中アイテム選択画面","戦闘中アイテム使用確認画面"]
         # ↑【重要】選択肢を使う場合、そのdict_nameは必ずこのリストにいれる
         self.choice_dict_initialize()
 
@@ -101,11 +101,11 @@ class Commander(show_game4.ShowGame):
 
                 elif self.choice_dict["初期画面"]["name"] == "ダイヤ購入" and self.choice_dict["ダイヤ購入"]["number"] == "False":
                     self.choice_screen(
-                        ["何個購入しますか？","保有ダイヤモンド:{}".format(self.diamond)], [["1個","¥100"], ["10個","¥900"], ["50個","¥4000"], ["100個","¥7500"]], ["※現在は無料で購入できます"],  "ダイヤ購入")
+                        ["何個購入しますか？","保有ダイヤモンド:{}".format(self.diamond)], list(zip(["1個","10個","50個","100個"],["¥100","¥900","¥4000","¥7500"])), ["※現在は無料で購入できます"],  "ダイヤ購入")
                 elif self.choice_dict["ダイヤ購入"]["name"] != "False" and self.choice_dict["ダイヤ購入確認"]["name"] == "False":
                     diamond_qty = int(self.choice_dict["ダイヤ購入"]["name"][:-1])
                     self.choice_screen(
-                        "ダイヤを{}個購入します。本当によろしいですか？".format(diamond_qty), ["はい", "いいえ"], [""], "ダイヤ購入確認", ["ダイヤ購入"])
+                        "ダイヤを{}個購入します。本当によろしいですか？".format(diamond_qty), [["はい",""],["いいえ",""]], [""], "ダイヤ購入確認", ["ダイヤ購入"])
                 elif self.choice_dict["ダイヤ購入確認"]["name"] == "はい":
                     self.message = "ご購入ありがとうございます！"
                     self.buy_diamond(diamond_qty)
@@ -124,7 +124,7 @@ class Commander(show_game4.ShowGame):
                 elif self.choice_dict["初期画面"]["name"] == "街へ行く":
                     if self.choice_dict["街の入口"]["number"] == "False":
                         self.choice_screen(
-                            ["街の入口","Lv.{} Gold:{} Diamond:{}".format(self.lv,self.money,self.diamond)], [["ステータス・アイテムチェック","現在準備中"],  ["装備","装備の変更や成長合成を行う"],  ["ショップ","アイテムの購入"],  ["ガチャ",["超強力なアイテムゲットのチャンス。","期間限定のハロウィンイベント実施中！"]], ["クエスト","依頼をこなして報酬をゲットせよ！"],["6個目の選択肢","1234567890かきくけこさしすせそなにぬねのあいうえおかきくけこさしすせそなにぬねの"]], ["message", "ここは合計で3行程度まで", "3行目"], "街の入口")
+                            ["街の入口","Lv.{} Gold:{} Diamond:{}".format(self.lv,self.money,self.diamond)], [["ステータス・アイテムチェック","現在準備中"],  ["装備","装備の変更や成長合成を行う"],  ["ショップ","アイテムの購入"],  ["ガチャ",["超強力なアイテムゲットのチャンス。","期間限定のハロウィンイベント実施中！"]], ["クエスト","依頼をこなして報酬をゲットせよ！"],["成長合成","武器をカスタマイズしよう！"]], "", "街の入口")
 
                     elif self.choice_dict["街の入口"]["name"] == "ステータス・アイテムチェック":
                         self.town_status()
@@ -254,6 +254,121 @@ class Commander(show_game4.ShowGame):
                         self.choice_dict["ガチャ画面"] = {
                             "number": "False", "name": "False"}
 
+
+
+
+                    
+                    # 成長合成
+                    elif self.choice_dict["街の入口"]["name"] == "成長合成" and self.choice_dict["成長合成1"]["number"] == "False":
+                        # 装備の情報更新
+                        if self.run_count_town[5] == 0:
+                            self.status_checker()
+                            id_list = self.current_equip_list("id")
+                            self.run_count_town[5] += 1
+                        self.choice_screen("何をしますか？", [["成長合成をする","武器に属性を付与します"],["成長合成の取り消し","魔女の秘薬を用いて、満足な結果が得られなかったスロットを消去します"],["触媒購入","成長合成を補助する触媒を購入します"],["禁忌の宝箱","最高性能の触媒を低確率で入手できます"]],["成長合成は沼。","安易に手を出すことなかれ。"],"成長合成1", ["街の入口"])
+                    elif self.choice_dict["成長合成1"]["name"] == "成長合成をする" and self.choice_dict["成長合成2"]["number"] == "False":
+                        # self.id_equip_info(id_list[i],"name")
+                        self.choice_screen(
+                            "現在、成長合成の可能な装備は武器（右手）のみです。",list(zip(self.equip_position,["","","","",""])) ,"", "成長合成2", ["成長合成1"])
+                    elif self.choice_dict["成長合成2"]["number"] != "False" and self.choice_dict["成長合成3"]["number"] == "False":
+                        id_list = self.equip_list_position("右手","id")
+                        dic_list = []
+                        for id_num in id_list:
+                            dic_list.append(self.id_equip_dict(id_num))
+                        self.choice_screen_multi("どの装備を成長合成しますか？", list(["{}:{}".format(dic_list[i]["id"],dic_list[i]["name"]),
+                        ["atk:+{},空きスロット:{}/{},".format(dic_list[i]["atk"],dic_list[i]["slot_empty"],dic_list[i]["slot_qty"]),
+                        "水:+{}%,木:+{}%,闇+{}%,雷:+{}%".format(dic_list[i]["water_attr"],dic_list[i]["plant_attr"],dic_list[i]["dark_attr"],
+                        dic_list[i]["elect_attr"])]]for i in range(len(dic_list))),"" , "成長合成3", ["成長合成2"])
+                    elif self.choice_dict["成長合成3"]["name"] != "False" and self.choice_dict["成長合成4"]["number"] == "False":
+                        sel_num = self.choice_dict["成長合成3"]["number"]
+                        dic = dic_list[sel_num]
+                        equip_id = id_list[sel_num]
+                        slot_val_list = []
+                        for j in range(dic["slot_qty"]):
+                            if dic["slot{}_attr".format(j+1)] == None:
+                                slot_val_list.append("S{}:empty".format(j+1))
+                            else:
+                                slot_val_list.append("S{}:{}+{}%".format(j+1,dic["slot{}_attr".format(j+1)],dic["slot{}_val".format(j+1)]))
+                        # print("S{}:{}+{}%".format(1,dic[sel_]["slot{}_attr".format(1)],dic[1]["slot{}_val".format(1)]))
+                        self.choice_screen("{}を成長合成".format(self.choice_dict["成長合成3"]["name"].split(":")[1]),list(zip(slot_val_list,["","","","",""])),"","成長合成4",["成長合成3"])
+                    elif self.choice_dict["成長合成4"]["name"] != "False" and self.choice_dict["成長合成4"]["name"].split(":")[1]!="empty":
+                        self.message = "そのスロットはすでに付与されています。"
+                        self.choice_dict["成長合成4"] = {"number": "False", "name": "False"}
+                    elif self.choice_dict["成長合成4"]["name"] != "False" and self.choice_dict["成長合成5"]["number"] == "False":
+                        sel_slot = self.choice_dict["成長合成4"]["number"]
+                        material_infos = self.item_type_list_multi_info("属性付与",["name","effect_type","effect_val","effect_val_max"],"on")
+                        material_list_name = material_infos[0]
+                        material_list_attr = material_infos[1]
+                        material_list_min = material_infos[2]
+                        material_list_max = material_infos[3]
+                        material_detail_list = []
+                        for i in range(len(material_list_name)):
+                            material_detail_list.append("属性:{},付与値：+{}～+{}".format(self.attr_dict[material_list_attr[i].split("_")[0]],round(material_list_min[i]*dic["atk"]/100),round(material_list_max[i]*dic["atk"]/100)))
+                        self.choice_screen_multi("成長合成の素材を選択",list(zip(material_list_name,material_detail_list)),"","成長合成5",["成長合成4"])
+                    elif self.choice_dict["成長合成5"]["name"] != "False" and self.choice_dict["成長合成6"]["number"] == "False":
+                        material = self.choice_dict["成長合成5"]["name"]
+                        catalyst_infos = self.item_type_list_multi_info("成長合成補助",["name","effect_type","effect_val_max"],"on")
+                        catalyst_dict = {"compound_max_up":"最大値上昇","compound_min_up":"最小値上昇","compound_luck_up":"ランダム数値向上"}
+                        catalyst_list_name = ["なし"]
+                        catalyst_list_name.extend(catalyst_infos[0])
+                        catalyst_list_effect=(catalyst_infos[1])
+                        catalyst_list_val=(catalyst_infos[2])
+                        catalyst_detail_list=[""]
+                        for i in range(len(catalyst_list_name)-1):
+                            catalyst_detail_list.append("{}:+{}%".format(catalyst_dict[catalyst_list_effect[i]],catalyst_list_val[i]))
+                        self.choice_screen_multi("成長合成補助の触媒を選択",list(zip(catalyst_list_name,catalyst_detail_list)),"","成長合成6",["成長合成5"])
+                    elif self.choice_dict["成長合成6"]["name"] != "False" and self.choice_dict["成長合成7"]["number"] == "False":
+                        catalyst = self.choice_dict["成長合成6"]["name"]
+                        catalyst_red = ""
+                        catalyst_blue = ""
+                        catalyst_green = ""
+                        if self.item_info(catalyst,"effect_type") == "compound_max_up":
+                            catalyst_red = catalyst
+                        elif self.item_info(catalyst,"effect_type") == "compound_min_up":
+                            catalyst_blue = catalyst
+                        elif self.item_info(catalyst,"effect_type") == "compound_luck_up":
+                            catalyst_green = catalyst
+                        min_val,max_val = self.compound_min_max(equip_id,sel_slot,material,catalyst_red,catalyst_blue,catalyst_green)
+                        self.choice_screen("以下の内容で成長合成を行います。よろしいですか？",list(zip(["はい","いいえ"],["",""])),["対象：{}".format(self.id_equip_info(equip_id,"name")),"合成素材:{},触媒:{}".format(material,catalyst),["最小値:{},最大値:{}".format(min_val,max_val)]],"成長合成7",["成長合成6"])
+                    elif self.choice_dict["成長合成7"]["name"] == "はい":
+                        attr,value = self.compound(equip_id,sel_slot,material,catalyst_red,catalyst_blue,catalyst_green)
+                        self.save
+                        self.gacha_show()
+                        self.message =("{}属性値が{}上昇した！".format(self.attr_dict(attr),value))
+                        self.choice_dict["成長合成7"] = {"number": "False", "name": "False"}
+                        self.choice_dict["成長合成6"] = {"number": "False", "name": "False"}
+                        self.choice_dict["成長合成5"] = {"number": "False", "name": "False"}
+                        self.choice_dict["成長合成4"] = {"number": "False", "name": "False"}
+                    elif self.choice_dict["成長合成7"]["name"] == "いいえ":
+                        self.choice_dict["成長合成7"] = {"number": "False", "name": "False"}
+                        self.choice_dict["成長合成6"] = {"number": "False", "name": "False"}
+                    # elif self.choice_dict["成長合成6"]["name"] != "False" and self.choice_dict["成長合成7"]["number"] == "False":
+                    #     catalyst = self.choice_dict["成長合成6"]["name"]
+                    #     if catalyst == "なし":
+                    #         self.choice_screen("{}に{}を合成します。よろしいですか？".format(self.id_equip_info(equip_id,"name"),material),list(zip(["はい","いいえ"],["",""])),"","成長合成7",["成長合成6"])
+                    #     else:
+                    #         self.choice_screen("{}に{}を、{}を触媒として合成します。よろしいですか？".format(self.id_equip_info(equip_id,"name"),material,catalyst),list(zip(["はい","いいえ"],["",""])),"","成長合成7",["成長合成6"])
+                        
+                            # list(["{}:{}".format(equip_list_id[i],equip_list_name[i]),"HP:+{},ATK:+{}".format(equip_list_hp[i],equip_list_atk[i])]for i in range(len(equip_list_name)))
+                        # selected_position = self.choice_dict["装備変更：変更対象"]["name"].split(':')[0]
+                        # required_info  = ["name","hp","atk"]
+                        # equip_list_name = self.equip_list_position(selected_position,"name")
+                        # equip_list_hp = self.equip_list_position(selected_position,"hp")
+                        # equip_list_atk = self.equip_list_position(selected_position,"atk")
+                        # equip_list_id = self.equip_list_position(selected_position,"id")
+                        # # self.town_equip2(
+                        # #     self.choice_dict["装備変更：変更対象"]["number"])
+                        # self.choice_screen_multi(
+                        #     "{}の装備を変更".format(selected_position), list(["{}:{}".format(equip_list_id[i],equip_list_name[i]),"HP:+{},ATK:+{}".format(equip_list_hp[i],equip_list_atk[i])]for i in range(len(equip_list_name))),"" , "装備変更：手持ち", ["装備変更：変更対象"])
+                    # elif self.choice_dict["装備変更：手持ち"]["number"] != "False":
+                    #     selected_id = self.choice_dict["装備変更：手持ち"]["name"].split(":")[0]
+                    #     self.mysheet[self.vhindex_super(self.mysheet, selected_position,
+                    #               1, "id", "position", "excel","off")] = int(selected_id)
+                    #     print("装備が変更されました！")
+                    #     self.status_checker()
+                    #     self.init_town_info()
+                    #     self.save()
+
                     # elif self.choice_dict["街の入口"]["name"] == "テンプレ" and self.choice_dict["テンプレ画面"]["number"] == "False":
                     #     self.choice_screen(
                     #         "テンプレ", ["【期間限定】ハロウィンテンプレ：¥300", "スーパーテンプレ：¥300", "ノーマルテンプレ：500G"], ["ハロウィン装備を入手できるのは今だけ！"], "テンプレ画面")
@@ -296,7 +411,7 @@ class Commander(show_game4.ShowGame):
 
                     elif self.item_screen_count == 1:
                         if self.choice_dict["戦闘中アイテム選択画面"]["name"] == "False":
-                            item_list_battle = self.item_list("戦闘用消耗品","name")
+                            item_list_battle = self.item_type_list("戦闘用消耗品","name")
                             self.choice_screen_multi("アイテム",list([item_list_battle[i],self.item_info(item_list_battle[i],"detail")]for i in range(len(item_list_battle))),"","戦闘中アイテム選択画面",["戦闘中アイテム選択画面"],"on","off",1)
                         elif self.choice_dict["戦闘中アイテム選択画面"]["name"] != "False" and self.choice_dict["戦闘中アイテム使用確認画面"]["name"] == "False":
                             self.choice_screen("{}を使用しますか？".format(self.choice_dict["戦闘中アイテム選択画面"]["name"]), [["はい",""],["いいえ",""]],[self.item_info(self.choice_dict["戦闘中アイテム選択画面"]["name"],"detail")], "戦闘中アイテム使用確認画面", ["戦闘中アイテム選択画面"])

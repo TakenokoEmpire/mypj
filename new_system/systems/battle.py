@@ -9,6 +9,7 @@ import try_1009
 import send_recieve
 import time
 import unicodedata
+from typing import List, Tuple
 
 # from systems import testtry
 
@@ -331,7 +332,8 @@ class Core(Function):
                                  "skill1", "skill2", "skill3"]
         # self.basic_status_index_var = [self.lv, self.hp, self.atk]
         # self.all_status_index_var = [self.lv, self.hp, self.atk, self.exp, self.money, self.skill1, self.skill2, self.skill3]
-
+        # 属性関連
+        self.attr_dict = {"dark":"闇","water":"水","plant":"木","elect":"雷","all":"全"}
         # ステータス取得
         self.status_checker()  # ステータス取得前にステータスを更新しておく
 
@@ -497,14 +499,69 @@ class Core(Function):
     def item_info(self,item_name,info_type):
         return self.vhlookup_super(self.book["アイテム箱"],item_name,"name",info_type,1,"on")
 
-    def item_list(self,item_type,info_type):
-        return self.vhlookup_super(self.book["アイテム箱"],item_type,"type",info_type,1,"on","on")
+    def item_multi_info(self,item_name,info_type_list:List[str]):
+        box = []
+        for info_type in info_type_list:
+            box.append(self.item_info(item_name,info_type))
+        return box
+
+
+    def item_type_list(self,item_type,info_type,only_own_mode="off"):
+        """指定したitem_typeに属する全てのアイテムを返す
+        only_owa_modeをonにすると、1個以上持っているもののみを返す"""
+        if only_own_mode != "on":
+            return self.vhlookup_super(self.book["アイテム箱"],item_type,"type",info_type,1,"on","on")
+
+        else:
+            box1 = self.vhlookup_super(self.book["アイテム箱"],item_type,"type",info_type,1,"on","on")
+            box2 = self.vhlookup_super(self.book["アイテム箱"],item_type,"type","qty",1,"on","on")
+            count = 0
+            while True:
+                try:
+                    if box2[count] == 0:
+                        box1.pop(count)
+                        box2.pop(count)
+                    else:
+                        count += 1
+                except IndexError:
+                    break
+            return box1
+        # else:
+        #     box1 = self.vhlookup_super(self.book["アイテム箱"],item_type,"type",info_type,1,"on","on")
+        #     box2 = self.vhlookup_super(self.book["アイテム箱"],item_type,"type","qty",1,"on","on")
+        #     box12 = list(zip(box1,box2))
+        #     for num, qty in enumerate(box2):
+        #         if qty == 0:
+
+        #     return box1
+
+    def item_type_list_multi_info(self,item_type,info_type_list,only_own_mode="off"):
+        box = []
+        for info_type in info_type_list:
+            box.append(self.item_type_list(item_type,info_type,only_own_mode))
+        return box
 
     def equip_list_position(self,position,info_type):
+        """指定された部位の、保有装備の一覧表を返す"""
         return self.vhlookup_super(self.book["装備個別情報"],position,"position",info_type,1,"on","on")
 
-    def id_equip_info(self,id_num,info_type):
-        return self.vhlookup_super(self.book["装備個別情報"],str(id_num),"id",info_type,1,"on")
+    def id_equip_info(self,equip_id,info_type):
+        return self.vhlookup_super(self.book["装備個別情報"],str(equip_id),"id",info_type,1,"on")
+
+    def id_equip_multi_info(self,equip_id,info_type_list:List[str]):
+        box = []
+        for info_type in info_type_list:
+            box.append(self.id_equip_info(equip_id,info_type))
+        return box
+
+    def id_equip_dict(self,equip_id):
+        """idが一致する装備のすべての情報をdictで返す。"""
+        key = ["id","position","name","atk","slot_qty","slot_empty","water_attr","plant_attr","dark_attr","elect_attr"]
+        key.extend(list(("slot{}_attr".format(i+1)for i in range(5))))
+        key.extend(list(("slot{}_val".format(i+1)for i in range(5))))
+        val = self.id_equip_multi_info(equip_id,key)
+        equip_info_dict = dict(zip(key,val))
+        return equip_info_dict
 
     def current_equip_list(self, info_type):
         box = []
@@ -512,10 +569,80 @@ class Core(Function):
             box.append(self.vhlookup_super(self.mysheet,pos,1,info_type,"position","off"))
         return box
 
-    def compound(self,equip_num,material):
+    def equip_val_update(self,equip_id,info_type,update_val):
+        self.book["装備個別情報"][self.vhindex_super(self.book["武器個別情報"],equip_id,"id",info_type,1,"Excel")] = update_val
+
+    def equip_multi_val_update(self,equip_id,info_type_list,update_val_list):
+        box = []
+        for i in range(len(info_type_list)):
+            box.append(self.equip_val_update(equip_id,info_type_list[i],update_val_list[i]))
+        return box
+
+    def compound(self,equip_id,slot_num:int,material,catalyst_red = "",catalyst_blue = "",catalyst_green = ""):
         """装備に様々な能力を付与する成長合成を行う。
-        リリース段階では、武器に属性値を付与するもののみを実装する予定"""
-        pass
+        リリース段階では、武器に属性値を付与するもののみを実装する予定
+        現段階では、合成値＝【攻撃力】＊合成係数　となっているため、今後防具にも適用する際は注意"""
+        dic = self.id_equip_dict(equip_id)
+        if dic["slot{}_attr".format(slot_num)] != None:
+            return "slot not empty"
+        attr, compound_value_ratio, min_val_ratio,max_val_ratio = self.compound_judge(material,catalyst_red,catalyst_blue,catalyst_green)
+        compound_value = round(compound_value_ratio * dic["atk"] / 100)
+        print[attr,compound_value_ratio,compound_value]
+        self.equip_multi_val_update(equip_id,[attr,compound_value],["slot{}_attr".format(slot_num),"slot{}_val".format(slot_num)])
+        self.attribute_update(equip_id)
+        return attr,compound_value
+
+    def compound_min_max(self,equip_id,slot_num:int,material,catalyst_red = "",catalyst_blue = "",catalyst_green = ""):
+        """装備に様々な能力を付与する成長合成を行う。
+        リリース段階では、武器に属性値を付与するもののみを実装する予定
+        現段階では、合成値＝【攻撃力】＊合成係数　となっているため、今後防具にも適用する際は注意"""
+        dic = self.id_equip_dict(equip_id)
+        if dic["slot{}_attr".format(slot_num)] != None:
+            return "slot not empty"
+        attr, compound_value_ratio, min_val_ratio,max_val_ratio = self.compound_judge(material,catalyst_red,catalyst_blue,catalyst_green)
+        min_val = round(min_val_ratio * dic["atk"] / 100)
+        max_val = round(max_val_ratio * dic["atk"] / 100)
+        return min_val,max_val
+
+    def attribute_update(self,equip_id):
+        """それぞれのスロットの属性値を計算し、それぞれの属性の値を書き込む"""
+        dic = self.id_equip_dict(equip_id)
+        attr_list = ["water","plant","dark","elect"]
+        for attr in attr_list:
+            attr_val = 0
+            for slot in range(5):
+                if dic["slot{}_attr".format(slot)] == attr:
+                    attr_val += dic["slot{}_val".format(slot)]
+            self.equip_val_update(equip_id,"{}_attr".format(attr),attr_val)
+
+    def compound_judge(self,material,catalyst_red = "",catalyst_blue = "",catalyst_green = ""):
+        """同種類の触媒を同時に送ることは禁止（特に緑系統）
+        合成値= 最小値 + (最大値-最小値)*乱数^x"""
+        #xは、デフォルトでは2。平均値は0.33。低い値が出やすいようになっている。
+        #緑系統触媒の「合成値○○倍」は、xの値が小さくなることによってこの平均値がどれほど上昇するかを表している。
+        #最大の1.5倍の触媒を使うと、x=1で平均値が0.5。これでやっとフラット。
+        #重課金させるためには、0.2~0.3にしてもいいかも。
+
+        material_info = self.item_multi_info(material,["effect_type","effect_val","effect_val_max"])
+        if catalyst_red != "":
+            max_up_ratio = self.item_info(catalyst_red,"effect_val")
+        if catalyst_blue != "":
+            min_up_ratio = self.item_info(catalyst_blue,"effect_val")
+        if catalyst_green != "":
+            expoent_up_ratio = self.item_info(catalyst_green,"effect_val")
+
+        attr = material_info[0]
+        min_val = material_info[1] * min_up_ratio
+        max_val = material_info[2] * max_up_ratio
+        exponent = 2 * expoent_up_ratio
+
+        rand = random.random()
+        rand_exponent = rand ** exponent
+
+        compound_value_ratio = min_val + rand_exponent * (max_val - min_val)
+
+        return attr,compound_value_ratio,min_val,max_val
+
 
     def save(self):
         """開いてる途中だとエラー出るよ"""
