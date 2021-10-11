@@ -5,6 +5,7 @@ import math
 import copy
 from systems import judge_manual
 import try_1003
+import try_1009
 import send_recieve
 import time
 import unicodedata
@@ -15,6 +16,11 @@ import unicodedata
 self忘れ
 =と==
 関数の()
+return忘れ（Noneが帰ってきたときや、Nonetypeとの足し算ができないと言われたとき注意）
+gameplay以外のファイルを実行（ipmortがおかしいときは大抵これ）
+過剰にリスト化（text must be a unicode or bytesのとき）
+変数のstr化（text must be a unicode or bytes）
+Excel検索文字列がstrでない（text must be a unicode or bytes）
 """
 
 """
@@ -91,17 +97,57 @@ class Function():
                 return output
         return False
 
-    def vhlookup(self, sheet, left_index, left_index_position, top_index, top_index_position):
+    def vhlookup(self, sheet, left_index, left_index_position, top_index, top_index_position,minus_search = "off", multi_find = "off" ):
         """excelの、vlookup関数とhlookup関数を組み合わせた関数
         indexとmatchを組み合わせて作るアレ
-        動作未確認
+        minus_search="on"にすると、top_indexを探す際に、left_index_positionの行よりも左側の行からも探す（列も同様）
         """
-        for i in range(500):
-            if str(sheet.cell(row=i + top_index_position, column=left_index_position).value) == left_index:
-                for j in range(100):
-                    if str(sheet.cell(row=top_index_position, column=j+left_index_position).value) == top_index:
-                        return sheet.cell(row=i+top_index_position, column=j+left_index_position).value
-        return False
+        if multi_find == "on":
+            return_box = []
+            if minus_search=="on":
+                for i in range(500):
+                    if str(sheet.cell(row=i+1, column=left_index_position).value) == left_index:
+                        for j in range(100):
+                            if str(sheet.cell(row=top_index_position, column=j+1).value) == top_index:
+                                return_box.append(sheet.cell(row=i+1, column=j+1).value)
+                return return_box
+            else:
+                for i in range(500):
+                    if str(sheet.cell(row=i + top_index_position, column=left_index_position).value) == left_index:
+                        for j in range(100):
+                            if str(sheet.cell(row=top_index_position, column=j+left_index_position).value) == top_index:
+                                return_box.append(sheet.cell(row=i+top_index_position, column=j+left_index_position).value)
+                return return_box
+        else:
+            if minus_search=="on":
+                for i in range(500):
+                    if str(sheet.cell(row=i+1, column=left_index_position).value) == left_index:
+                        for j in range(100):
+                            if str(sheet.cell(row=top_index_position, column=j+1).value) == top_index:
+                                return sheet.cell(row=i+1, column=j+1).value
+                return False
+            else:
+                for i in range(500):
+                    if str(sheet.cell(row=i + top_index_position, column=left_index_position).value) == left_index:
+                        for j in range(100):
+                            if str(sheet.cell(row=top_index_position, column=j+left_index_position).value) == top_index:
+                                return sheet.cell(row=i+top_index_position, column=j+left_index_position).value
+                return False
+            
+
+    def vhlookup_super(self, sheet, left_index, left_index_position_or_topname, top_index, top_index_position_or_leftname,minus_search = "off", multi_find = "off"):
+        """vhlookupについて、position指定をその行・列の先頭セルの名前でも行えるようになった。
+        第3、第5引数について、intを入力した場合は従来通り、strを入力した場合その文字で探すようになる。
+        minus_search="on"にすると、top_indexを探す際に、left_index_positionの行よりも左側の行からも探す（列も同様）"""
+        if type(left_index_position_or_topname) == str:
+            left_index_position = self.hindex(sheet,left_index_position_or_topname)
+        else:
+            left_index_position = left_index_position_or_topname
+        if type(top_index_position_or_leftname) == str:
+            top_index_position = self.vindex(sheet,top_index_position_or_leftname)
+        else:
+            top_index_position = top_index_position_or_leftname
+        return self.vhlookup(sheet, left_index, left_index_position, top_index, top_index_position,minus_search,multi_find)
 
     def vindex(self, sheet, index):
         """excelのindex関数もどきを再現
@@ -139,25 +185,56 @@ class Function():
                 return i + 1
         return False
 
-    def vhindex(self, sheet, left_index, left_index_position, top_index, top_index_position, return_type):
+    def vhindex(self, sheet, left_index, left_index_position, top_index, top_index_position, return_type,minus_search = "off"):
         """excelのindex関数もどきを再現
         縦横両方向に対応し、さらに先頭行（列）以外にも対応
         return_type:"excel"→セル番号形式
                     その他→row,column
+        minus_search="on"にすると、top_indexを探す際に、left_index_positionの行よりも左側の行からも探す（列も同様）
         """
-        for i in range(500):
-            output = 0
-            if str(sheet.cell(row=i + top_index_position, column=left_index_position).value) == left_index:
-                # print("a")
-                for j in range(100):
-                    #     print(sheet.cell(row=j + 1, column=1).value)
-                    #     print(top_index)
-                    if str(sheet.cell(row=top_index_position, column=j+left_index_position).value) == top_index:
-                        if return_type == "excel":
-                            return openpyxl.utils.get_column_letter(j + left_index_position)+str(i + top_index_position)
-                        else:
-                            return i + top_index_position, j + left_index_position
-        return False
+        if minus_search == "on":
+            for i in range(500):
+                output = 0
+                if str(sheet.cell(row=i + 1, column=left_index_position).value) == left_index:
+                    # print("a")
+                    for j in range(100):
+                        #     print(sheet.cell(row=j + 1, column=1).value)
+                        #     print(top_index)
+                        if str(sheet.cell(row=top_index_position, column=j+1).value) == top_index:
+                            if return_type == "excel":
+                                return openpyxl.utils.get_column_letter(j + 1)+str(i + 1)
+                            else:
+                                return i + 1, j + 1
+        else:
+            for i in range(500):
+                output = 0
+                if str(sheet.cell(row=i + top_index_position, column=left_index_position).value) == left_index:
+                    # print("a")
+                    for j in range(100):
+                        #     print(sheet.cell(row=j + 1, column=1).value)
+                        #     print(top_index)
+                        if str(sheet.cell(row=top_index_position, column=j+left_index_position).value) == top_index:
+                            if return_type == "excel":
+                                return openpyxl.utils.get_column_letter(j + left_index_position)+str(i + top_index_position)
+                            else:
+                                return i + top_index_position, j + left_index_position
+            return False
+
+    def vhindex_super(self, sheet, left_index, left_index_position_or_topname, top_index, top_index_position_or_leftname,return_type,minus_search = "off"):
+        """動作未確認。
+        vhindexについて、position指定をその行・列の先頭セルの名前でも行えるようになった。
+        第3、第5引数について、intを入力した場合は従来通り、strを入力した場合その文字で探すようになる。
+        minus_search="on"にすると、top_indexを探す際に、left_index_positionの行よりも左側の行からも探す（列も同様）"""
+        if type(left_index_position_or_topname) == str:
+            left_index_position = self.hindex(sheet,left_index_position_or_topname)
+        else:
+            left_index_position = left_index_position_or_topname
+        if type(top_index_position_or_leftname) == str:
+            top_index_position = self.vindex(sheet,top_index_position_or_leftname)
+        else:
+            top_index_position = top_index_position_or_leftname
+        return self.vhindex(sheet, left_index, left_index_position, top_index, top_index_position,return_type,minus_search)
+
 
     def zero_false(self, x):
         if x == 0:
@@ -263,14 +340,12 @@ class Core(Function):
     #     return equip_index_list, equip_sepc_list
 
     def status_checker(self):
-        self.equip_checker()
+        self.equip_checker_new()
         for stat in self.basic_status_index:
-            self.mysheet[self.vhindex(self.mysheet, stat, 1, "total", 1, "excel")] = self.vhlookup(
-                self.mysheet, stat, 1, "raw", 1) + self.vhlookup(self.mysheet, stat, 1, "equip", 1)
+            self.mysheet[self.vhindex(self.mysheet, stat, 1, "total", 1, "excel")] = self.vhlookup(self.mysheet, stat, 1, "raw", 1) + self.vhlookup(self.mysheet, stat, 1, "equip", 1)
         status_box = []
         for num in range(len(self.all_status_index)):
-            status_box.append(self.vlookup(
-                self.mysheet, self.all_status_index[num], 2))
+            status_box.append(self.vlookup(self.mysheet, self.all_status_index[num], 2))
         # ステータス定義
         self.lv = status_box[0]
         self.hp = status_box[1]
@@ -298,6 +373,38 @@ class Core(Function):
                                              1, update_stat[j], self.equip_index_rownum)
             self.mysheet[self.vhindex(
                 self.mysheet, update_stat[j], 1, "equip", 1, "excel")] = sum_stat[j]
+
+    def equip_checker_new(self):
+        # 装備欄に登録された名前から、update_statリストの値を「装備」ブックから参照し記録する
+        # update_statとsum_statの大きさは合わせること
+        # 原因不明のバグのため、プレイヤーステータスシートの装備欄は更新せず、IDのみを情報として使う。
+        update_stat = ["hp","atk"]
+        sum_stat = [0, 0]
+        for j,stat in enumerate(update_stat):
+            for i in range(len(self.equip_position)):
+                equip_id = self.vhlookup_super(self.mysheet, self.equip_position[i], 1, "id", "position","off")
+            
+                sum_stat[j] += self.id_equip_info(equip_id,stat)
+            self.mysheet[self.vhindex(
+                self.mysheet, stat, 1, "equip", 1, "excel")] = sum_stat[j]
+
+        # for i in range(len(self.equip_position)):
+        #     equip_id = self.vhlookup_super(self.mysheet, self.equip_position[i], 1, "id", "position","off")
+        #     for stat in update_stat:
+        #         self.mysheet[self.vhindex_super(self.mysheet, self.equip_position[i], 1, stat, "position", "excel","off")] = self.id_equip_info(self.vhlookup_super(self.mysheet, self.equip_position[i], 1, stat, "position","off"),stat)
+        # # 装備欄に記録されたhp,atkの補正値をステータスに反映する(補正値の合計sum_statを計算し、該当する位置に貼り付ける)
+        # for j in range(len(update_stat)):
+        #     for i in range(len(self.equip_position)):
+        #         print(self.vhlookup_super(self.mysheet, self.equip_position[i], 1, update_stat[j], "position","off"))
+        #         print(self.vhlookup_super(self.mysheet, self.equip_position[i], 1, "equip_atk", "position","off"))
+                
+        #         print(self.equip_position[i])
+        #         print(update_stat[j])
+        #         sum_stat[j] += self.vhlookup_super(self.mysheet, self.equip_position[i],
+        #                                      1, update_stat[j], "position","off")
+        # #ステータスもこの関数で更新できるように変更した。→できてなかった
+        # for stat in self.basic_status_index:
+        #     self.mysheet[self.vhindex(self.mysheet, stat, 1, "total", 1, "excel")] = self.vhlookup(self.mysheet, stat, 1, "raw", 1) + self.vhlookup(self.mysheet, stat, 1, "equip", 1)
 
     def print_status(self):
         print("my status")
@@ -387,7 +494,25 @@ class Core(Function):
         else:
             return True
 
-    # def compound
+    def item_info(self,item_name,info_type):
+        return self.vhlookup_super(self.book["アイテム箱"],item_name,"name",info_type,1,"on")
+
+    def equip_list_position(self,position,info_type):
+        return self.vhlookup_super(self.book["装備個別情報"],position,"position",info_type,1,"on","on")
+
+    def id_equip_info(self,id_num,info_type):
+        return self.vhlookup_super(self.book["装備個別情報"],str(id_num),"id",info_type,1,"on")
+
+    def current_equip_list(self, info_type):
+        box = []
+        for pos in self.equip_position:
+            box.append(self.vhlookup_super(self.mysheet,pos,1,info_type,"position","off"))
+        return box
+
+    def compound(self,equip_num,material):
+        """装備に様々な能力を付与する成長合成を行う。
+        リリース段階では、武器に属性値を付与するもののみを実装する予定"""
+        pass
 
     def save(self):
         """開いてる途中だとエラー出るよ"""
@@ -399,6 +524,7 @@ class Core(Function):
         except PermissionError:
             print("エクセルファイルを閉じてください")  # これ戦闘前に欲しい
             exit()
+
 
 
 class Battle(Core):
@@ -617,7 +743,7 @@ class Battle(Core):
     """
 
     def autoplay(self):
-        vs = try_1003.AutoPlay("off")
+        vs = try_1009.AutoPlay("on")
         self.hist[1] = vs.run()
 
     def mob_turn(self):
@@ -708,26 +834,30 @@ class Battle(Core):
         #     self.mysheet, "hp", 1, "raw", 1, "excel")] = new_hp
         # self.mysheet[self.xy_index(
         #     self.mysheet, "atk", 1, "raw", 1, "excel")] = new_atk
-        self.status_checker()
+        # self.status_checker()
         # 経験値、金の更新
-        self.mysheet.cell(row=self.vindex(
-            self.mysheet, "exp"), column=2, value=self.exp)
-        self.mysheet.cell(row=self.vindex(
-            self.mysheet, "money"), column=2, value=self.money)
-        # ドロップアイテム数は1のみ対応。
-        # 解説：ゲットしたアイテムがまだ道具箱に1個もない→新しくインデックスを追加し個数を1増やす(実際に行う順序は、個数を1にしてからインデックス追加)
-        # 　　　そうでない（すでにある）→個数を1増やす
-        if self.vindex(self.book["道具箱"], self.droplist[0]) == False:
-            self.book["道具箱"].cell(row=self.vindex(
-                self.book["道具箱"], "empty"), column=2, value=self.vlookup(self.book["道具箱"], "empty", 2)+1)
-            self.book["道具箱"].cell(row=self.vindex(
-                self.book["道具箱"], "empty"), column=1, value=self.droplist[0])
-        else:
-            self.book["道具箱"].cell(row=self.vindex(self.book["道具箱"], self.droplist[0]),
-                                  column=2, value=self.vlookup(self.book["道具箱"], self.droplist[0], 2)+1)
-        print(self.vindex(self.book["道具箱"], "empty"))
-        """開いてる途中だとエラー出るよ"""
+        self.mysheet.cell(row=self.vindex(self.mysheet, "exp"), column=2, value=self.exp)
+        self.mysheet.cell(row=self.vindex(self.mysheet, "money"), column=2, value=self.money)
+        #ドロップアイテムの処理
+        self.get_item(self.droplist[0])
         self.save()
+
+
+        # # self.mysheet.cell(row=self.vindex(self.mysheet, "diamond"),column=2, value=self.diamond)
+        # # ドロップアイテム数は1のみ対応。
+        # # 解説：ゲットしたアイテムがまだ道具箱に1個もない→新しくインデックスを追加し個数を1増やす(実際に行う順序は、個数を1にしてからインデックス追加)
+        # # 　　　そうでない（すでにある）→個数を1増やす
+        # if self.vindex(self.book["道具箱"], self.droplist[0]) == False:
+        #     self.book["道具箱"].cell(row=self.vindex(
+        #         self.book["道具箱"], "empty"), column=2, value=self.vlookup(self.book["道具箱"], "empty", 2)+1)
+        #     self.book["道具箱"].cell(row=self.vindex(
+        #         self.book["道具箱"], "empty"), column=1, value=self.droplist[0])
+        # else:
+        #     self.book["道具箱"].cell(row=self.vindex(self.book["道具箱"], self.droplist[0]),
+        #                           column=2, value=self.vlookup(self.book["道具箱"], self.droplist[0], 2)+1)
+        # print(self.vindex(self.book["道具箱"], "empty"))
+        """開いてる途中だとエラー出るよ"""
+        # self.save()
 
     # def save(self):
     #     """開いてる途中だとエラー出るよ"""
@@ -741,75 +871,75 @@ class Battle(Core):
     #         exit()
 
 
-class Initialize(Battle):
-    """めんどくさいからinitはそのままコピーした
-    """
+# class Initialize(Battle):
+#     """めんどくさいからinitはそのままコピーした
+#     """
 
-    def __init__(self) -> None:
-        """コンストラクタ
-        lv,hp,atk,skill[0]~[2],exp,moneyはリストとなっており、[0]がプレイヤー、[1]が敵
-        """
-        self.basic_status_index = ["lv", "hp", "atk"]
-        self.mobname = "スライム"
-        self.book = openpyxl.load_workbook('systems/base.xlsx', data_only=True)
-        self.mobsheet = self.book[self.mobname]
-        self.mysheet = self.book["プレイヤーステータス"]
-        self.vs_sheet = [self.mysheet, self.mobsheet]
-        self.lv = [0, 0]
-        self.hp = [0, 0]
-        self.atk = [0, 0]
-        self.skill = [[0, 0] for j in range(3)]
-        self.exp = [0, 0]
-        self.money = [0, 0]
-        for num, sheet in enumerate(self.vs_sheet):
-            self.lv[num] = self.vlookup(sheet, "lv", 2)
-            self.hp[num] = self.vlookup(sheet, "hp", 2)
-            self.atk[num] = self.vlookup(sheet, "atk", 2)
-            for j in range(3):
-                self.skill[j][num] = self.vlookup(
-                    sheet, "skill{}".format(j), 2)
-            self.exp[num] = self.vlookup(sheet, "exp", 2)
-            self.money[num] = self.vlookup(sheet, "money", 2)
-        self.droplist = []
+#     def __init__(self) -> None:
+#         """コンストラクタ
+#         lv,hp,atk,skill[0]~[2],exp,moneyはリストとなっており、[0]がプレイヤー、[1]が敵
+#         """
+#         self.basic_status_index = ["lv", "hp", "atk"]
+#         self.mobname = "スライム"
+#         self.book = openpyxl.load_workbook('systems/base.xlsx', data_only=True)
+#         self.mobsheet = self.book[self.mobname]
+#         self.mysheet = self.book["プレイヤーステータス"]
+#         self.vs_sheet = [self.mysheet, self.mobsheet]
+#         self.lv = [0, 0]
+#         self.hp = [0, 0]
+#         self.atk = [0, 0]
+#         self.skill = [[0, 0] for j in range(3)]
+#         self.exp = [0, 0]
+#         self.money = [0, 0]
+#         for num, sheet in enumerate(self.vs_sheet):
+#             self.lv[num] = self.vlookup(sheet, "lv", 2)
+#             self.hp[num] = self.vlookup(sheet, "hp", 2)
+#             self.atk[num] = self.vlookup(sheet, "atk", 2)
+#             for j in range(3):
+#                 self.skill[j][num] = self.vlookup(
+#                     sheet, "skill{}".format(j), 2)
+#             self.exp[num] = self.vlookup(sheet, "exp", 2)
+#             self.money[num] = self.vlookup(sheet, "money", 2)
+#         self.droplist = []
 
-    def confirm(self):
-        confirm = input("これまでのプレイデータを削除します。本当によろしいですか？[Y/n] ->")
-        if confirm == "y" or confirm == "Y":
-            input("削除されたデータは戻りません。本当によろしいですか？[Y/n] ->")
-            if confirm == "y" or confirm == "Y":
-                self.all_zero()
-                print("データは削除されました m9(^Д^)")
+#     def confirm(self):
+#         confirm = input("これまでのプレイデータを削除します。本当によろしいですか？[Y/n] ->")
+#         if confirm == "y" or confirm == "Y":
+#             input("削除されたデータは戻りません。本当によろしいですか？[Y/n] ->")
+#             if confirm == "y" or confirm == "Y":
+#                 self.all_zero()
+#                 print("データは削除されました m9(^Д^)")
 
-    def all_zero(self):
-        """戦闘後の処理を参考にした
-        ステータスの更新
-        経験値の更新
-        金の更新
-        アイテムの更新
-        以上の情報をエクセルファイルに更新・保存
-        """
-        # ステータス更新
-        init_lv = 0
-        init_hp = 100
-        init_atk = 10
-        box = [init_lv, ]
-        for stat in self.basic_status_index:
-            for i in range(4):
-                self.mysheet.cell(row=self.vindex(
-                    self.mysheet, stat), column=i+2, value=init_lv)
-                self.mysheet.cell(row=self.vindex(
-                    self.mysheet, stat), column=i+2, value=init_hp)
-                self.mysheet.cell(row=self.vindex(
-                    self.mysheet, s), column=i+2, value=init_atk)
-        # 経験値、金の更新
-        self.mysheet.cell(row=self.vindex(
-            self.mysheet, "exp"), column=2, value=0)
-        self.mysheet.cell(row=self.vindex(
-            self.mysheet, "money"), column=2, value=0)
-        # ドロップアイテム数は1のみ対応。
-        # 解説：ゲットしたアイテムがまだ道具箱に1個もない→新しくインデックスを追加し個数を1増やす(実際に行う順序は、個数を1にしてからインデックス追加)
-        # 　　　そうでない（すでにある）→個数を1増やす
-        for i in range(39):
-            self.book["道具箱"].cell(row=i+2, column=1, value="empty")
-            self.book["道具箱"].cell(row=i+2, column=2, value=0)
-        self.save()
+#     def all_zero(self):
+#         """戦闘後の処理を参考にした
+#         ステータスの更新
+#         経験値の更新
+#         金の更新
+#         アイテムの更新
+#         以上の情報をエクセルファイルに更新・保存
+#         """
+#         # ステータス更新
+#         init_lv = 0
+#         init_hp = 100
+#         init_atk = 10
+#         box = [init_lv, ]
+#         for stat in self.basic_status_index:
+#             for i in range(4):
+#                 self.mysheet.cell(row=self.vindex(
+#                     self.mysheet, stat), column=i+2, value=init_lv)
+#                 self.mysheet.cell(row=self.vindex(
+#                     self.mysheet, stat), column=i+2, value=init_hp)
+#                 self.mysheet.cell(row=self.vindex(
+#                     self.mysheet, s), column=i+2, value=init_atk)
+#         # 経験値、金の更新
+#         self.mysheet.cell(row=self.vindex(
+#             self.mysheet, "exp"), column=2, value=0)
+#         self.mysheet.cell(row=self.vindex(
+#             self.mysheet, "money"), column=2, value=0)
+#         # ドロップアイテム数は1のみ対応。
+#         # 解説：ゲットしたアイテムがまだ道具箱に1個もない→新しくインデックスを追加し個数を1増やす(実際に行う順序は、個数を1にしてからインデックス追加)
+#         # 　　　そうでない（すでにある）→個数を1増やす
+#         for i in range(39):
+#             self.book["道具箱"].cell(row=i+2, column=1, value="empty")
+#             self.book["道具箱"].cell(row=i+2, column=2, value=0)
+#         self.save()

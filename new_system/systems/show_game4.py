@@ -803,8 +803,9 @@ class ShowGame(battle.Battle, town.Town):
                                 pygame.mixer.Sound(self.se_dict["failed"]))
                 if self.history_buttonrect.collidepoint(event.pos):
                     self.history_count = 1
-                if Rect(130*self.screen_size,310*self.screen_size,120*self.screen, 50*self.screen):
-                    pass #アイテムコマンド押したときの処理を入れてほしい
+                if Rect(130*self.screen_size,310*self.screen_size,120*self.screen_size, 50*self.screen_size).collidepoint(event.pos):
+                    print("a")
+                    # pass #アイテムコマンド押したときの処理を入れてほしい
 
     def mark_show(self):
         """入力画面の描画
@@ -1177,6 +1178,103 @@ class ShowGame(battle.Battle, town.Town):
         self.choice_current_page = 0
 
     def choice_screen(self, title, choice: List[str], message: List[str], dict_name, delete_dict_list_when_return: List[str] = [], multi_page_checker: str = "single"):
+        """選択肢を表示させるためのモジュール。
+        選択肢をそばにその選択肢の説明を表示することで、タップ部分の大きさと選択肢数・文字量の両立を図る。
+        タイトルは全角14字*2行、選択肢は6つまで、選択肢説明は全角20行*2行、メッセージは3行まで対応。
+        選択肢数がこれを超える場合は、multiを使うこと。
+        choiceは2重のリストとし、外側のリストの番号は選択肢番号を、内側のリストは0が選択肢の名前、1が選択肢の説明となる。
+        title,choiceの説明部分は、どちらも「str」「長さ1のリスト」「長さ2のリスト」の全てに対応。
+        自動改行したいときはstrか長さ1のリスト、自分で改行したいときは長さ2のリストを使用する
+        選択が行われた場合、選択肢の番号と名前を、self.choice_dictのdict_nameに登録する
+        dict_name="装備"のとき、選択肢の番号はself.choice_dict["装備"]["number"]に、選択肢の名前をself.choice_dict["装備"]["name"]に登録する
+        【使い方】
+        まず、self.dict_name_listに【選択肢の名称】を追加
+        次に、引っ掛ける条件を「if self.choice_dict["【選択肢の名称】"]["number"] == "False":」とする。
+        さらに、self.choice_screenの最後の引数に【選択肢の名称】を入力する。
+        「RETURN」ボタンを押した際に、削除するべき｛ 前 の 選択肢の名称｝を決定する(設定がなければ、ホーム画面に戻る)
+        選択結果は、self.choice_dictに保存される。
+        何かおかしいと思ったら、
+        ・self.dict_name_listに【選択肢の名称】を追加したか
+        ・3箇所の【選択肢の名称】が全て同じであるか
+        ・dict検索時のnumberとnameを間違えてないか"""
+        self.choice_buttonrect = []
+        choice_answer = False
+        font_title = pygame.font.SysFont(
+            "bizudminchomediumbizudpminchomediumtruetype", 24*self.screen_size)
+        font = pygame.font.SysFont(
+            "bizudminchomediumbizudpminchomediumtruetype", 20*self.screen_size)
+        font2 = pygame.font.SysFont(
+            "bizudminchomediumbizudpminchomediumtruetype", 15*self.screen_size)
+        # titleを表示
+        title = self.auto_line_break(title,28)
+        print_title1 = font_title.render(title[0], True, "WHITE")
+        self.screen.blit(
+            print_title1, (11*self.screen_size, 12*self.screen_size))
+        if len(title) > 1:
+            print_title2 = font_title.render(title[1], True, "WHITE")
+            self.screen.blit(
+                print_title2, (11*self.screen_size, 44*self.screen_size))
+        # 選択肢を表示
+        for i in range(len(choice)):
+            self.choice_buttonrect.append(Rect(24*self.screen_size, (78+70*i)*self.screen_size, 300*self.screen_size, 60*self.screen_size))
+        for i, name in enumerate(choice):
+            print_choice_index = font.render(name[0], True, "WHITE")
+            self.screen.blit(print_choice_index, (24*self.screen_size, (81+70*i)*self.screen_size))
+            choice_detail = self.auto_line_break(name[1], 40)
+            for j, detail in enumerate(choice_detail):
+                print_choice_detail = font2.render(detail, True, "WHITE")
+                self.screen.blit(print_choice_detail, (40*self.screen_size, (105+70*i+18*j)*self.screen_size))
+        self.screen.blit(self.return_button_img, self.return_buttonrect)
+        if multi_page_checker == "multi":
+            self.screen.blit(self.g_snow_img, self.right_buttonrect)
+            self.screen.blit(self.g_moon_img, self.left_buttonrect)
+        # メッセージを表示
+        for i, name in enumerate(message):
+            print_message = font2.render(name, True, "WHITE")
+            self.screen.blit(
+                print_message, (11*self.screen_size, (503+21*i)*self.screen_size))
+
+        # 以下、本来は別関数（judge_～～～）となるはずだった部分
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+            if (event.type == pygame.MOUSEBUTTONUP) and (event.button == 1):
+                for i in range(len(choice)):
+                    if self.choice_buttonrect[i].collidepoint(event.pos):
+                        pygame.mixer.Channel(0).play(pygame.mixer.Sound(self.se_dict["start"]))
+                        print("選択肢：{}".format(i))
+                        self.choice_judge = 1
+                        time.sleep(0.25)
+                        self.choice_dict.update({dict_name: {"number": i,"name": choice[i][0]}})
+                        print(self.choice_dict)
+                # Returnボタンが押されたときの動作
+                if self.return_buttonrect.collidepoint(event.pos):
+                    # 何も設定されてない場合はホーム画面まで戻る
+                    if delete_dict_list_when_return == []:
+                        delete_dict_list_when_return = self.dict_name_list
+                    time.sleep(0.5)
+                    for dicts in delete_dict_list_when_return:
+                        self.choice_dict.update({dicts: {"number": "False", "name": "False"}})
+                if multi_page_checker == "multi":
+                    if self.left_buttonrect.collidepoint(event.pos):
+                        self.choice_current_page -= 1
+                    if self.right_buttonrect.collidepoint(event.pos):
+                        self.choice_current_page += 1
+
+    def auto_line_break(self,text,line_length):
+        """line_breakをchoice用に使いやすくしたもの
+        textがlistならそれぞれの行を表示
+        strの場合、自動改行
+        いずれにしても2行まで（それ以降は無視される）"""
+        if type(text) == list and len(text) >1:
+            pass
+        else:
+            if type(text) == list and len(text) == 1:
+                text = str(text[0])
+            text = self.line_break(text, line_length)
+        return text
+
+    def old_choice_screen(self, title, choice: List[str], message: List[str], dict_name, delete_dict_list_when_return: List[str] = [], multi_page_checker: str = "single"):
         """選択肢を表示させるためのモジュール
         タイトルは28文字まで、選択肢は6つまで、メッセージは8行まで対応（それを超える場合はchoice_screen_multiを使う）
         選択が行われた場合、選択肢の番号と名前を、self.choice_dictのdict_nameに登録する
@@ -1264,14 +1362,47 @@ class ShowGame(battle.Battle, town.Town):
                     if self.right_buttonrect.collidepoint(event.pos):
                         self.choice_current_page += 1
 
-    def choice_screen_multi(self, title, choice: List[str], message: List[str], dict_name, delete_dict_list_when_return: List[str] = []):
-        """選択肢が複数ページに跨る場合はこちらを使用する
-        choice,message以外はchoice_screenと同様。
-        上記2つについては、二重のリストとする。最も外側のリストのlengthは、それぞれ等しくすること。"""
-        page_qty = len(message)
+    def choice_screen_multi(self, title, choice: List[str], message: List[str], dict_name, delete_dict_list_when_return: List[str] = [],auto_page_grouping = "on" ,message_multi_page = "off"):
+        """選択肢が複数ページに跨る場合はこちらを使用する。
+        特に指定がない場合は、自動で複数ページ化する（自動の場合、選択肢が6以下なら複数ページとならない）。
+        手動でやる場合、最後から2番目の引数を"off"とし、リストの重なり数を1つ増やし、ページ毎にまとめること。
+        choice,message以外はchoice_screenと同様。最終引数を"on"にすると、choiceだけでなくmessageも複数ページ化できる。
+        この場合、最も外側のリストのlengthは、choiceとmessageでそれぞれ等しくすること。
+        自動化とメッセージ複数ページ化を同時にonにする場合の動作は未確認（ヤバそう）"""
+        page_qty = len(choice)
+        if auto_page_grouping == "on":
+            if page_qty <= 6:
+                self.choice_screen(title,choice, message, dict_name, delete_dict_list_when_return)
+                return
+            else:
+                choice = self.arrange_choice_list(choice)
+        # 一番右のページで右を押したら左に戻ってくるための仕掛け
         page_num = self.choice_current_page % page_qty
-        self.choice_screen(title, choice[page_num], message[page_num], dict_name,
+        if message_multi_page == "off":
+            self.choice_screen(title, choice[page_num], message, dict_name,
                            delete_dict_list_when_return, "multi")
+        else:
+            self.choice_screen(title, choice[page_num], message[page_num], dict_name,
+                           delete_dict_list_when_return, "multi")
+
+    def arrange_choice_list(self,choice):
+        arranged_choice = []
+        temporal_box = []
+        i_count = 0
+        # if auto_page_grouping == "on":
+        for i in range(len(choice)//6):
+            for j in range(6):
+                temporal_box.append(choice[i*6+j])
+            arranged_choice.append(temporal_box)
+            temporal_box = []
+            i_count = i+1
+        if len(choice)%6 != 0:
+            for j in range(len(choice)%6):
+                temporal_box.append(choice[j+6*i_count])
+            arranged_choice.append(temporal_box)
+            temporal_box = []
+        return arranged_choice
+        # print(arranged_choice)
 
     def message_screen(self, message: str):
         """メッセーのみを表示したいときに使うモジュール
@@ -1384,3 +1515,15 @@ class ShowGame(battle.Battle, town.Town):
 
 
 # main()
+
+
+
+
+
+
+
+
+
+
+
+

@@ -47,8 +47,8 @@ class Commander(show_game4.ShowGame):
         pygame.display.set_caption("Hit, Blow and Dragons")
         self.set_sound()
         # choice関連
-        self.dict_name_list = ["初期画面", "ダイヤ購入", "ダイヤ購入確認", "街の入り口", "装備：変更対象",
-                               "装備：手持ち", "ショップ画面", "ショップ確認画面", "ガチャ画面", "ガチャ確認画面", "クエスト画面", "クエスト確認画面"]
+        self.dict_name_list = ["初期画面", "ダイヤ購入", "ダイヤ購入確認", "街の入口", "装備変更：変更対象",
+                               "装備変更：手持ち", "ショップ画面", "ショップ確認画面", "ガチャ画面", "ガチャ確認画面", "クエスト画面", "クエスト確認画面"]
         # ↑【重要】選択肢を使う場合、そのdict_nameは必ずこのリストにいれる
         self.choice_dict_initialize()
 
@@ -82,14 +82,13 @@ class Commander(show_game4.ShowGame):
                 if self.choice_dict["初期画面"]["name"] == "False":
                     self.reset()
                     # self.save()
-                    self.choice_screen("<Hit and blow タイトル画面>", ["街へ行く", "ダンジョンへ行く", "ダイヤ購入"],
-                                    ["街へ行く：装備の調整", "ダンジョンへ行く：モンスターバトル", "ダイヤ購入:課金"], "初期画面")
+                    self.choice_screen("Hit and blow", [["街へ行く","戦闘準備"], ["ダンジョンへ行く","モンスターとの戦闘"], ["ダイヤ購入","課金コーナー"]],"", "初期画面")
                     self.run_count_town = [0, 0, 0, 0, 0, 0, 0]
                     self.run_count_battle = [0, 0, 0, 0, 0, 0, 0]
 
                 elif self.choice_dict["初期画面"]["name"] == "ダイヤ購入" and self.choice_dict["ダイヤ購入"]["number"] == "False":
                     self.choice_screen(
-                        "何個購入しますか？", ["1個", "10個", "50個", "100個"], ["※現在は無料で購入できます", "1個:¥100", "10個:¥900", "50個:¥4000", "100個:¥7500"],  "ダイヤ購入")
+                        ["何個購入しますか？","保有ダイヤモンド:{}".format(self.diamond)], [["1個","¥100"], ["10個","¥900"], ["50個","¥4000"], ["100個","¥7500"]], ["※現在は無料で購入できます"],  "ダイヤ購入")
                 elif self.choice_dict["ダイヤ購入"]["name"] != "False" and self.choice_dict["ダイヤ購入確認"]["name"] == "False":
                     diamond_qty = int(self.choice_dict["ダイヤ購入"]["name"][:-1])
                     self.choice_screen(
@@ -110,47 +109,65 @@ class Commander(show_game4.ShowGame):
                         "number": "False", "name": "False"}
 
                 elif self.choice_dict["初期画面"]["name"] == "街へ行く":
-                    if self.choice_dict["街の入り口"]["number"] == "False":
+                    if self.choice_dict["街の入口"]["number"] == "False":
                         self.choice_screen(
-                            "何をする？文字数チェックあああああああああああああああああああ", ["ステータス・アイテムチェック",  "装備",  "ショップ",  "ガチャ", "クエスト"], ["文字の大きさチェック", "2", "3", "4", "5", "6", "7", "8", "9", "10", "123456789012345678901234567890123456789012345678", "１２３４５６７８９０１２３４５６７８９０１２３４"], "街の入り口")
+                            ["街の入口","Lv.99 Gold:99999 Diamond:9999"], [["ステータス・アイテムチェック","現在準備中"],  ["装備","装備の変更や成長合成を行う"],  ["ショップ","アイテムの購入"],  ["ガチャ",["超強力なアイテムゲットのチャンス。","期間限定のハロウィンイベント実施中！"]], ["クエスト","依頼をこなして報酬をゲットせよ！"],["6個目の選択肢","1234567890かきくけこさしすせそなにぬねのあいうえおかきくけこさしすせそなにぬねの"]], ["message", "ここは合計で3行程度まで", "3行目"], "街の入口")
 
-                    elif self.choice_dict["街の入り口"]["name"] == "ステータス・アイテムチェック":
+                    elif self.choice_dict["街の入口"]["name"] == "ステータス・アイテムチェック":
                         self.town_status()
                         self.init_town_info()
+                        print(self.equip_list_position("右手","name"))
+                        item_list_consume = ["薬草","回復薬","妨害の笛","知恵の書","ハイポーション"]
+                        print(self.show_nonequip_item(item_list_consume))
 
                     # 装備変更
-                    elif self.choice_dict["街の入り口"]["name"] == "装備" and self.choice_dict["装備：変更対象"]["number"] == "False":
+                    elif self.choice_dict["街の入口"]["name"] == "装備" and self.choice_dict["装備変更：変更対象"]["number"] == "False":
                         # 装備の情報更新
                         if self.run_count_town[1] == 0:
-                            self.equip_checker()
-                            # equip_list = []
-                            print(self.basic_status_index)
-                            position_choice_list, position_detail_list = self.town_equip1()
-                            # print(current_equip_list)
+                            self.status_checker()
+                            id_list = self.current_equip_list("id")
                             self.run_count_town[1] += 1
+                        # self.id_equip_info(id_list[i],"name")
                         self.choice_screen(
-                            "どの部位を変更する？", position_choice_list, position_detail_list, "装備：変更対象", ["街の入り口"])
-                    elif self.choice_dict["装備：変更対象"]["number"] != "False" and self.choice_dict["装備：手持ち"]["number"] == "False":
-                        equip_list = self.town_equip2(
-                            self.choice_dict["装備：変更対象"]["number"])
-                        self.choice_screen(
-                            self.choice_dict["装備：手持ち"]["number"], equip_list, ["ここに現在の装備の情報を表示させたい"], "装備：手持ち", ["装備：変更対象"])
-                    elif self.choice_dict["装備：手持ち"]["number"] != "False":
-                        self.town_equip3(
-                            self.choice_dict["装備：変更対象"]["number"], equip_list, self.choice_dict["装備：手持ち"]["number"])
-                        self.save()
+                            "どの部位を変更する？", list(["{}:{}".format(self.id_equip_info(id_list[i],"position"),self.id_equip_info(id_list[i],"name")), "HP:+{},ATK:+{}".format(self.id_equip_info(id_list[i],"hp"),self.id_equip_info(id_list[i],"atk"))]for i in range(len(self.equip_position))),"", "装備変更：変更対象", ["街の入口"])
+                    
+                    elif self.choice_dict["装備変更：変更対象"]["number"] != "False" and self.choice_dict["装備変更：手持ち"]["number"] == "False":
+                        selected_position = self.choice_dict["装備変更：変更対象"]["name"].split(':')[0]
+                        required_info  = ["name","hp","atk"]
+                        equip_list_name = self.equip_list_position(selected_position,"name")
+                        equip_list_hp = self.equip_list_position(selected_position,"hp")
+                        equip_list_atk = self.equip_list_position(selected_position,"atk")
+                        equip_list_id = self.equip_list_position(selected_position,"id")
+                        # self.town_equip2(
+                        #     self.choice_dict["装備変更：変更対象"]["number"])
+                        self.choice_screen_multi(
+                            "{}の装備を変更".format(selected_position), list(["{}:{}".format(equip_list_id[i],equip_list_name[i]),"HP:+{},ATK:+{}".format(equip_list_hp[i],equip_list_atk[i])]for i in range(len(equip_list_name))),"" , "装備変更：手持ち", ["装備変更：変更対象"])
+                    elif self.choice_dict["装備変更：手持ち"]["number"] != "False":
+                        selected_id = self.choice_dict["装備変更：手持ち"]["name"].split(":")[0]
+                        self.mysheet[self.vhindex_super(self.mysheet, selected_position,
+                                  1, "id", "position", "excel","off")] = int(selected_id)
+                        print("装備が変更されました！")
+                        self.status_checker()
                         self.init_town_info()
+                        self.save()
+
+# # item_list = ["薬草","回復薬","妨害の笛","パンプキンポーション","知恵の書","ハイポーション","スライムゼリー"]
+#                         self.choice_screen_multi(
+#                             self.choice_dict["装備変更：手持ち"]["number"], list([item_list[i],self.item_info(item_list[i],"detail")]for i in range(len(item_list))),"" , "装備変更：手持ち", ["装備変更：変更対象"])
+
+# list([list1[i],list2[i]]for i in range(len(list1[1])))
 
                         # アイテム購入と装備購入で複数選択肢を作りたい
-                    elif self.choice_dict["街の入り口"]["name"] == "ショップ" and self.choice_dict["ショップ画面"]["number"] == "False":
-                        self.choice_screen_multi(
-                            "ショップ", [["薬草", "回復薬", "ハイポーション", "叡智の実", "妨害の笛"], [
-                                "水の砂", "木の砂", "闇の砂", "雷の砂", "砂金"]],
-                            [["戦闘用消耗品コーナー", "右下・左下のボタンで他のコーナーに行けるよ", "薬草:10G", "　HPを30回復する", "回復薬：100G", "　HPを100回復する", "ハイポーション:500G", "　HPを300回復する", "叡智の実:250G", "　選択肢を1つ減らす", "妨害の笛:1000G", "　敵BOSSの調査を1度だけ妨害する"],
-                            ["属性の砂コーナー", "付与属性値が増えると、", "各々の色の選択肢が一定確率で減少する", "水の砂:400G,水属性+5~10", "木の砂:400G,木属性+5~10", "雷の砂:400G,雷属性+5~10", "闇の砂:400G,闇属性+5~10", "砂金:2500G 全属性+3~5"]], "ショップ画面")
+                    elif self.choice_dict["街の入口"]["name"] == "ショップ" and self.choice_dict["ショップ画面"]["number"] == "False":
+                            item_list_consume = ["薬草","回復薬","妨害の笛","知恵の書","ハイポーション"]
+                            item_list_material = ["水の石","木の石","闇の石","雷の石","砂金"]
+                            self.choice_screen_multi(["ショップ","所持金:{}G".format(self.money)],
+                             [self.show_nonequip_item(item_list_consume),self.show_nonequip_item(item_list_material)]
+                             ,[["戦闘用消耗品コーナー", "右下・左下のボタンで他のコーナーに行けるよ"],["属性の砂コーナー", "付与属性値が増えると、", "各々の色の選択肢が一定確率で減少する"]]
+                             , "ショップ画面",[],"off","on")
                     elif self.choice_dict["ショップ画面"]["name"] != "False" and self.choice_dict["ショップ確認画面"]["name"] == "False":
                         self.choice_screen(
-                            "本当に{}を買いますか？".format(self.choice_dict["ショップ画面"]["name"]), ["はい", "いいえ"], [""], "ショップ確認画面", ["ショップ画面"])
+                            ["{}を{}Gで買います。".format(self.choice_dict["ショップ画面"]["name"],self.item_info(self.choice_dict["ショップ画面"]["name"],"value")),"よろしいですか？"], [["はい",""], ["いいえ",""]], [""], "ショップ確認画面", ["ショップ画面"])
                     elif self.choice_dict["ショップ確認画面"]["name"] == "はい":
                         # お金が足りないときの処理を忘れずに
                         value = self.vhlookup(
@@ -168,15 +185,16 @@ class Commander(show_game4.ShowGame):
                             "number": "False", "name": "False"}
                         self.choice_dict["ショップ画面"] = {
                             "number": "False", "name": "False"}
+                            
 
-                    elif self.choice_dict["街の入り口"]["name"] == "クエスト" and self.choice_dict["クエスト画面"]["number"] == "False":
+                    elif self.choice_dict["街の入口"]["name"] == "クエスト" and self.choice_dict["クエスト画面"]["number"] == "False":
                         self.choice_screen(
-                            "クエスト", ["装備の錆取り", "ゴブリン討伐依頼", "最高の豚肉を求めて", "城壁の修復", "古龍の足跡"], ["クエスト詳細をここに表示"], "クエスト画面")
+                            "クエスト", [["装備の錆取り",""],["ゴブリン討伐依頼",""],["最高の豚肉を求めて",""],["城壁の修復",""],["古龍の足跡",""]], "未実装です", "クエスト画面")
                     elif self.choice_dict["クエスト画面"]["name"] != "False" and self.choice_dict["クエスト確認画面"]["name"] == "False":
                         self.choice_screen(
-                            "クエスト：{}を受諾しますか？".format(self.choice_dict["クエスト画面"]["name"]), ["はい", "いいえ"], ["ここにクエストの条件・報酬・ストーリーを表示"], "クエスト確認画面", ["クエスト画面"])
+                            "クエスト：{}を受諾しますか？".format(self.choice_dict["クエスト画面"]["name"]), [["はい",""],["いいえ",""]], "受けられないよ", "クエスト確認画面", ["クエスト画面"])
                     elif self.choice_dict["クエスト確認画面"]["name"] == "はい":
-                        print("{}を受諾".format(self.choice_dict["クエスト画面"]["name"]))
+                        self.message = "クエスト：{}を受諾しました。".format(self.choice_dict["クエスト画面"]["name"])
                         self.choice_dict["クエスト確認画面"] = {
                             "number": "False", "name": "False"}
                         self.choice_dict["クエスト画面"] = {
@@ -187,17 +205,15 @@ class Commander(show_game4.ShowGame):
                         self.choice_dict["クエスト画面"] = {
                             "number": "False", "name": "False"}
 
-                    elif self.choice_dict["街の入り口"]["name"] == "ガチャ" and self.choice_dict["ガチャ画面"]["number"] == "False":
+                    elif self.choice_dict["街の入口"]["name"] == "ガチャ" and self.choice_dict["ガチャ画面"]["number"] == "False":
                         self.choice_screen(
-                            "ガチャ", ["【期間限定】ハロウィンガチャ", "スーパーガチャ", "ノーマルガチャ"],
-                            ["【期間限定】ハロウィンガチャ：3ダイヤモンド", "10/31までの期間限定。ハロウィン装備を手に入れろ！", "フルセットで揃えると…？",
-                            "スーパーガチャ：1ダイヤモンド", "限定装備や限定素材が盛りだくさん！", "ノーマルガチャ：500G", "ゲーム内通貨で回せるお得なガチャ"], "ガチャ画面")
+                            "ガチャ　　　　　　　　　　　保有ダイヤモンド:{}".format(self.diamond), [["【期間限定】ハロウィンガチャ","3ダイヤモンド　10/31までの期間限定。ハロウィン装備を手に入れよう！"], ["スーパーガチャ","1ダイヤモンド　限定装備や限定素材が盛りだくさん！"], ["ノーマルガチャ","500G　ゲーム内通貨で回せるお得なガチャ"]],"", "ガチャ画面")
                         value_dict = {"【期間限定】ハロウィンガチャ":[0,3],"スーパーガチャ":[0,1],"ノーマルガチャ":[500,0]}
                     elif self.choice_dict["ガチャ画面"]["name"] != "False" and self.choice_dict["ガチャ確認画面"]["name"] == "False":
                         gold_value = value_dict[self.choice_dict["ガチャ画面"]["name"]][0]
                         diamond_value = value_dict[self.choice_dict["ガチャ画面"]["name"]][1]
                         self.choice_screen(
-                            "本当に{}を買いますか？".format(self.choice_dict["ガチャ画面"]["name"]), ["はい", "いいえ"], [""], "ガチャ確認画面", ["ガチャ画面"])
+                            "本当に{}を買いますか？".format(self.choice_dict["ガチャ画面"]["name"]), [["はい",""], ["いいえ",""]], "", "ガチャ確認画面", ["ガチャ画面"])
                         atodekesu_count = 0
                     elif self.choice_dict["ガチャ確認画面"]["name"] == "はい":
                         if atodekesu_count == 0:
@@ -213,15 +229,18 @@ class Commander(show_game4.ShowGame):
                                 self.save()
                             # self.get_item(selected_item)
                             atodekesu_count += 1
-                        self.choice_screen(
-                            "演出画面、RETURNで戻る".format(self.choice_dict["ガチャ画面"]["name"]), [""], [""], "ガチャ確認画面", ["ガチャ画面", "ガチャ確認画面"])
+                        self.message = "演出画面"
+                        self.choice_dict["ガチャ確認画面"] = {
+                            "number": "False", "name": "False"}
+                        self.choice_dict["ガチャ画面"] = {
+                            "number": "False", "name": "False"}
                     elif self.choice_dict["ガチャ確認画面"]["name"] == "いいえ":
                         self.choice_dict["ガチャ確認画面"] = {
                             "number": "False", "name": "False"}
                         self.choice_dict["ガチャ画面"] = {
                             "number": "False", "name": "False"}
 
-                    # elif self.choice_dict["街の入り口"]["name"] == "テンプレ" and self.choice_dict["テンプレ画面"]["number"] == "False":
+                    # elif self.choice_dict["街の入口"]["name"] == "テンプレ" and self.choice_dict["テンプレ画面"]["number"] == "False":
                     #     self.choice_screen(
                     #         "テンプレ", ["【期間限定】ハロウィンテンプレ：¥300", "スーパーテンプレ：¥300", "ノーマルテンプレ：500G"], ["ハロウィン装備を入手できるのは今だけ！"], "テンプレ画面")
                     # elif self.choice_dict["テンプレ画面"]["name"] != "False" and self.choice_dict["テンプレ確認画面"]["name"] == "False":
@@ -333,7 +352,7 @@ class Commander(show_game4.ShowGame):
             pygame.display.update()  # スクリーン上のものを書き換えた時にはupdateが必要
 
     def init_town_info(self):
-        """街の入り口に戻る
+        """街の入口に戻る
         「初期画面」以外のdict_name情報は（戦闘関連も含めて）すべて初期化される"""
         init_list = self.dict_name_list[1:]
         for i in init_list:
@@ -344,6 +363,21 @@ class Commander(show_game4.ShowGame):
     def init_battle_info(self):
         self.run_count_battle = [0, 0, 0, 0, 0, 0, 0]
         self.turn_switch = 0
+    
+    # def dungeon_to_town(self):
+    #     super().__init__()
+        
+
+    def show_nonequip_item(self,item_list):
+        """1ページ分の情報を表示する"""
+        return list([item_list[i],"{}G  {}".format(self.item_info(item_list[i],"value"),self.item_info(item_list[i],"detail"))]for i in range(len(item_list)))
+
+    # def show_quest_info(self,quest_list)
+
+    def get_equip_num(self):
+        """武器を個別に管理することにしたので、
+        装備や成長合成の際にはそれぞれの武器の番号を得る必要がある。
+        後でshowgame4に移す予定"""
 
 
 class Debug(Commander):
