@@ -756,13 +756,17 @@ class ShowGame(battle.Battle, town.Town):
                         self.turn_switch += 1  # ボス用
                         self.boss_action(mode)  # ボス用
                         if self.hit == 5:
-                            self.gamescene = 4  # clear画面への遷移
+                            font4 = pygame.font.SysFont(None, 50*self.screen_size)
+                            hit_blow = font4.render("Hit:{}   Blow:{}".format(self.hit,self.blow), True, (230,180,34),(0,0,0))
+                            self.screen.blit(hit_blow, (80*self.screen_size,360*self.screen_size))
+                            pygame.display.update()
+                            pygame.mixer.Channel(0).play(pygame.mixer.Sound(self.se_dict["clear"])) 
+                            time.sleep(2)
+                            self.gamescene = 4 #clear画面への遷移
                             pygame.mixer.music.stop()
                             pygame.mixer.music.load(self.bgm_dict["clear"])
                             pygame.mixer.music.set_volume(0.1)
                             pygame.mixer.music.play(loops=-1)
-                            pygame.mixer.Channel(0).play(
-                                pygame.mixer.Sound(self.se_dict["clear"]))
                         elif mode == "normal":
                             self.hp_g -= self.damage
                             pygame.mixer.Channel(0).play(
@@ -840,10 +844,28 @@ class ShowGame(battle.Battle, town.Town):
     def boss_stage(self):
         """ボスステージの描画
         """
-        font2 = pygame.font.SysFont(None, 80*self.screen_size)
-        stage = font2.render("Boss Stage", True, (255, 255, 255))
-        self.screen.blit(stage, (25*self.screen_size, 30*self.screen_size))
-        self.screen.blit(self.return_button_img, self.return_buttonrect)
+        self.screen.blit(self.enemy_list[self.enemy_level],self.enemyrect) # 敵の描画
+        font2 = pygame.font.SysFont(None, 30*self.screen_size) # turnの表示
+        stage = font2.render("turn:{}".format(self.turn), True, (255,255,255))
+        font4 = pygame.font.SysFont(None, 50*self.screen_size)
+        hit_blow = font4.render("Hit:{}   Blow:{}".format(self.hit,self.blow), True, (255,255,255))
+        font = pygame.font.SysFont("algerian", 40*self.screen_size)
+        item_comand = font.render("ITEMS", True, (255,255,255))
+        self.screen.blit(item_comand,(130*self.screen_size, 310*self.screen_size))
+        self.screen.blit(stage, (5*self.screen_size,5*self.screen_size))
+        self.screen.blit(hit_blow, (80*self.screen_size,360*self.screen_size))
+        self.screen.blit(self.enter_button_img, self.enter_buttonrect)
+        self.screen.blit(self.history_button_img, self.history_buttonrect)
+        self.mark_show()
+        # ボスのHit,Blow
+        font4 = pygame.font.SysFont(None, 40*self.screen_size)
+        if self.hit >= 3: #ここでボスのhitが3以上かどうか
+            self.alert_count = 1
+        if self.alert_count == 1:
+            hit_blow = font4.render("Hit:{}   Blow:{}".format(self.hit,self.blow), True, (160,0,0))
+        else:
+            hit_blow = font4.render("Hit:{}   Blow:{}".format(self.hit,self.blow), True, (255,255,255))
+        self.screen.blit(hit_blow, (105*self.screen_size,30*self.screen_size))
 
     def game_over(self):
         """ゲームオーバー画面の描画

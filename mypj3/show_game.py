@@ -231,6 +231,7 @@ class ShowGame:
         self.blow_list = []
         self.num = [0,1,2,3,4]
         self.enemy_level = 0
+        self.alert_count = 0
 
     def home_show(self):
         """ホーム画面の描画
@@ -588,10 +589,28 @@ class ShowGame:
     def boss_stage(self):
         """ボスステージの描画
         """
-        font2 = pygame.font.SysFont(None, 80*self.screen_size)
-        stage = font2.render("Boss Stage", True, (255,255,255))
-        self.screen.blit(stage, (25*self.screen_size,30*self.screen_size))
-        self.screen.blit(self.return_button_img, self.return_buttonrect)
+        self.screen.blit(self.enemy_list[self.enemy_level],self.enemyrect) # 敵の描画
+        font2 = pygame.font.SysFont(None, 30*self.screen_size) # turnの表示
+        stage = font2.render("turn:{}".format(self.turn), True, (255,255,255))
+        font4 = pygame.font.SysFont(None, 50*self.screen_size)
+        hit_blow = font4.render("Hit:{}   Blow:{}".format(self.hit,self.blow), True, (255,255,255))
+        font = pygame.font.SysFont("algerian", 40*self.screen_size)
+        item_comand = font.render("ITEMS", True, (255,255,255))
+        self.screen.blit(item_comand,(130*self.screen_size, 310*self.screen_size))
+        self.screen.blit(stage, (5*self.screen_size,5*self.screen_size))
+        self.screen.blit(hit_blow, (80*self.screen_size,360*self.screen_size))
+        self.screen.blit(self.enter_button_img, self.enter_buttonrect)
+        self.screen.blit(self.history_button_img, self.history_buttonrect)
+        self.mark_show()
+        # ボスのHit,Blow
+        font4 = pygame.font.SysFont(None, 40*self.screen_size)
+        if self.hit >= 3: #ここでボスのhitが3以上かどうか
+            self.alert_count = 1
+        if self.alert_count == 1:
+            hit_blow = font4.render("Hit:{}   Blow:{}".format(self.hit,self.blow), True, (160,0,0))
+        else:
+            hit_blow = font4.render("Hit:{}   Blow:{}".format(self.hit,self.blow), True, (255,255,255))
+        self.screen.blit(hit_blow, (105*self.screen_size,30*self.screen_size))
 
     def game_over(self):
         """ゲームオーバー画面の描画
@@ -726,12 +745,7 @@ class ShowGame:
 
             elif self.gamescene == 2: #Boss Stage
                 self.boss_stage()
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT: 
-                        self.running = False
-                    if (event.type == pygame.MOUSEBUTTONUP) and (event.button == 1):
-                            if self.return_buttonrect.collidepoint(event.pos):
-                                self.gamescene = 0
+                self.normal_stage_judge()
             
             elif self.gamescene ==3: # game over
                 self.game_over()
