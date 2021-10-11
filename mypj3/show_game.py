@@ -518,12 +518,17 @@ class ShowGame:
                         self.hit_list.append(self.hit)
                         self.blow_list.append(self.blow)
                         if self.hit == 5:
+                            font4 = pygame.font.SysFont(None, 50*self.screen_size)
+                            hit_blow = font4.render("Hit:{}   Blow:{}".format(self.hit,self.blow), True, (230,180,34),(0,0,0))
+                            self.screen.blit(hit_blow, (80*self.screen_size,360*self.screen_size))
+                            pygame.display.update()
+                            pygame.mixer.Channel(0).play(pygame.mixer.Sound(self.se_dict["clear"])) 
+                            time.sleep(2)
                             self.gamescene = 4 #clear画面への遷移
                             pygame.mixer.music.stop()
                             pygame.mixer.music.load(self.bgm_dict["clear"])
                             pygame.mixer.music.set_volume(0.1)
                             pygame.mixer.music.play(loops=-1)
-                            pygame.mixer.Channel(0).play(pygame.mixer.Sound(self.se_dict["clear"]))
                         else:
                             self.hp -= self.damage_list[self.enemy_level-1]
                             pygame.mixer.Channel(0).play(pygame.mixer.Sound(self.se_dict["attack"]))
@@ -544,7 +549,7 @@ class ShowGame:
                             pygame.mixer.Channel(0).play(pygame.mixer.Sound(self.se_dict["failed"]))
                 if self.history_buttonrect.collidepoint(event.pos):
                     self.history_count = 1
-                if Rect(130*self.screen_size,310*self.screen_size,120*self.screen, 50*self.screen):
+                if Rect(130*self.screen_size,310*self.screen_size,120*self.screen_size, 50*self.screen_size):
                     pass #アイテムコマンド押したときの処理を入れてほしい
 
 
