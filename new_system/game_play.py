@@ -38,7 +38,7 @@ class Commander(show_game4.ShowGame):
         1番目:画面選択をPCで固定
         2番目:プロローグをカット
         """
-        self.demand = [1, 1, 1]
+        self.demand = [1, 1,1]
         super().__init__(demand = self.demand)
         self.place = "entrance"
 

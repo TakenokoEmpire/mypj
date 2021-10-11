@@ -104,108 +104,108 @@ class ShowGame(battle.Battle, town.Town):
     def set_player(self, X: int = 118, Y: int = 50):
         """ホーム画面の立ち絵の設定
         """
-        self.img = pygame.image.load("./mypj3/img/player.png")
+        self.img = pygame.image.load("./new_system/mypj3/img/player.png")
         self.img = pygame.transform.rotozoom(self.img, 0, self.screen_size)
         self.player_place = (X*self.screen_size, Y*self.screen_size)
 
     def set_mark(self):
         """入力用マークの設定
         """
-        self.b_moon_img = pygame.image.load("./mypj3/img/b_moon.png")
+        self.b_moon_img = pygame.image.load("./new_system/mypj3/img/b_moon.png")
         self.b_moon_img = pygame.transform.rotozoom(
             self.b_moon_img, 0, self.screen_size)
-        self.b_snow_img = pygame.image.load("./mypj3/img/b_snow.png")
+        self.b_snow_img = pygame.image.load("./new_system/mypj3/img/b_snow.png")
         self.b_snow_img = pygame.transform.rotozoom(
             self.b_snow_img, 0, self.screen_size)
-        self.b_star_img = pygame.image.load("./mypj3/img/b_star.png")
+        self.b_star_img = pygame.image.load("./new_system/mypj3/img/b_star.png")
         self.b_star_img = pygame.transform.rotozoom(
             self.b_star_img, 0, self.screen_size)
-        self.b_sun_img = pygame.image.load("./mypj3/img/b_sun.png")
+        self.b_sun_img = pygame.image.load("./new_system/mypj3/img/b_sun.png")
         self.b_sun_img = pygame.transform.rotozoom(
             self.b_sun_img, 0, self.screen_size)
-        self.g_moon_img = pygame.image.load("./mypj3/img/g_moon.png")
+        self.g_moon_img = pygame.image.load("./new_system/mypj3/img/g_moon.png")
         self.g_moon_img = pygame.transform.rotozoom(
             self.g_moon_img, 0, self.screen_size)
-        self.g_snow_img = pygame.image.load("./mypj3/img/g_snow.png")
+        self.g_snow_img = pygame.image.load("./new_system/mypj3/img/g_snow.png")
         self.g_snow_img = pygame.transform.rotozoom(
             self.g_snow_img, 0, self.screen_size)
-        self.g_star_img = pygame.image.load("./mypj3/img/g_star.png")
+        self.g_star_img = pygame.image.load("./new_system/mypj3/img/g_star.png")
         self.g_star_img = pygame.transform.rotozoom(
             self.g_star_img, 0, self.screen_size)
-        self.g_sun_img = pygame.image.load("./mypj3/img/g_sun.png")
+        self.g_sun_img = pygame.image.load("./new_system/mypj3/img/g_sun.png")
         self.g_sun_img = pygame.transform.rotozoom(
             self.g_sun_img, 0, self.screen_size)
-        self.p_moon_img = pygame.image.load("./mypj3/img/p_moon.png")
+        self.p_moon_img = pygame.image.load("./new_system/mypj3/img/p_moon.png")
         self.p_moon_img = pygame.transform.rotozoom(
             self.p_moon_img, 0, self.screen_size)
-        self.p_snow_img = pygame.image.load("./mypj3/img/p_snow.png")
+        self.p_snow_img = pygame.image.load("./new_system/mypj3/img/p_snow.png")
         self.p_snow_img = pygame.transform.rotozoom(
             self.p_snow_img, 0, self.screen_size)
-        self.p_star_img = pygame.image.load("./mypj3/img/p_star.png")
+        self.p_star_img = pygame.image.load("./new_system/mypj3/img/p_star.png")
         self.p_star_img = pygame.transform.rotozoom(
             self.p_star_img, 0, self.screen_size)
-        self.p_sun_img = pygame.image.load("./mypj3/img/p_sun.png")
+        self.p_sun_img = pygame.image.load("./new_system/mypj3/img/p_sun.png")
         self.p_sun_img = pygame.transform.rotozoom(
             self.p_sun_img, 0, self.screen_size)
-        self.y_moon_img = pygame.image.load("./mypj3/img/y_moon.png")
+        self.y_moon_img = pygame.image.load("./new_system/mypj3/img/y_moon.png")
         self.y_moon_img = pygame.transform.rotozoom(
             self.y_moon_img, 0, self.screen_size)
-        self.y_snow_img = pygame.image.load("./mypj3/img/y_snow.png")
+        self.y_snow_img = pygame.image.load("./new_system/mypj3/img/y_snow.png")
         self.y_snow_img = pygame.transform.rotozoom(
             self.y_snow_img, 0, self.screen_size)
-        self.y_star_img = pygame.image.load("./mypj3/img/y_star.png")
+        self.y_star_img = pygame.image.load("./new_system/mypj3/img/y_star.png")
         self.y_star_img = pygame.transform.rotozoom(
             self.y_star_img, 0, self.screen_size)
-        self.y_sun_img = pygame.image.load("./mypj3/img/y_sun.png")
+        self.y_sun_img = pygame.image.load("./new_system/mypj3/img/y_sun.png")
         self.y_sun_img = pygame.transform.rotozoom(
             self.y_sun_img, 0, self.screen_size)
 
-        self.b_moon_s_img = pygame.image.load("./mypj3/img/b_moon_s.png")
+        self.b_moon_s_img = pygame.image.load("./new_system/mypj3/img/b_moon_s.png")
         self.b_moon_s_img = pygame.transform.rotozoom(
             self.b_moon_s_img, 0, self.screen_size)
-        self.b_snow_s_img = pygame.image.load("./mypj3/img/b_snow_s.png")
+        self.b_snow_s_img = pygame.image.load("./new_system/mypj3/img/b_snow_s.png")
         self.b_snow_s_img = pygame.transform.rotozoom(
             self.b_snow_s_img, 0, self.screen_size)
-        self.b_star_s_img = pygame.image.load("./mypj3/img/b_star_s.png")
+        self.b_star_s_img = pygame.image.load("./new_system/mypj3/img/b_star_s.png")
         self.b_star_s_img = pygame.transform.rotozoom(
             self.b_star_s_img, 0, self.screen_size)
-        self.b_sun_s_img = pygame.image.load("./mypj3/img/b_sun_s.png")
+        self.b_sun_s_img = pygame.image.load("./new_system/mypj3/img/b_sun_s.png")
         self.b_sun_s_img = pygame.transform.rotozoom(
             self.b_sun_s_img, 0, self.screen_size)
-        self.g_moon_s_img = pygame.image.load("./mypj3/img/g_moon_s.png")
+        self.g_moon_s_img = pygame.image.load("./new_system/mypj3/img/g_moon_s.png")
         self.g_moon_s_img = pygame.transform.rotozoom(
             self.g_moon_s_img, 0, self.screen_size)
-        self.g_snow_s_img = pygame.image.load("./mypj3/img/g_snow_s.png")
+        self.g_snow_s_img = pygame.image.load("./new_system/mypj3/img/g_snow_s.png")
         self.g_snow_s_img = pygame.transform.rotozoom(
             self.g_snow_s_img, 0, self.screen_size)
-        self.g_star_s_img = pygame.image.load("./mypj3/img/g_star_s.png")
+        self.g_star_s_img = pygame.image.load("./new_system/mypj3/img/g_star_s.png")
         self.g_star_s_img = pygame.transform.rotozoom(
             self.g_star_s_img, 0, self.screen_size)
-        self.g_sun_s_img = pygame.image.load("./mypj3/img/g_sun_s.png")
+        self.g_sun_s_img = pygame.image.load("./new_system/mypj3/img/g_sun_s.png")
         self.g_sun_s_img = pygame.transform.rotozoom(
             self.g_sun_s_img, 0, self.screen_size)
-        self.p_moon_s_img = pygame.image.load("./mypj3/img/p_moon_s.png")
+        self.p_moon_s_img = pygame.image.load("./new_system/mypj3/img/p_moon_s.png")
         self.p_moon_s_img = pygame.transform.rotozoom(
             self.p_moon_s_img, 0, self.screen_size)
-        self.p_snow_s_img = pygame.image.load("./mypj3/img/p_snow_s.png")
+        self.p_snow_s_img = pygame.image.load("./new_system/mypj3/img/p_snow_s.png")
         self.p_snow_s_img = pygame.transform.rotozoom(
             self.p_snow_s_img, 0, self.screen_size)
-        self.p_star_s_img = pygame.image.load("./mypj3/img/p_star_s.png")
+        self.p_star_s_img = pygame.image.load("./new_system/mypj3/img/p_star_s.png")
         self.p_star_s_img = pygame.transform.rotozoom(
             self.p_star_s_img, 0, self.screen_size)
-        self.p_sun_s_img = pygame.image.load("./mypj3/img/p_sun_s.png")
+        self.p_sun_s_img = pygame.image.load("./new_system/mypj3/img/p_sun_s.png")
         self.p_sun_s_img = pygame.transform.rotozoom(
             self.p_sun_s_img, 0, self.screen_size)
-        self.y_moon_s_img = pygame.image.load("./mypj3/img/y_moon_s.png")
+        self.y_moon_s_img = pygame.image.load("./new_system/mypj3/img/y_moon_s.png")
         self.y_moon_s_img = pygame.transform.rotozoom(
             self.y_moon_s_img, 0, self.screen_size)
-        self.y_snow_s_img = pygame.image.load("./mypj3/img/y_snow_s.png")
+        self.y_snow_s_img = pygame.image.load("./new_system/mypj3/img/y_snow_s.png")
         self.y_snow_s_img = pygame.transform.rotozoom(
             self.y_snow_s_img, 0, self.screen_size)
-        self.y_star_s_img = pygame.image.load("./mypj3/img/y_star_s.png")
+        self.y_star_s_img = pygame.image.load("./new_system/mypj3/img/y_star_s.png")
         self.y_star_s_img = pygame.transform.rotozoom(
             self.y_star_s_img, 0, self.screen_size)
-        self.y_sun_s_img = pygame.image.load("./mypj3/img/y_sun_s.png")
+        self.y_sun_s_img = pygame.image.load("./new_system/mypj3/img/y_sun_s.png")
         self.y_sun_s_img = pygame.transform.rotozoom(
             self.y_sun_s_img, 0, self.screen_size)
 
@@ -231,21 +231,21 @@ class ShowGame(battle.Battle, town.Town):
         # ダメージときに点滅させるために2種類用意
         # 【】敵画像の名称は、変数を用いたい
         # 【】点滅用敵画像を作るのがめんどくさいなら、他にいい方法ありそう
-        self.enemy1_img = pygame.image.load("./mypj3/img/enemy1.png")
+        self.enemy1_img = pygame.image.load("./new_system/mypj3/img/enemy1.png")
         self.enemy1_img = pygame.transform.rotozoom(
             self.enemy1_img, 0, self.screen_size)
         self.enemy1_damage_img = pygame.image.load(
-            "./mypj3/img/enemy1_damage.png")
+            "./new_system/mypj3/img/enemy1_damage.png")
         self.enemy1_damage_img = pygame.transform.rotozoom(
             self.enemy1_damage_img, 0, self.screen_size)
-        self.enemy2_img = pygame.image.load("./mypj3/img/enemy2.png")
+        self.enemy2_img = pygame.image.load("./new_system/mypj3/img/enemy2.png")
         self.enemy2_img = pygame.transform.rotozoom(
             self.enemy2_img, 0, self.screen_size)
         self.enemy2_damage_img = pygame.image.load(
-            "./mypj3/img/enemy2_damage.png")
+            "./new_system/mypj3/img/enemy2_damage.png")
         self.enemy2_damage_img = pygame.transform.rotozoom(
             self.enemy2_damage_img, 0, self.screen_size)
-        self.enemy3_img = pygame.image.load("./mypj3/img/enemy3.png")
+        self.enemy3_img = pygame.image.load("./new_system/mypj3/img/enemy3.png")
         self.enemy3_img = pygame.transform.rotozoom(
             self.enemy3_img, 0, self.screen_size)
         self.enemy3_damage_img = pygame.image.load(
@@ -286,46 +286,46 @@ class ShowGame(battle.Battle, town.Town):
             self.stage_select_buttonrect.append(Rect(
                 80*self.screen_size, (100+100*i)*self.screen_size, 200*self.screen_size, 50*self.screen_size))
         self.normal_button_img = pygame.image.load(
-            "./mypj3/img/normal_button.png")
+            "./new_system/mypj3/img/normal_button.png")
         self.normal_button_img = pygame.transform.rotozoom(
             self.normal_button_img, 0, self.screen_size)
-        self.boss_button_img = pygame.image.load("./mypj3/img/boss_button.png")
+        self.boss_button_img = pygame.image.load("./new_system/mypj3/img/boss_button.png")
         self.boss_button_img = pygame.transform.rotozoom(
             self.boss_button_img, 0, self.screen_size)
         self.how_to_play_button_img = pygame.image.load(
-            "./mypj3/img/how_to_button.png")
+            "./new_system/mypj3/img/how_to_button.png")
         self.how_to_play_button_img = pygame.transform.rotozoom(
             self.how_to_play_button_img, 0, self.screen_size)
-        self.return_button_img = pygame.image.load("./mypj3/img/return.png")
+        self.return_button_img = pygame.image.load("./new_system/mypj3/img/return.png")
         self.return_button_img = pygame.transform.rotozoom(
             self.return_button_img, 0, self.screen_size)
-        self.prev_button_img = pygame.image.load("./mypj3/img/prev.png")
+        self.prev_button_img = pygame.image.load("./new_system/mypj3/img/prev.png")
         self.prev_button_img = pygame.transform.rotozoom(
             self.prev_button_img, 0, self.screen_size)
-        self.next_button_img = pygame.image.load("./mypj3/img/next.png")
+        self.next_button_img = pygame.image.load("./new_system/mypj3/img/next.png")
         self.next_button_img = pygame.transform.rotozoom(
             self.next_button_img, 0, self.screen_size)
         self.history_button_img = pygame.image.load(
-            "./mypj3/img/history_button.png")
+            "./new_system/mypj3/img/history_button.png")
         self.history_button_img = pygame.transform.rotozoom(
             self.history_button_img, 0, self.screen_size)
-        self.how_to_play_img = pygame.image.load("./mypj3/img/how_to_play.png")
+        self.how_to_play_img = pygame.image.load("./new_system/mypj3/img/how_to_play.png")
         self.how_to_play_img = pygame.transform.rotozoom(
             self.how_to_play_img, 0, self.screen_size)
-        # self.left_img = pygame.image.load("./mypj3/img/left.png")
-        # self.left_img = pygame.transform.rotozoom(
-        #     self.left_img, 0, self.screen_size)
-        # self.right_img = pygame.image.load("./mypj3/img/right.png")
-        # self.right_img = pygame.transform.rotozoom(
-        #     self.right_img, 0, self.screen_size)
+        self.left_img = pygame.image.load("./new_system/mypj3/img/left.png")
+        self.left_img = pygame.transform.rotozoom(
+            self.left_img, 0, self.screen_size)
+        self.right_img = pygame.image.load("./new_system/mypj3/img/right.png")
+        self.right_img = pygame.transform.rotozoom(
+            self.right_img, 0, self.screen_size)
 
     def set_mark_entry(self):
         """マーク入力用の設定
         """
-        self.up_button_img = pygame.image.load("./mypj3/img/up.png")
+        self.up_button_img = pygame.image.load("./new_system/mypj3/img/up.png")
         self.up_button_img = pygame.transform.rotozoom(
             self.up_button_img, 0, self.screen_size)
-        self.down_button_img = pygame.image.load("./mypj3/img/down.png")
+        self.down_button_img = pygame.image.load("./new_system/mypj3/img/down.png")
         self.down_button_img = pygame.transform.rotozoom(
             self.down_button_img, 0, self.screen_size)
         self.up_buttonrect = []
@@ -336,22 +336,22 @@ class ShowGame(battle.Battle, town.Town):
         for n in range(5):
             self.down_buttonrect.append(Rect(
                 (10+n*70)*self.screen_size, 485*self.screen_size, 60*self.screen_size, 25*self.screen_size))
-        self.enter_button_img = pygame.image.load("./mypj3/img/enter.png")
+        self.enter_button_img = pygame.image.load("./new_system/mypj3/img/enter.png")
         self.enter_button_img = pygame.transform.rotozoom(
             self.enter_button_img, 0, self.screen_size)
         self.enter_buttonrect = Rect(
             120*self.screen_size, 520*self.screen_size, 120*self.screen_size, 32*self.screen_size)
 
     def set_sound(self):
-        self.bgm_dict = {"normal": "./mypj3/sound/normal_BGM.mp3",
-                         "boss": "./mypj3/sound/boss.mp3",
-                         "home": "./mypj3/sound/home.mp3",
-                         "clear": "./mypj3/sound/clear_bgm.mp3",
-                         "failed": "./mypj3/sound/failed_bgm.mp3"}
-        self.se_dict = {"attack": "./mypj3/sound/attacked.mp3",
-                        "start": "./mypj3/sound/start.mp3",
-                        "clear": "./mypj3/sound/clear_se.mp3",
-                        "failed": "./mypj3/sound/failed_se.mp3"}
+        self.bgm_dict = {"normal": "./new_system/mypj3/sound/normal_BGM.mp3",
+                         "boss": "./new_system/mypj3/sound/boss.mp3",
+                         "home": "./new_system/mypj3/sound/home.mp3",
+                         "clear": "./new_system/mypj3/sound/clear_bgm.mp3",
+                         "failed": "./new_system/mypj3/sound/failed_bgm.mp3"}
+        self.se_dict = {"attack": "./new_system/mypj3/sound/attacked.mp3",
+                        "start": "./new_system/mypj3/sound/start.mp3",
+                        "clear": "./new_system/mypj3/sound/clear_se.mp3",
+                        "failed": "./new_system/mypj3/sound/failed_se.mp3"}
 
     def reset(self):
         """ゲーム関係の数値のリセット
@@ -1228,8 +1228,8 @@ class ShowGame(battle.Battle, town.Town):
                 self.screen.blit(print_choice_detail, (40*self.screen_size, (105+70*i+18*j)*self.screen_size))
         self.screen.blit(self.return_button_img, self.return_buttonrect)
         if multi_page_checker == "multi":
-            self.screen.blit(self.g_snow_img, self.right_buttonrect)
-            self.screen.blit(self.g_moon_img, self.left_buttonrect)
+            self.screen.blit(self.right_img, self.right_buttonrect)
+            self.screen.blit(self.left_img, self.left_buttonrect)
         # メッセージを表示
         for i, name in enumerate(message):
             print_message = font2.render(name, True, "WHITE")
@@ -1333,8 +1333,8 @@ class ShowGame(battle.Battle, town.Town):
                 print_choice, (24*self.screen_size, (83+46*i)*self.screen_size))
         self.screen.blit(self.return_button_img, self.return_buttonrect)
         if multi_page_checker == "multi":
-            self.screen.blit(self.g_snow_img, self.right_buttonrect)
-            self.screen.blit(self.g_moon_img, self.left_buttonrect)
+            self.screen.blit(self.right_img, self.right_buttonrect)
+            self.screen.blit(self.left_img, self.left_buttonrect)
         # メッセージを表示
         for i, name in enumerate(message):
             print_message = font2.render(name, True, "WHITE")
