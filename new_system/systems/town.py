@@ -122,7 +122,7 @@ class Town(battle.Core):
 
     def town_equip3(self, choice_position, equip_list, choice_equips):
         """指定された部位の装備品リストの中から、指定された装備を現在装備と交換する"""
-        self.mysheet[self.vhindex(self.mysheet, self.equip_position[choice_position],
+        self.mysheet[self.vhindex_super(self.mysheet, self.equip_position[choice_position],
                                   1, "name", self.equip_index_rownum, "excel")] = equip_list[choice_equips]
         print(self.mysheet[self.vhindex(self.mysheet, self.equip_position[choice_position],
                                         1, "name", self.equip_index_rownum, "excel")].value)
@@ -132,6 +132,17 @@ class Town(battle.Core):
         self.print_equip()
         self.print_status()
         print(self.book["プレイヤーステータス"]["B4"].value)
+
+    def town_equip3_new(self, selected_position,selected_id):
+        """指定された部位の装備品リストの中から、指定された装備を現在装備と交換する"""
+        self.mysheet[self.vhindex_super(self.mysheet, selected_position,
+                                  1, "id", "position", "excel","off")] = int(selected_id)
+        print("装備が変更されました！")
+        # battle.Battle("town")
+        # self.equip_checker_new()
+        # self.print_equip()
+        # self.print_status()
+        # print(self.book["プレイヤーステータス"]["B4"].value)
 
     def town_test(self):
         self.mysheet["G6"].value += 1

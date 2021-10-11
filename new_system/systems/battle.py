@@ -16,6 +16,11 @@ import unicodedata
 self忘れ
 =と==
 関数の()
+return忘れ（Noneが帰ってきたときや、Nonetypeとの足し算ができないと言われたとき注意）
+gameplay以外のファイルを実行（ipmortがおかしいときは大抵これ）
+過剰にリスト化（text must be a unicode or bytesのとき）
+変数のstr化（text must be a unicode or bytes）
+Excel検索文字列がstrでない（text must be a unicode or bytes）
 """
 
 """
@@ -92,17 +97,57 @@ class Function():
                 return output
         return False
 
-    def vhlookup(self, sheet, left_index, left_index_position, top_index, top_index_position):
+    def vhlookup(self, sheet, left_index, left_index_position, top_index, top_index_position,minus_search = "off", multi_find = "off" ):
         """excelの、vlookup関数とhlookup関数を組み合わせた関数
         indexとmatchを組み合わせて作るアレ
-        動作未確認
+        minus_search="on"にすると、top_indexを探す際に、left_index_positionの行よりも左側の行からも探す（列も同様）
         """
-        for i in range(500):
-            if str(sheet.cell(row=i + top_index_position, column=left_index_position).value) == left_index:
-                for j in range(100):
-                    if str(sheet.cell(row=top_index_position, column=j+left_index_position).value) == top_index:
-                        return sheet.cell(row=i+top_index_position, column=j+left_index_position).value
-        return False
+        if multi_find == "on":
+            return_box = []
+            if minus_search=="on":
+                for i in range(500):
+                    if str(sheet.cell(row=i+1, column=left_index_position).value) == left_index:
+                        for j in range(100):
+                            if str(sheet.cell(row=top_index_position, column=j+1).value) == top_index:
+                                return_box.append(sheet.cell(row=i+1, column=j+1).value)
+                return return_box
+            else:
+                for i in range(500):
+                    if str(sheet.cell(row=i + top_index_position, column=left_index_position).value) == left_index:
+                        for j in range(100):
+                            if str(sheet.cell(row=top_index_position, column=j+left_index_position).value) == top_index:
+                                return_box.append(sheet.cell(row=i+top_index_position, column=j+left_index_position).value)
+                return return_box
+        else:
+            if minus_search=="on":
+                for i in range(500):
+                    if str(sheet.cell(row=i+1, column=left_index_position).value) == left_index:
+                        for j in range(100):
+                            if str(sheet.cell(row=top_index_position, column=j+1).value) == top_index:
+                                return sheet.cell(row=i+1, column=j+1).value
+                return False
+            else:
+                for i in range(500):
+                    if str(sheet.cell(row=i + top_index_position, column=left_index_position).value) == left_index:
+                        for j in range(100):
+                            if str(sheet.cell(row=top_index_position, column=j+left_index_position).value) == top_index:
+                                return sheet.cell(row=i+top_index_position, column=j+left_index_position).value
+                return False
+            
+
+    def vhlookup_super(self, sheet, left_index, left_index_position_or_topname, top_index, top_index_position_or_leftname,minus_search = "off", multi_find = "off"):
+        """vhlookupについて、position指定をその行・列の先頭セルの名前でも行えるようになった。
+        第3、第5引数について、intを入力した場合は従来通り、strを入力した場合その文字で探すようになる。
+        minus_search="on"にすると、top_indexを探す際に、left_index_positionの行よりも左側の行からも探す（列も同様）"""
+        if type(left_index_position_or_topname) == str:
+            left_index_position = self.hindex(sheet,left_index_position_or_topname)
+        else:
+            left_index_position = left_index_position_or_topname
+        if type(top_index_position_or_leftname) == str:
+            top_index_position = self.vindex(sheet,top_index_position_or_leftname)
+        else:
+            top_index_position = top_index_position_or_leftname
+        return self.vhlookup(sheet, left_index, left_index_position, top_index, top_index_position,minus_search,multi_find)
 
     def vindex(self, sheet, index):
         """excelのindex関数もどきを再現
@@ -140,25 +185,56 @@ class Function():
                 return i + 1
         return False
 
-    def vhindex(self, sheet, left_index, left_index_position, top_index, top_index_position, return_type):
+    def vhindex(self, sheet, left_index, left_index_position, top_index, top_index_position, return_type,minus_search = "off"):
         """excelのindex関数もどきを再現
         縦横両方向に対応し、さらに先頭行（列）以外にも対応
         return_type:"excel"→セル番号形式
                     その他→row,column
+        minus_search="on"にすると、top_indexを探す際に、left_index_positionの行よりも左側の行からも探す（列も同様）
         """
-        for i in range(500):
-            output = 0
-            if str(sheet.cell(row=i + top_index_position, column=left_index_position).value) == left_index:
-                # print("a")
-                for j in range(100):
-                    #     print(sheet.cell(row=j + 1, column=1).value)
-                    #     print(top_index)
-                    if str(sheet.cell(row=top_index_position, column=j+left_index_position).value) == top_index:
-                        if return_type == "excel":
-                            return openpyxl.utils.get_column_letter(j + left_index_position)+str(i + top_index_position)
-                        else:
-                            return i + top_index_position, j + left_index_position
-        return False
+        if minus_search == "on":
+            for i in range(500):
+                output = 0
+                if str(sheet.cell(row=i + 1, column=left_index_position).value) == left_index:
+                    # print("a")
+                    for j in range(100):
+                        #     print(sheet.cell(row=j + 1, column=1).value)
+                        #     print(top_index)
+                        if str(sheet.cell(row=top_index_position, column=j+1).value) == top_index:
+                            if return_type == "excel":
+                                return openpyxl.utils.get_column_letter(j + 1)+str(i + 1)
+                            else:
+                                return i + 1, j + 1
+        else:
+            for i in range(500):
+                output = 0
+                if str(sheet.cell(row=i + top_index_position, column=left_index_position).value) == left_index:
+                    # print("a")
+                    for j in range(100):
+                        #     print(sheet.cell(row=j + 1, column=1).value)
+                        #     print(top_index)
+                        if str(sheet.cell(row=top_index_position, column=j+left_index_position).value) == top_index:
+                            if return_type == "excel":
+                                return openpyxl.utils.get_column_letter(j + left_index_position)+str(i + top_index_position)
+                            else:
+                                return i + top_index_position, j + left_index_position
+            return False
+
+    def vhindex_super(self, sheet, left_index, left_index_position_or_topname, top_index, top_index_position_or_leftname,return_type,minus_search = "off"):
+        """動作未確認。
+        vhindexについて、position指定をその行・列の先頭セルの名前でも行えるようになった。
+        第3、第5引数について、intを入力した場合は従来通り、strを入力した場合その文字で探すようになる。
+        minus_search="on"にすると、top_indexを探す際に、left_index_positionの行よりも左側の行からも探す（列も同様）"""
+        if type(left_index_position_or_topname) == str:
+            left_index_position = self.hindex(sheet,left_index_position_or_topname)
+        else:
+            left_index_position = left_index_position_or_topname
+        if type(top_index_position_or_leftname) == str:
+            top_index_position = self.vindex(sheet,top_index_position_or_leftname)
+        else:
+            top_index_position = top_index_position_or_leftname
+        return self.vhindex(sheet, left_index, left_index_position, top_index, top_index_position,return_type,minus_search)
+
 
     def zero_false(self, x):
         if x == 0:
@@ -264,7 +340,7 @@ class Core(Function):
     #     return equip_index_list, equip_sepc_list
 
     def status_checker(self):
-        self.equip_checker()
+        self.equip_checker_new()
         for stat in self.basic_status_index:
             self.mysheet[self.vhindex(self.mysheet, stat, 1, "total", 1, "excel")] = self.vhlookup(self.mysheet, stat, 1, "raw", 1) + self.vhlookup(self.mysheet, stat, 1, "equip", 1)
         status_box = []
@@ -297,6 +373,38 @@ class Core(Function):
                                              1, update_stat[j], self.equip_index_rownum)
             self.mysheet[self.vhindex(
                 self.mysheet, update_stat[j], 1, "equip", 1, "excel")] = sum_stat[j]
+
+    def equip_checker_new(self):
+        # 装備欄に登録された名前から、update_statリストの値を「装備」ブックから参照し記録する
+        # update_statとsum_statの大きさは合わせること
+        # 原因不明のバグのため、プレイヤーステータスシートの装備欄は更新せず、IDのみを情報として使う。
+        update_stat = ["hp","atk"]
+        sum_stat = [0, 0]
+        for j,stat in enumerate(update_stat):
+            for i in range(len(self.equip_position)):
+                equip_id = self.vhlookup_super(self.mysheet, self.equip_position[i], 1, "id", "position","off")
+            
+                sum_stat[j] += self.id_equip_info(equip_id,stat)
+            self.mysheet[self.vhindex(
+                self.mysheet, stat, 1, "equip", 1, "excel")] = sum_stat[j]
+
+        # for i in range(len(self.equip_position)):
+        #     equip_id = self.vhlookup_super(self.mysheet, self.equip_position[i], 1, "id", "position","off")
+        #     for stat in update_stat:
+        #         self.mysheet[self.vhindex_super(self.mysheet, self.equip_position[i], 1, stat, "position", "excel","off")] = self.id_equip_info(self.vhlookup_super(self.mysheet, self.equip_position[i], 1, stat, "position","off"),stat)
+        # # 装備欄に記録されたhp,atkの補正値をステータスに反映する(補正値の合計sum_statを計算し、該当する位置に貼り付ける)
+        # for j in range(len(update_stat)):
+        #     for i in range(len(self.equip_position)):
+        #         print(self.vhlookup_super(self.mysheet, self.equip_position[i], 1, update_stat[j], "position","off"))
+        #         print(self.vhlookup_super(self.mysheet, self.equip_position[i], 1, "equip_atk", "position","off"))
+                
+        #         print(self.equip_position[i])
+        #         print(update_stat[j])
+        #         sum_stat[j] += self.vhlookup_super(self.mysheet, self.equip_position[i],
+        #                                      1, update_stat[j], "position","off")
+        # #ステータスもこの関数で更新できるように変更した。→できてなかった
+        # for stat in self.basic_status_index:
+        #     self.mysheet[self.vhindex(self.mysheet, stat, 1, "total", 1, "excel")] = self.vhlookup(self.mysheet, stat, 1, "raw", 1) + self.vhlookup(self.mysheet, stat, 1, "equip", 1)
 
     def print_status(self):
         print("my status")
@@ -386,11 +494,25 @@ class Core(Function):
         else:
             return True
 
+    def item_info(self,item_name,info_type):
+        return self.vhlookup_super(self.book["アイテム箱"],item_name,"name",info_type,1,"on")
+
+    def equip_list_position(self,position,info_type):
+        return self.vhlookup_super(self.book["装備個別情報"],position,"position",info_type,1,"on","on")
+
+    def id_equip_info(self,id_num,info_type):
+        return self.vhlookup_super(self.book["装備個別情報"],str(id_num),"id",info_type,1,"on")
+
+    def current_equip_list(self, info_type):
+        box = []
+        for pos in self.equip_position:
+            box.append(self.vhlookup_super(self.mysheet,pos,1,info_type,"position","off"))
+        return box
 
     def compound(self,equip_num,material):
         """装備に様々な能力を付与する成長合成を行う。
         リリース段階では、武器に属性値を付与するもののみを実装する予定"""
-        
+        pass
 
     def save(self):
         """開いてる途中だとエラー出るよ"""
