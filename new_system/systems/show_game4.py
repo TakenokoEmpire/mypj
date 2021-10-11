@@ -69,7 +69,7 @@ class ShowGame(battle.Battle, town.Town):
         self.message_checker = 0
         self.clock = pygame.time.Clock()
         self.FPS = 72
-        self.ball_img = pygame.image.load("./mypj3/img/ball.png")
+        self.ball_img = pygame.image.load("./new_system/mypj3/img/ball.png")
         self.ball_img = pygame.transform.rotozoom(self.ball_img, 0, self.screen_size)
 
     def second_init_showgame(self):
