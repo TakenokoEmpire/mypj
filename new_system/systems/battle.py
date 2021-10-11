@@ -497,6 +497,9 @@ class Core(Function):
     def item_info(self,item_name,info_type):
         return self.vhlookup_super(self.book["アイテム箱"],item_name,"name",info_type,1,"on")
 
+    def item_list(self,item_type,info_type):
+        return self.vhlookup_super(self.book["アイテム箱"],item_type,"type",info_type,1,"on","on")
+
     def equip_list_position(self,position,info_type):
         return self.vhlookup_super(self.book["装備個別情報"],position,"position",info_type,1,"on","on")
 

@@ -34,7 +34,7 @@ class ShowGame(battle.Battle, town.Town):
                  dungeon_num: int = 0,
                  max_dungeon_num: int = 3,
                  gamescene: int = 0,
-                 demand: List[int] = [1, 1]):
+                 demand: List[int] = [1, 1, 1]):
         print("showgame init")
         super().__init__()
         self.demand = demand
@@ -49,6 +49,7 @@ class ShowGame(battle.Battle, town.Town):
         self.gamescene = gamescene
         self.error_count = 0  # 同じ数字入れたときのエラーカウント
         self.history_count = 0  # 履歴画面関連
+        self.item_screen_count = 0
         # self.guess_list = []  # 推測した数字
         # self.boss_guess_list = []
         self.running = True
@@ -804,7 +805,7 @@ class ShowGame(battle.Battle, town.Town):
                 if self.history_buttonrect.collidepoint(event.pos):
                     self.history_count = 1
                 if Rect(130*self.screen_size,310*self.screen_size,120*self.screen_size, 50*self.screen_size).collidepoint(event.pos):
-                    print("a")
+                    self.item_screen_count = 1
                     # pass #アイテムコマンド押したときの処理を入れてほしい
 
     def mark_show(self):
@@ -1177,7 +1178,7 @@ class ShowGame(battle.Battle, town.Town):
                 {dict_name: {"number": "False", "name": "False"}})
         self.choice_current_page = 0
 
-    def choice_screen(self, title, choice: List[str], message: List[str], dict_name, delete_dict_list_when_return: List[str] = [], multi_page_checker: str = "single"):
+    def choice_screen(self, title, choice: List[str], message: List[str], dict_name, delete_dict_list_when_return: List[str] = [], multi_page_checker: str = "single",special_action_when_return:int = 0):
         """選択肢を表示させるためのモジュール。
         選択肢をそばにその選択肢の説明を表示することで、タップ部分の大きさと選択肢数・文字量の両立を図る。
         タイトルは全角14字*2行、選択肢は6つまで、選択肢説明は全角20行*2行、メッセージは3行まで対応。
@@ -1187,6 +1188,7 @@ class ShowGame(battle.Battle, town.Town):
         自動改行したいときはstrか長さ1のリスト、自分で改行したいときは長さ2のリストを使用する
         選択が行われた場合、選択肢の番号と名前を、self.choice_dictのdict_nameに登録する
         dict_name="装備"のとき、選択肢の番号はself.choice_dict["装備"]["number"]に、選択肢の名前をself.choice_dict["装備"]["name"]に登録する
+        special_action_when_returnは、returnボタンを押したときに、choice_screen関数に予め記録された関数を実行させる。
         【使い方】
         まず、self.dict_name_listに【選択肢の名称】を追加
         次に、引っ掛ける条件を「if self.choice_dict["【選択肢の名称】"]["number"] == "False":」とする。
@@ -1249,6 +1251,10 @@ class ShowGame(battle.Battle, town.Town):
                         print(self.choice_dict)
                 # Returnボタンが押されたときの動作
                 if self.return_buttonrect.collidepoint(event.pos):
+                    # 特別動作が登録されたいた場合は関数を実行する
+                    if special_action_when_return == 1:
+                        self.escape_from_item_screen_when_battle()
+                        return
                     # 何も設定されてない場合はホーム画面まで戻る
                     if delete_dict_list_when_return == []:
                         delete_dict_list_when_return = self.dict_name_list
@@ -1273,6 +1279,9 @@ class ShowGame(battle.Battle, town.Town):
                 text = str(text[0])
             text = self.line_break(text, line_length)
         return text
+
+    def escape_from_item_screen_when_battle(self):
+        self.item_screen_count = 0
 
     def old_choice_screen(self, title, choice: List[str], message: List[str], dict_name, delete_dict_list_when_return: List[str] = [], multi_page_checker: str = "single"):
         """選択肢を表示させるためのモジュール
@@ -1362,7 +1371,7 @@ class ShowGame(battle.Battle, town.Town):
                     if self.right_buttonrect.collidepoint(event.pos):
                         self.choice_current_page += 1
 
-    def choice_screen_multi(self, title, choice: List[str], message: List[str], dict_name, delete_dict_list_when_return: List[str] = [],auto_page_grouping = "on" ,message_multi_page = "off"):
+    def choice_screen_multi(self, title, choice: List[str], message: List[str], dict_name, delete_dict_list_when_return: List[str] = [],auto_page_grouping = "on" ,message_multi_page = "off",special_action_when_return:int = 0):
         """選択肢が複数ページに跨る場合はこちらを使用する。
         特に指定がない場合は、自動で複数ページ化する（自動の場合、選択肢が6以下なら複数ページとならない）。
         手動でやる場合、最後から2番目の引数を"off"とし、リストの重なり数を1つ増やし、ページ毎にまとめること。
@@ -1380,10 +1389,10 @@ class ShowGame(battle.Battle, town.Town):
         page_num = self.choice_current_page % page_qty
         if message_multi_page == "off":
             self.choice_screen(title, choice[page_num], message, dict_name,
-                           delete_dict_list_when_return, "multi")
+                           delete_dict_list_when_return, "multi",special_action_when_return)
         else:
             self.choice_screen(title, choice[page_num], message[page_num], dict_name,
-                           delete_dict_list_when_return, "multi")
+                           delete_dict_list_when_return, "multi",special_action_when_return)
 
     def arrange_choice_list(self,choice):
         arranged_choice = []

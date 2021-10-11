@@ -32,7 +32,14 @@ def gui_title():
 class Commander(show_game4.ShowGame):
 
     def __init__(self):
-        super().__init__()
+        """demand:デバッグを楽にするツール
+        1でON、0でOFF
+        0番目:hitblowの正答を[0,1,2,3,5]に固定
+        1番目:画面選択をPCで固定
+        2番目:プロローグをカット
+        """
+        self.demand = [1, 1, 1]
+        super().__init__(demand = self.demand)
         self.place = "entrance"
 
     # def choice_command(self, *cond):
@@ -48,7 +55,7 @@ class Commander(show_game4.ShowGame):
         self.set_sound()
         # choice関連
         self.dict_name_list = ["初期画面", "ダイヤ購入", "ダイヤ購入確認", "街の入口", "装備変更：変更対象",
-                               "装備変更：手持ち", "ショップ画面", "ショップ確認画面", "ガチャ画面", "ガチャ確認画面", "クエスト画面", "クエスト確認画面"]
+                               "装備変更：手持ち", "ショップ画面", "ショップ確認画面", "ガチャ画面", "ガチャ確認画面", "クエスト画面", "クエスト確認画面","戦闘中アイテム選択画面","戦闘中アイテム使用確認画面"]
         # ↑【重要】選択肢を使う場合、そのdict_nameは必ずこのリストにいれる
         self.choice_dict_initialize()
 
@@ -69,12 +76,18 @@ class Commander(show_game4.ShowGame):
             ・dict検索時のnumberとnameを間違えてないか
             をチェック
             """
+            #PCorスマホ
             if self.screen_count == 0:
                 self.screen_select()
+            #プロローグ
+            elif self.screen_count == 1:
+                if self.demand[2] != 1:
+                    self.show_prologue()
+                self.screen_count += 1
 
             # 伝えたいメッセージを表示したい場合
             # self.message = "残したいメッセージ"
-            # とする。関数self.message_screenは使わなて点に注意。
+            # とする。関数self.message_screenは使わない点に注意。
             elif self.message != "":
                 self.message_screen(self.message)
 
@@ -111,14 +124,14 @@ class Commander(show_game4.ShowGame):
                 elif self.choice_dict["初期画面"]["name"] == "街へ行く":
                     if self.choice_dict["街の入口"]["number"] == "False":
                         self.choice_screen(
-                            ["街の入口","Lv.99 Gold:99999 Diamond:9999"], [["ステータス・アイテムチェック","現在準備中"],  ["装備","装備の変更や成長合成を行う"],  ["ショップ","アイテムの購入"],  ["ガチャ",["超強力なアイテムゲットのチャンス。","期間限定のハロウィンイベント実施中！"]], ["クエスト","依頼をこなして報酬をゲットせよ！"],["6個目の選択肢","1234567890かきくけこさしすせそなにぬねのあいうえおかきくけこさしすせそなにぬねの"]], ["message", "ここは合計で3行程度まで", "3行目"], "街の入口")
+                            ["街の入口","Lv.{} Gold:{} Diamond:{}".format(self.lv,self.money,self.diamond)], [["ステータス・アイテムチェック","現在準備中"],  ["装備","装備の変更や成長合成を行う"],  ["ショップ","アイテムの購入"],  ["ガチャ",["超強力なアイテムゲットのチャンス。","期間限定のハロウィンイベント実施中！"]], ["クエスト","依頼をこなして報酬をゲットせよ！"],["6個目の選択肢","1234567890かきくけこさしすせそなにぬねのあいうえおかきくけこさしすせそなにぬねの"]], ["message", "ここは合計で3行程度まで", "3行目"], "街の入口")
 
                     elif self.choice_dict["街の入口"]["name"] == "ステータス・アイテムチェック":
                         self.town_status()
                         self.init_town_info()
-                        print(self.equip_list_position("右手","name"))
-                        item_list_consume = ["薬草","回復薬","妨害の笛","知恵の書","ハイポーション"]
-                        print(self.show_nonequip_item(item_list_consume))
+                        # print(self.equip_list_position("右手","name"))
+                        # item_list_consume = ["薬草","回復薬","妨害の笛","知恵の書","ハイポーション"]
+                        # print(self.show_nonequip_item(item_list_consume))
 
                     # 装備変更
                     elif self.choice_dict["街の入口"]["name"] == "装備" and self.choice_dict["装備変更：変更対象"]["number"] == "False":
@@ -229,7 +242,8 @@ class Commander(show_game4.ShowGame):
                                 self.save()
                             # self.get_item(selected_item)
                             atodekesu_count += 1
-                        self.message = "演出画面"
+                        self.gacha_show()
+                        self.message =("{}:{}を手に入れた！".format(item_rarity, selected_item))
                         self.choice_dict["ガチャ確認画面"] = {
                             "number": "False", "name": "False"}
                         self.choice_dict["ガチャ画面"] = {
@@ -279,6 +293,26 @@ class Commander(show_game4.ShowGame):
                     elif self.history_count == 4:
                         self.historylast_show()
                         self.historylast_judge()
+
+                    elif self.item_screen_count == 1:
+                        if self.choice_dict["戦闘中アイテム選択画面"]["name"] == "False":
+                            item_list_battle = self.item_list("戦闘用消耗品","name")
+                            self.choice_screen_multi("アイテム",list([item_list_battle[i],self.item_info(item_list_battle[i],"detail")]for i in range(len(item_list_battle))),"","戦闘中アイテム選択画面",["戦闘中アイテム選択画面"],"on","off",1)
+                        elif self.choice_dict["戦闘中アイテム選択画面"]["name"] != "False" and self.choice_dict["戦闘中アイテム使用確認画面"]["name"] == "False":
+                            self.choice_screen("{}を使用しますか？".format(self.choice_dict["戦闘中アイテム選択画面"]["name"]), [["はい",""],["いいえ",""]],[self.item_info(self.choice_dict["戦闘中アイテム選択画面"]["name"],"detail")], "戦闘中アイテム使用確認画面", ["戦闘中アイテム選択画面"])
+                        elif self.choice_dict["戦闘中アイテム使用確認画面"]["name"] == "はい":
+                            self.choice_dict["戦闘中アイテム使用確認画面"] = {
+                                "number": "False", "name": "False"}
+                            self.choice_dict["戦闘中アイテム選択画面"] = {
+                                "number": "False", "name": "False"}
+                            self.item_screen_count = 0
+                        elif self.choice_dict["戦闘中アイテム使用確認画面"]["name"] == "いいえ":
+                            self.choice_dict["戦闘中アイテム使用確認画面"] = {
+                                "number": "False", "name": "False"}
+                            self.choice_dict["戦闘中アイテム選択画面"] = {
+                                "number": "False", "name": "False"}
+                        
+
                     elif self.gamescene == 0:  # ホーム画面
                         self.reset()
                         self.home_show()
@@ -374,10 +408,7 @@ class Commander(show_game4.ShowGame):
 
     # def show_quest_info(self,quest_list)
 
-    def get_equip_num(self):
-        """武器を個別に管理することにしたので、
-        装備や成長合成の際にはそれぞれの武器の番号を得る必要がある。
-        後でshowgame4に移す予定"""
+
 
 
 class Debug(Commander):
