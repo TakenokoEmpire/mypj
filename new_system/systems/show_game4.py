@@ -71,6 +71,7 @@ class ShowGame(battle.Battle, town.Town):
         self.FPS = 72
         self.ball_img = pygame.image.load("./new_system/mypj3/img/ball.png")
         self.ball_img = pygame.transform.rotozoom(self.ball_img, 0, self.screen_size)
+        self.enemy_stop = 0
 
     def second_init_showgame(self):
         # GUIに対応
@@ -99,7 +100,39 @@ class ShowGame(battle.Battle, town.Town):
                 (self.hp_g/100)**(math.log(2)/math.log(1000/100))
         else:
             self.hp_bar_ratio = 300 / self.hp_g
-        print(self.hp_bar_ratio)
+        # print(self.hp_bar_ratio)
+        self.attr_mark_qty = [4,4,4,4]
+        self.mark_qty_all = 16
+        self.attr_judge_battle()
+        self.attr_mark_dict = {}
+        self.make_attr_mark_dict()
+        self.digit_16_to_less()
+
+    def make_attr_mark_dict(self):
+        # ax = [3,4,4,4]
+        attr_mark_dict = {}
+        key_count = 0
+        for attr_index,qty in enumerate(self.attr_mark_qty):
+            # print(qty)
+            for shape_index in range(qty):
+                self.attr_mark_dict[key_count] = attr_index*4+shape_index
+                key_count += 1
+        print(self.attr_mark_dict)
+
+    def attr_judge_battle(self):
+        """現状、各属性の数は3~4の間でしか動かないようになってる"""
+        enemy_attr_resist = [self.e_lv*3,self.e_lv*3,self.e_lv*3,self.e_lv*3]
+        for attr in range(4):
+            attr_mergin = (self.attr_power[attr] - enemy_attr_resist[attr])/100 * (1+self.demand[4])
+            attr_mergin_fraction = attr_mergin - int(attr_mergin)
+            if self.rand_judge(attr_mergin_fraction) == True:
+                self.attr_mark_qty[attr] = min(max(3 - int(attr_mergin),2),4)
+            else:
+                self.attr_mark_qty[attr] = min(max(4 - int(attr_mergin),2),4)
+        if int(self.demand[3]) != 0:
+            self.attr_mark_qty = [4,4,4-self.demand[3],4]
+        self.mark_qty_all = sum(self.attr_mark_qty)
+
 
     def set_player(self, X: int = 118, Y: int = 50):
         """ホーム画面の立ち絵の設定
@@ -209,20 +242,28 @@ class ShowGame(battle.Battle, town.Town):
         self.y_sun_s_img = pygame.transform.rotozoom(
             self.y_sun_s_img, 0, self.screen_size)
 
-        self.marks = {0: self.b_moon_img, 1: self.b_snow_img, 2: self.b_star_img, 3: self.b_sun_img,
+        self.marks_16 = {0: self.b_moon_img, 1: self.b_snow_img, 2: self.b_star_img, 3: self.b_sun_img,
                       4: self.g_moon_img, 5: self.g_snow_img, 6: self.g_star_img, 7: self.g_sun_img,
                       8: self.p_moon_img, 9: self.p_snow_img, 10: self.p_star_img, 11: self.p_sun_img,
                       12: self.y_moon_img, 13: self.y_snow_img, 14: self.y_star_img, 15: self.y_sun_img
                       }
-        self.marks_s = {0: self.b_moon_s_img, 1: self.b_snow_s_img, 2: self.b_star_s_img, 3: self.b_sun_s_img,
+        self.marks_s_16 = {0: self.b_moon_s_img, 1: self.b_snow_s_img, 2: self.b_star_s_img, 3: self.b_sun_s_img,
                         4: self.g_moon_s_img, 5: self.g_snow_s_img, 6: self.g_star_s_img, 7: self.g_sun_s_img,
                         8: self.p_moon_s_img, 9: self.p_snow_s_img, 10: self.p_star_s_img, 11: self.p_sun_s_img,
                         12: self.y_moon_s_img, 13: self.y_snow_s_img, 14: self.y_star_s_img, 15: self.y_sun_s_img
                         }
+
         self.mark_buttonrect = []
         for n in range(5):
             self.mark_buttonrect.append(Rect(
                 (10+n*70)*self.screen_size, 425*self.screen_size, 60*self.screen_size, 25*self.screen_size))
+
+    def digit_16_to_less(self):
+        self.marks = {}
+        self.marks_s = {}
+        for i in range(self.mark_qty_all):
+            self.marks[i] = self.marks_16[self.attr_mark_dict[i]]
+            self.marks_s[i] = self.marks_s_16[self.attr_mark_dict[i]]
 
     def set_enemy(self):
         """敵の設定
@@ -577,11 +618,10 @@ class ShowGame(battle.Battle, town.Town):
     def stage_select(self):
         """ステージセレクト画面
         """
-        font = pygame.font.SysFont(
-            "bizudminchomediumbizudpminchomediumtruetype", 30*self.screen_size)
+        font = pygame.font.Font("./new_system/Harenosora.otf", 30*self.screen_size)
         level = font.render("ステージを選んで下さい", True, "WHITE")
         self.screen.blit(level, (11*self.screen_size, 10*self.screen_size))
-        font2 = pygame.font.SysFont("algerian", 40*self.screen_size)
+        font2 = pygame.font.Font("./new_system/ALGERIA.TTF", 40*self.screen_size)
         for i in range(self.max_dungeon_num):  # ステージの数だけ描画
             level = font2.render("LEVEL:{}".format(i+1), True, "WHITE")
             self.screen.blit(level, (100*self.screen_size,
@@ -645,7 +685,7 @@ class ShowGame(battle.Battle, town.Town):
         #         damage_ratio = 0
         # damage = damage_ratio*self.damage
 
-        damage = self.damage*(self.turn-1)
+        damage = self.hp - self.hp_g
         if damage != 0:
             pygame.draw.line(self.screen, (200, 0, 0),
                              (30*self.screen_size+self.hp_g*self.hp_bar_ratio*self.screen_size, 40*self.screen_size), (30*self.screen_size+(self.hp_g+damage)*self.hp_bar_ratio*self.screen_size, 40*self.screen_size), 10*self.screen_size)
@@ -659,7 +699,7 @@ class ShowGame(battle.Battle, town.Town):
         self.screen.blit(hit_blow, (80*self.screen_size, 360*self.screen_size))
         self.screen.blit(self.enter_button_img, self.enter_buttonrect)
         self.screen.blit(self.history_button_img, self.history_buttonrect)
-        font = pygame.font.SysFont("algerian", 40*self.screen_size)
+        font = pygame.font.Font("./new_system/ALGERIA.TTF", 40*self.screen_size)
         item_comand = font.render("ITEMS", True, (255,255,255))
         self.screen.blit(item_comand,(130*self.screen_size, 310*self.screen_size))
         self.mark_show()
@@ -698,44 +738,44 @@ class ShowGame(battle.Battle, town.Town):
             if (event.type == pygame.MOUSEBUTTONUP) and (event.button == 1):
                 if self.up_buttonrect[0].collidepoint(event.pos):
                     self.num[0] += 1
-                    if self.num[0] == 16:
+                    if self.num[0] == self.mark_qty_all:
                         self.num[0] = 0
                 if self.down_buttonrect[0].collidepoint(event.pos):
                     self.num[0] -= 1
                     if self.num[0] == -1:
-                        self.num[0] = 15
+                        self.num[0] = self.mark_qty_all-1
                 if self.up_buttonrect[1].collidepoint(event.pos):
                     self.num[1] += 1
-                    if self.num[1] == 16:
+                    if self.num[1] == self.mark_qty_all:
                         self.num[1] = 0
                 if self.down_buttonrect[1].collidepoint(event.pos):
                     self.num[1] -= 1
                     if self.num[1] == -1:
-                        self.num[1] = 15
+                        self.num[1] = self.mark_qty_all-1
                 if self.up_buttonrect[2].collidepoint(event.pos):
                     self.num[2] += 1
-                    if self.num[2] == 16:
+                    if self.num[2] == self.mark_qty_all:
                         self.num[2] = 0
                 if self.down_buttonrect[2].collidepoint(event.pos):
                     self.num[2] -= 1
                     if self.num[2] == -1:
-                        self.num[2] = 15
+                        self.num[2] = self.mark_qty_all-1
                 if self.up_buttonrect[3].collidepoint(event.pos):
                     self.num[3] += 1
-                    if self.num[3] == 16:
+                    if self.num[3] == self.mark_qty_all:
                         self.num[3] = 0
                 if self.down_buttonrect[3].collidepoint(event.pos):
                     self.num[3] -= 1
                     if self.num[3] == -1:
-                        self.num[3] = 15
+                        self.num[3] = self.mark_qty_all-1
                 if self.up_buttonrect[4].collidepoint(event.pos):
                     self.num[4] += 1
-                    if self.num[4] == 16:
+                    if self.num[4] == self.mark_qty_all:
                         self.num[4] = 0
                 if self.down_buttonrect[4].collidepoint(event.pos):
                     self.num[4] -= 1
                     if self.num[4] == -1:
-                        self.num[4] = 15
+                        self.num[4] = self.mark_qty_all-1
                 if self.enter_buttonrect.collidepoint(event.pos):
                     for i in self.num:
                         if self.num.count(i) > 1:
@@ -744,7 +784,7 @@ class ShowGame(battle.Battle, town.Town):
                     if self.error_count == 0:
                         guess_mark = [self.marks_s[self.num[0]], self.marks_s[self.num[1]],
                                       self.marks_s[self.num[2]], self.marks_s[self.num[3]], self.marks_s[self.num[4]]]
-                        print(self.num)
+                        # print(self.num)
                         self.guess_list.append(guess_mark)  # マークの履歴
                         # self.guess = self.convert() # マークから文字列へ変換
                         # self.hit = 1
@@ -767,8 +807,8 @@ class ShowGame(battle.Battle, town.Town):
                             pygame.mixer.music.load(self.bgm_dict["clear"])
                             pygame.mixer.music.set_volume(0.1)
                             pygame.mixer.music.play(loops=-1)
-                        elif mode == "normal":
-                            self.hp_g -= self.damage
+                        elif mode == "normal" and self.enemy_stop < 1:
+                            # self.hp_g -= self.damage
                             pygame.mixer.Channel(0).play(
                                 pygame.mixer.Sound(self.se_dict["attack"]))
                             for i in range(2):
@@ -780,7 +820,7 @@ class ShowGame(battle.Battle, town.Town):
                                     self.enemy_list[self.dungeon_num], self.enemyrect)
                                 pygame.display.update()
                                 time.sleep(0.1)
-                        elif mode == "boss":
+                        elif mode == "boss" and self.enemy_stop < 1:
                             if self.boss_hit == 3:
                                 print("演出はここに入れる")
                             elif self.boss_hit == 5:
@@ -849,7 +889,7 @@ class ShowGame(battle.Battle, town.Town):
         stage = font2.render("turn:{}".format(self.turn), True, (255,255,255))
         font4 = pygame.font.SysFont(None, 50*self.screen_size)
         hit_blow = font4.render("Hit:{}   Blow:{}".format(self.hit,self.blow), True, (255,255,255))
-        font = pygame.font.SysFont("algerian", 40*self.screen_size)
+        font = pygame.font.Font("./new_system/ALGERIA.TTF", 40*self.screen_size)
         item_comand = font.render("ITEMS", True, (255,255,255))
         self.screen.blit(item_comand,(130*self.screen_size, 310*self.screen_size))
         self.screen.blit(stage, (5*self.screen_size,5*self.screen_size))
@@ -932,8 +972,7 @@ class ShowGame(battle.Battle, town.Town):
             self.set_mark_entry()
             return
         w, h = pygame.display.get_surface().get_size()
-        font = pygame.font.SysFont(
-            "bizudminchomediumbizudpminchomediumtruetype", 100)
+        font = pygame.font.Font("./new_system/Harenosora.otf", 100)
         pc = font.render("PC", True, "WHITE")
         self.screen.blit(pc, (50, 10))
         pcrect = Rect(0, 10, w, h/2-50)
@@ -1178,7 +1217,7 @@ class ShowGame(battle.Battle, town.Town):
         if self.demand[0] == 1:
             self.ans_g = [0, 1, 2, 3, 5]
         else:
-            nums = list(range(16))
+            nums = list(range(self.mark_qty_all))
             self.ans_g = random.sample(nums, 5)
 
     def judge_guess(self, guess: List[int]):
@@ -1533,6 +1572,63 @@ class ShowGame(battle.Battle, town.Town):
                 # Returnボタンが押されたときの動作
                 if self.return_buttonrect.collidepoint(event.pos):
                     self.message = ""
+
+    def item_use_battle(self,item_name):
+        self.item_use_history = {}
+        effect_type = self.item_info(item_name,"effect_type")
+        effect_val_min = self.item_info(item_name,"effect_val")
+        effect_val_max = self.item_info(item_name,"effect_val_max")
+        if effect_val_max is None:
+            effect_val = effect_val_min
+        else:
+            effect_val = self.randex(effect_val_min,effect_val_max)
+        self.enemy_stop = 0
+
+        if effect_type in ["hp_rec","hp_rec_act"]:
+            self.hp_g = min(self.max_hp,self.hp_g+effect_val)
+        elif effect_type == "hp_rec_act":
+            self.enemy_stop = 1
+        elif effect_type == "enemy_jam":
+            self.enemy_stop = effect_val + 1
+        else:
+            pass
+
+    def item_use_before_battle(self,item_name):
+        """主に選択肢を減らす系のアイテム。使用するタイミングがつかめないため未実装。
+        タイミングさえ決めれば、このまま使えるようにしてある"""
+        self.item_use_history = {}
+        effect_type = self.item_info(item_name,"effect_type")
+        effect_val_min = self.item_info(item_name,"effect_val")
+        effect_val_max = self.item_info(item_name,"effect_val_max")
+        if effect_val_max is None:
+            effect_val = effect_val_min
+        else:
+            effect_val = int(self.randex(effect_val_min,effect_val_max))
+        self.enemy_stop = 0
+        for num, attr in enumerate(self.attr_list4):
+            if effect_type == "{}_temporal".format(attr):
+                self.attr_power[num] += effect_val
+        if effect_type == "all_attr_temporal":
+            for i in range(4):
+                self.attr[i] += effect_val
+
+    def normal_action(self):
+        self.hp_g -= self.damage
+            
+
+    def damage_effect(self,count=2,period=0.2):
+        pygame.mixer.Channel(0).play(
+            pygame.mixer.Sound(self.se_dict["attack"]))
+        for i in range(count):
+            self.screen.blit(
+                self.enemy_damage_list[self.dungeon_num], self.enemyrect)
+            pygame.display.update()
+            time.sleep(period/2)
+            self.screen.blit(
+                self.enemy_list[self.dungeon_num], self.enemyrect)
+            pygame.display.update()
+            time.sleep(period/2)
+
 
     def historylast_show(self):
 

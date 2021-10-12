@@ -301,6 +301,19 @@ class Function():
         else:
             return target
 
+    def randex(self,min_val,max_val,exponent=1):
+        rand = random.random()
+        rand_exponent = rand ** exponent
+
+        return min_val + rand_exponent * (max_val - min_val)
+
+    def rand_judge(self,threshold_prob):
+        rand = random.random()
+        if rand < threshold_prob:
+            return True
+        else:
+            return False
+
 class Core(Function):
     """
     変数：複数の場面で使用されるもの
@@ -338,10 +351,14 @@ class Core(Function):
         self.basic_status_index = ["lv", "hp", "atk"]
         self.all_status_index = ["lv", "hp", "atk", "exp", "money",
                                  "skill1", "skill2", "skill3"]
+        self.all_plus_attr_status_index = ["lv", "hp", "atk", "exp", "money",
+                                 "skill1", "skill2", "skill3","water_attr","plant_attr","dark_attr","elect_attr"]
         # self.basic_status_index_var = [self.lv, self.hp, self.atk]
         # self.all_status_index_var = [self.lv, self.hp, self.atk, self.exp, self.money, self.skill1, self.skill2, self.skill3]
         # 属性関連
         self.attr_dict = {"dark":"闇","water":"水","plant":"木","elect":"雷","all":"全","dark_attr":"闇","water_attr":"水","plant_attr":"木","elect_attr":"雷","all_attr":"全"}
+        self.attr_list4 = ["water_attr","plant_attr","dark_attr","elect_attr"]
+        self.attr_list5 = ["water_attr","plant_attr","dark_attr","elect_attr","all_attr"]
         # ステータス取得
         self.status_checker()  # ステータス取得前にステータスを更新しておく
 
@@ -352,11 +369,13 @@ class Core(Function):
     def status_checker(self):
         self.attribute_update()
         self.equip_checker_new()
-        for stat in self.basic_status_index:
+        update_index = self.basic_status_index + self.attr_list4
+        for stat in update_index:
             self.mysheet[self.vhindex(self.mysheet, stat, 1, "total", 1, "excel")] = self.vhlookup(self.mysheet, stat, 1, "raw", 1) + self.vhlookup(self.mysheet, stat, 1, "equip", 1)
         status_box = []
-        for num in range(len(self.all_status_index)):
-            status_box.append(self.vlookup(self.mysheet, self.all_status_index[num], 2))
+        for num in range(len(self.all_plus_attr_status_index)):
+            status_box.append(self.vlookup(self.mysheet, self.all_plus_attr_status_index[num], 2))
+        
         # ステータス定義
         self.lv = status_box[0]
         self.hp = status_box[1]
@@ -366,6 +385,8 @@ class Core(Function):
         self.skill1 = status_box[5]
         self.skill2 = status_box[6]
         self.skill3 = status_box[7]
+        self.attr_power = status_box[8:12]
+        
 
     def equip_checker(self):
         # 装備欄に登録された名前から、hp,atkの値を「装備」ブックから参照し記録する
@@ -389,12 +410,11 @@ class Core(Function):
         # 装備欄に登録された名前から、update_statリストの値を「装備」ブックから参照し記録する
         # update_statとsum_statの大きさは合わせること
         # 原因不明のバグのため、プレイヤーステータスシートの装備欄は更新せず、IDのみを情報として使う。
-        update_stat = ["hp","atk"]
-        sum_stat = [0, 0]
+        update_stat = ["hp","atk","water_attr","plant_attr","dark_attr","elect_attr"]
+        sum_stat = [0, 0,0,0,0,0]
         for j,stat in enumerate(update_stat):
             for i in range(len(self.equip_position)):
                 equip_id = self.vhlookup_super(self.mysheet, self.equip_position[i], 1, "id", "position","off")
-            
                 sum_stat[j] += self.id_equip_info(equip_id,stat)
             self.mysheet[self.vhindex(
                 self.mysheet, stat, 1, "equip", 1, "excel")] = sum_stat[j]
@@ -722,7 +742,6 @@ class Core(Function):
                 return i
         
     def decompound(self,equip_id,slot_num):
-        """ここで問題が起きている。"""
         print(equip_id,slot_num)
         self.use_item("魔女の秘薬")
         #Noneを書き込もうとするとなぜか書き込まれないので力技で
@@ -769,6 +788,8 @@ class Battle(Core):
             self.gamescene = int(input("Normal:1,Boss:2 ->"))
             self.dungeon_num = int(input("dungeon num 1~ (not 0)->"))
             self.dungeon_init()
+
+
 
     def dungeon_init(self):
         # ダンジョン情報と初期設定

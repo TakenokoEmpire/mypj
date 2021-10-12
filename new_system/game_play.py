@@ -37,8 +37,10 @@ class Commander(show_game4.ShowGame):
         0番目:hitblowの正答を[0,1,2,3,5]に固定
         1番目:画面選択をPCで固定
         2番目:プロローグをカット
+        3番目:闇属性のみ選択肢をvalだけ削る
+        4番目:属性の効果を、(1+val)倍する
         """
-        self.demand = [1, 1,1]
+        self.demand = [1, 1,1,0,0]
         super().__init__(demand = self.demand)
         self.place = "entrance"
 
@@ -550,17 +552,21 @@ class Commander(show_game4.ShowGame):
                         elif self.choice_dict["戦闘中アイテム選択画面"]["name"] != "False" and self.choice_dict["戦闘中アイテム使用確認画面"]["name"] == "False":
                             self.choice_screen("{}を使用しますか？".format(self.choice_dict["戦闘中アイテム選択画面"]["name"]), [["はい",""],["いいえ",""]],[self.item_info(self.choice_dict["戦闘中アイテム選択画面"]["name"],"detail")], "戦闘中アイテム使用確認画面", ["戦闘中アイテム選択画面"])
                         elif self.choice_dict["戦闘中アイテム使用確認画面"]["name"] == "はい":
+                            self.item_use_battle(self.choice_dict["戦闘中アイテム選択画面"]["name"])
                             self.choice_dict["戦闘中アイテム使用確認画面"] = {
                                 "number": "False", "name": "False"}
                             self.choice_dict["戦闘中アイテム選択画面"] = {
                                 "number": "False", "name": "False"}
+                            self.turn += 1
                             self.item_screen_count = 0
                         elif self.choice_dict["戦闘中アイテム使用確認画面"]["name"] == "いいえ":
                             self.choice_dict["戦闘中アイテム使用確認画面"] = {
                                 "number": "False", "name": "False"}
                             self.choice_dict["戦闘中アイテム選択画面"] = {
                                 "number": "False", "name": "False"}
-                        
+                        if self.enemy_stop < 1 and self.item_screen_count == 0:
+                            time.sleep(0.4)
+                            self.damage_effect()
 
                     elif self.gamescene == 0:  # ホーム画面
                         self.reset()
@@ -575,14 +581,22 @@ class Commander(show_game4.ShowGame):
 
                     elif self.gamescene == 1:  # Normal Stage
                         if self.run_count_battle[1] == 0:
-                            print("second_init")
-                            print(self.gamescene)
                             # 各戦闘毎に一回のみ動作させたい
-
+                            # print("second_init")
+                            # print(self.gamescene)
                             self.dungeon_init()
                             self.second_init_showgame()
                             self.print_status()
                             self.run_count_battle[1] += 1
+                            self.run_count_battle[6] = 1
+                            self.enemy_stop = 0
+                        if self.run_count_battle[6] < self.turn:
+                            # 各ターンに一度だけ動作させたい
+                            if self.enemy_stop >= 1:
+                                self.enemy_stop -= 1
+                            else:
+                                self.hp_g -= self.damage
+                            self.run_count_battle[6] += 1
                         self.normal_stage()
                         self.normal_stage_judge()
                         self.boss_action()
@@ -596,6 +610,12 @@ class Commander(show_game4.ShowGame):
                             print(self.boss_history)
                             self.second_init_showgame()
                             self.run_count_battle[2] += 1
+                            self.run_count_battle[6] = 1
+                        if self.run_count_battle[6] < self.turn:
+                            # 各ターンに一度だけ動作させたい
+                            print(self.turn)
+                            # self.hp_g -= self.damage
+                            self.run_count_battle[6] += 1
                         if self.switch_judge("turn_switch", self.turn_switch, 0) == True:
                             if self.jamming_judge("player") == "stop":
                                 print("調査を妨害された！")
@@ -633,7 +653,6 @@ class Commander(show_game4.ShowGame):
                         self.init_battle_info()
 
             pygame.display.update()  # スクリーン上のものを書き換えた時にはupdateが必要
-
     def init_town_info(self):
         """街の入口に戻る
         「初期画面」以外のdict_name情報は（戦闘関連も含めて）すべて初期化される"""
