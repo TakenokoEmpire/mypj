@@ -1435,6 +1435,75 @@ class ShowGame(battle.Battle, town.Town):
         return arranged_choice
         # print(arranged_choice)
 
+    def yes_no_choice(self,title,message,dict_name, delete_dict_list_when_return: List[str] = []):
+        """はいかいいえの選択画面
+        タイトルを長めにとれる。
+        タイトル4行、メッセージ6行まで。"""
+        choice = [["はい",""],["いいえ",""]]
+        self.choice_buttonrect = []
+        choice_answer = False
+        font_title = pygame.font.SysFont(
+            "bizudminchomediumbizudpminchomediumtruetype", 24*self.screen_size)
+        font = pygame.font.SysFont(
+            "bizudminchomediumbizudpminchomediumtruetype", 20*self.screen_size)
+        font2 = pygame.font.SysFont(
+            "bizudminchomediumbizudpminchomediumtruetype", 15*self.screen_size)
+        # titleを表示
+        title = self.auto_line_break(title,28)
+        print_title1 = font_title.render(title[0], True, "WHITE")
+        self.screen.blit(
+            print_title1, (11*self.screen_size, 12*self.screen_size))
+        if len(title) > 1:
+            print_title2 = font_title.render(title[1], True, "WHITE")
+            self.screen.blit(
+                print_title2, (11*self.screen_size, 44*self.screen_size))
+        if len(title) > 2:
+            print_title3 = font_title.render(title[2], True, "WHITE")
+            self.screen.blit(
+                print_title3, (11*self.screen_size, 76*self.screen_size))
+        if len(title) > 3:
+            print_title4 = font_title.render(title[2], True, "WHITE")
+            self.screen.blit(
+                print_title4, (11*self.screen_size, 108*self.screen_size))
+        # 選択肢を表示
+        for i in range(len(choice)):
+            self.choice_buttonrect.append(Rect(24*self.screen_size, (148+70*i)*self.screen_size, 300*self.screen_size, 60*self.screen_size))
+        for i, name in enumerate(choice):
+            print_choice_index = font.render(name[0], True, "WHITE")
+            self.screen.blit(print_choice_index, (24*self.screen_size, (151+70*i)*self.screen_size))
+            choice_detail = self.auto_line_break(name[1], 40)
+            for j, detail in enumerate(choice_detail):
+                print_choice_detail = font2.render(detail, True, "WHITE")
+                self.screen.blit(print_choice_detail, (40*self.screen_size, (175+70*i+18*j)*self.screen_size))
+        self.screen.blit(self.return_button_img, self.return_buttonrect)
+        # メッセージを表示
+        for i, name in enumerate(message):
+            print_message = font2.render(name, True, "WHITE")
+            self.screen.blit(
+                print_message, (11*self.screen_size, (440+21*i)*self.screen_size))
+
+        # 以下、本来は別関数（judge_～～～）となるはずだった部分
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+            if (event.type == pygame.MOUSEBUTTONUP) and (event.button == 1):
+                for i in range(len(choice)):
+                    if self.choice_buttonrect[i].collidepoint(event.pos):
+                        pygame.mixer.Channel(0).play(pygame.mixer.Sound(self.se_dict["start"]))
+                        print("選択肢：{}".format(i))
+                        self.choice_judge = 1
+                        time.sleep(0.25)
+                        self.choice_dict.update({dict_name: {"number": i,"name": choice[i][0]}})
+                        print(self.choice_dict)
+                # Returnボタンが押されたときの動作
+                if self.return_buttonrect.collidepoint(event.pos):
+                    # 何も設定されてない場合はホーム画面まで戻る
+                    if delete_dict_list_when_return == []:
+                        delete_dict_list_when_return = self.dict_name_list
+                    time.sleep(0.5)
+                    for dicts in delete_dict_list_when_return:
+                        self.choice_dict.update({dicts: {"number": "False", "name": "False"}})
+
     def message_screen(self, message: str):
         """メッセーのみを表示したいときに使うモジュール
         メッセージは自動改行される

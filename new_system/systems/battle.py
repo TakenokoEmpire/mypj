@@ -293,6 +293,14 @@ class Function():
         return text_box
 
 
+    def if_return(self,target,threshold,return_value_when_false):
+        """targetがthresholdと一致したらreturn_value_when_falseを返す
+        そうでない場合はtargetをそのまま返す"""
+        if target == threshold:
+            return return_value_when_false
+        else:
+            return target
+
 class Core(Function):
     """
     変数：複数の場面で使用されるもの
@@ -333,7 +341,7 @@ class Core(Function):
         # self.basic_status_index_var = [self.lv, self.hp, self.atk]
         # self.all_status_index_var = [self.lv, self.hp, self.atk, self.exp, self.money, self.skill1, self.skill2, self.skill3]
         # 属性関連
-        self.attr_dict = {"dark":"闇","water":"水","plant":"木","elect":"雷","all":"全"}
+        self.attr_dict = {"dark":"闇","water":"水","plant":"木","elect":"雷","all":"全","dark_attr":"闇","water_attr":"水","plant_attr":"木","elect_attr":"雷","all_attr":"全"}
         # ステータス取得
         self.status_checker()  # ステータス取得前にステータスを更新しておく
 
@@ -342,6 +350,7 @@ class Core(Function):
     #     return equip_index_list, equip_sepc_list
 
     def status_checker(self):
+        self.attribute_update()
         self.equip_checker_new()
         for stat in self.basic_status_index:
             self.mysheet[self.vhindex(self.mysheet, stat, 1, "total", 1, "excel")] = self.vhlookup(self.mysheet, stat, 1, "raw", 1) + self.vhlookup(self.mysheet, stat, 1, "equip", 1)
@@ -468,8 +477,7 @@ class Core(Function):
         """item:アイテム名、add_qty:取得した数"""
         item_pos = self.vindex_plus(self.book["アイテム箱"], item, 2)
         qty_pos = self.hindex(self.book["アイテム箱"], "qty")  # qtyではなく"qty"なので注意
-        self.book["アイテム箱"].cell(row=item_pos,
-                                column=qty_pos, value=self.vlookup(self.book["アイテム箱"], item, 2)+add_qty)
+        self.book["アイテム箱"].cell(row=item_pos,column=qty_pos, value=self.item_info(item,"qty")+add_qty)
 
     def buy_item(self, item: str, value: int, diamond: int = 0, add_qty: int = 1):
         """item:アイテム名,value:価格,diamond:リアルマネー、add_qty:取得した数"""
@@ -505,6 +513,17 @@ class Core(Function):
             box.append(self.item_info(item_name,info_type))
         return box
 
+    def use_item(self,item_name,qty = 1):
+        qty_minus = -qty
+        self.get_item(item_name,qty_minus)
+
+    def use_multi_item(self,item_list):
+        """使用数は1で固定"""
+        for item_name in item_list:
+            if item_name == "":
+                pass
+            else:
+                self.use_item(item_name,1)
 
     def item_type_list(self,item_type,info_type,only_own_mode="off"):
         """指定したitem_typeに属する全てのアイテムを返す
@@ -561,6 +580,7 @@ class Core(Function):
         key.extend(list(("slot{}_val".format(i+1)for i in range(5))))
         val = self.id_equip_multi_info(equip_id,key)
         equip_info_dict = dict(zip(key,val))
+        # print(equip_info_dict)
         return equip_info_dict
 
     def current_equip_list(self, info_type):
@@ -570,50 +590,36 @@ class Core(Function):
         return box
 
     def equip_val_update(self,equip_id,info_type,update_val):
-        self.book["装備個別情報"][self.vhindex_super(self.book["武器個別情報"],equip_id,"id",info_type,1,"Excel")] = update_val
+        # print(equip_id,info_type,update_val)
+        # if type(update_val) in [int,float]:
+        #     update_val = str(update_val)
+        # self.book["装備個別情報"][self.vhindex_super(self.book["装備個別情報"],equip_id,1,info_type,1,"Excel")] = update_val
+        equip_rownum = self.vindex_plus(self.book["装備個別情報"], str(equip_id), 1)
+        equip_columnnum=self.hindex_plus(self.book["装備個別情報"],info_type,1)
+        self.book["装備個別情報"].cell(row=equip_rownum, column=equip_columnnum, value=update_val)
 
     def equip_multi_val_update(self,equip_id,info_type_list,update_val_list):
-        box = []
+        # print(equip_id,info_type_list,update_val_list)
+        # box = []
         for i in range(len(info_type_list)):
-            box.append(self.equip_val_update(equip_id,info_type_list[i],update_val_list[i]))
-        return box
+            self.equip_val_update(equip_id,info_type_list[i],update_val_list[i])
+        # return box
 
     def compound(self,equip_id,slot_num:int,material,catalyst_red = "",catalyst_blue = "",catalyst_green = ""):
         """装備に様々な能力を付与する成長合成を行う。
         リリース段階では、武器に属性値を付与するもののみを実装する予定
         現段階では、合成値＝【攻撃力】＊合成係数　となっているため、今後防具にも適用する際は注意"""
         dic = self.id_equip_dict(equip_id)
-        if dic["slot{}_attr".format(slot_num)] != None:
-            return "slot not empty"
-        attr, compound_value_ratio, min_val_ratio,max_val_ratio = self.compound_judge(material,catalyst_red,catalyst_blue,catalyst_green)
+        # if dic["slot{}_attr".format(slot_num)] != None:
+        #     return "slot not empty"
+        attr, compound_value_ratio, min_val_ratio,max_val_ratio,rand,rand_exponent = self.compound_judge(material,catalyst_red,catalyst_blue,catalyst_green)
         compound_value = round(compound_value_ratio * dic["atk"] / 100)
-        print[attr,compound_value_ratio,compound_value]
-        self.equip_multi_val_update(equip_id,[attr,compound_value],["slot{}_attr".format(slot_num),"slot{}_val".format(slot_num)])
+        print("attr,rand,rand_exponent,compound_value_ratio,compound_value")
+        print([attr,rand,rand_exponent,compound_value_ratio,compound_value])
+        self.use_multi_item([material,catalyst_red,catalyst_blue,catalyst_green])
+        self.equip_multi_val_update(equip_id,["slot{}_attr".format(slot_num),"slot{}_val".format(slot_num)],[attr,compound_value])
         self.attribute_update(equip_id)
         return attr,compound_value
-
-    def compound_min_max(self,equip_id,slot_num:int,material,catalyst_red = "",catalyst_blue = "",catalyst_green = ""):
-        """装備に様々な能力を付与する成長合成を行う。
-        リリース段階では、武器に属性値を付与するもののみを実装する予定
-        現段階では、合成値＝【攻撃力】＊合成係数　となっているため、今後防具にも適用する際は注意"""
-        dic = self.id_equip_dict(equip_id)
-        if dic["slot{}_attr".format(slot_num)] != None:
-            return "slot not empty"
-        attr, compound_value_ratio, min_val_ratio,max_val_ratio = self.compound_judge(material,catalyst_red,catalyst_blue,catalyst_green)
-        min_val = round(min_val_ratio * dic["atk"] / 100)
-        max_val = round(max_val_ratio * dic["atk"] / 100)
-        return min_val,max_val
-
-    def attribute_update(self,equip_id):
-        """それぞれのスロットの属性値を計算し、それぞれの属性の値を書き込む"""
-        dic = self.id_equip_dict(equip_id)
-        attr_list = ["water","plant","dark","elect"]
-        for attr in attr_list:
-            attr_val = 0
-            for slot in range(5):
-                if dic["slot{}_attr".format(slot)] == attr:
-                    attr_val += dic["slot{}_val".format(slot)]
-            self.equip_val_update(equip_id,"{}_attr".format(attr),attr_val)
 
     def compound_judge(self,material,catalyst_red = "",catalyst_blue = "",catalyst_green = ""):
         """同種類の触媒を同時に送ることは禁止（特に緑系統）
@@ -626,23 +632,106 @@ class Core(Function):
         material_info = self.item_multi_info(material,["effect_type","effect_val","effect_val_max"])
         if catalyst_red != "":
             max_up_ratio = self.item_info(catalyst_red,"effect_val")
+        else:
+            max_up_ratio = 1
         if catalyst_blue != "":
             min_up_ratio = self.item_info(catalyst_blue,"effect_val")
+        else:
+            min_up_ratio = 1
         if catalyst_green != "":
-            expoent_up_ratio = self.item_info(catalyst_green,"effect_val")
+            exponent_up_ratio = self.item_info(catalyst_green,"effect_val")
+        else:
+            exponent_up_ratio = 1
 
         attr = material_info[0]
         min_val = material_info[1] * min_up_ratio
         max_val = material_info[2] * max_up_ratio
-        exponent = 2 * expoent_up_ratio
+        exponent = 2 * exponent_up_ratio
 
         rand = random.random()
         rand_exponent = rand ** exponent
 
         compound_value_ratio = min_val + rand_exponent * (max_val - min_val)
 
-        return attr,compound_value_ratio,min_val,max_val
+        return attr,compound_value_ratio,min_val,max_val,rand,rand_exponent
 
+    def compound_min_max(self,equip_id,slot_num:int,material,catalyst_red = "",catalyst_blue = "",catalyst_green = ""):
+        """合成値判定前に、ゲーム内表示用に触媒込みの最大最小を返す"""
+        dic = self.id_equip_dict(equip_id)
+        # if dic["slot{}_attr".format(slot_num)] != None:
+        #     return "slot not empty"
+        attr, compound_value_ratio, min_val_ratio,max_val_ratio,rand,rand_exponent = self.compound_judge(material,catalyst_red,catalyst_blue,catalyst_green)
+        min_val = round(min_val_ratio * dic["atk"] / 100)
+        max_val = round(max_val_ratio * dic["atk"] / 100)
+        return min_val,max_val
+
+    def catalyst_judge(self,target_catalyst,current_catalyst_red,current_catalyst_blue,current_catalyst_green):
+        catalyst_red = current_catalyst_red
+        catalyst_blue = current_catalyst_blue
+        catalyst_green = current_catalyst_green
+        if self.item_info(target_catalyst,"effect_type") == "compound_max_up":
+            catalyst_red = target_catalyst
+        elif self.item_info(target_catalyst,"effect_type") == "compound_min_up":
+            catalyst_blue = target_catalyst
+        elif self.item_info(target_catalyst,"effect_type") == "compound_luck_up":
+            catalyst_green = target_catalyst
+        # catalyst_red_detail = "{}:最大値上昇+{}%".format(catalyst_red,self.if_return(self.item_info(catalyst_red,"effect_val_max"),False,0))
+        # catalyst_blue_detail = "{}:最小値上昇+{}%".format(catalyst_blue,self.if_return(self.item_info(catalyst_blue,"effect_val_max"),False,0))
+        # catalyst_green_detail = "{}:ランダム数値上昇+{}%".format(catalyst_green,self.if_return(self.item_info(catalyst_green,"effect_val_max"),False,0))
+        return catalyst_red,catalyst_blue,catalyst_green
+
+    def attribute_update(self,equip_id = "all"):
+        """それぞれのスロットの属性値を計算し、それぞれの属性の値を書き込む。
+        さらに、スロット数を補正する。
+        装備IDを指定しない場合、全装備を計算する。"""
+        if equip_id == "all":
+            for i in range(self.get_equip_qty()):
+                current_id = i+1
+                dic = self.id_equip_dict(current_id)
+                attr_list = ["water_attr","plant_attr","dark_attr","elect_attr"]
+                for attr in attr_list:
+                    attr_val = 0
+                    for slot in range(5):
+                        if dic["slot{}_attr".format(slot+1)] == attr:
+                            attr_val += dic["slot{}_val".format(slot+1)]
+                    self.equip_val_update(current_id,"{}".format(attr),attr_val)
+                used_slot_count = 0
+                for slot in range(5):
+                    if self.id_equip_info(current_id,"slot{}_val".format(slot+1)) != None:
+                        used_slot_count += 1
+                self.equip_val_update(current_id,"slot_empty",self.id_equip_info(current_id,"slot_qty")-used_slot_count)
+
+        else:
+            dic = self.id_equip_dict(equip_id)
+            attr_list = ["water_attr","plant_attr","dark_attr","elect_attr"]
+            for attr in attr_list:
+                attr_val = 0
+                for slot in range(5):
+                    if dic["slot{}_attr".format(slot+1)] == attr:
+                        attr_val += dic["slot{}_val".format(slot+1)]
+                self.equip_val_update(equip_id,"{}".format(attr),attr_val)
+            used_slot_count = 0
+            for slot in range(5):
+                if self.id_equip_info(equip_id,"slot{}_val".format(slot+1)) != None:
+                    used_slot_count += 1
+            self.equip_val_update(equip_id,"slot_empty",self.id_equip_info(equip_id,"slot_qty")-used_slot_count)
+
+    def get_equip_qty(self):
+        for i in range(500):
+            if self.id_equip_info(i+1,"name") == "empty":
+                return i
+        
+    def decompound(self,equip_id,slot_num):
+        """ここで問題が起きている。"""
+        print(equip_id,slot_num)
+        self.use_item("魔女の秘薬")
+        #Noneを書き込もうとするとなぜか書き込まれないので力技で
+        # for row in self.book["装備個別情報"].iter_rows(min_row=equip_id+1, min_col=13+slot_num*2, max_row=1, max_col=2):
+        #     for cell in row:
+        #         cell.value = None
+        self.book["装備個別情報"].cell(row=equip_id+1,column=slot_num*2+13).value=None
+        self.book["装備個別情報"].cell(row=equip_id+1,column=slot_num*2+14).value=None
+        self.attribute_update(equip_id)
 
     def save(self):
         """開いてる途中だとエラー出るよ"""
