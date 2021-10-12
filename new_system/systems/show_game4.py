@@ -712,11 +712,14 @@ class ShowGame(battle.Battle, town.Town):
             print("敵の調査を妨害した！")
             time.sleep(1)
         else:
-            self.boss_guess_list = self.boss_history[self.boss_turn-1]["guess"]
-            self.boss_hit = self.boss_history[self.boss_turn-1]["hit"]
-            self.boss_blow = self.boss_history[self.boss_turn-1]["blow"]
-            self.boss_turn += 1
-            print([self.boss_guess_list, self.boss_hit, self.boss_blow])
+            try:
+                self.boss_guess_list = self.boss_history[self.boss_turn-1]["guess"]
+                self.boss_hit = self.boss_history[self.boss_turn-1]["hit"]
+                self.boss_blow = self.boss_history[self.boss_turn-1]["blow"]
+                self.boss_turn += 1
+            except IndexError:
+                pass
+            # print([self.boss_guess_list, self.boss_hit, self.boss_blow])
             time.sleep(1)
 
     def normal_stage_judge(self, mode="normal"):
@@ -898,15 +901,31 @@ class ShowGame(battle.Battle, town.Town):
         self.screen.blit(self.enter_button_img, self.enter_buttonrect)
         self.screen.blit(self.history_button_img, self.history_buttonrect)
         self.mark_show()
+        # self.boss_guess_list, self.boss_hit, self.boss_blow
         # ボスのHit,Blow
         font4 = pygame.font.SysFont(None, 40*self.screen_size)
-        if self.hit >= 3: #ここでボスのhitが3以上かどうか
+        if self.boss_hit >= 3: #ここでボスのhitが3以上かどうか
             self.alert_count = 1
         if self.alert_count == 1:
-            hit_blow = font4.render("Hit:{}   Blow:{}".format(self.hit,self.blow), True, (160,0,0))
+            hit_blow = font4.render("Hit:{}   Blow:{}".format(self.boss_hit,self.boss_blow), True, (160,0,0))
         else:
-            hit_blow = font4.render("Hit:{}   Blow:{}".format(self.hit,self.blow), True, (255,255,255))
-        self.screen.blit(hit_blow, (105*self.screen_size,30*self.screen_size))
+            hit_blow = font4.render("Hit:{}   Blow:{}".format(self.boss_hit,self.boss_blow), True, (255,255,255))
+        self.screen.blit(hit_blow, (105*self.screen_size,5*self.screen_size))
+        # try:
+        font5 = pygame.font.SysFont(None, 28*self.screen_size)
+        enemy_guess_str = font5.render("BOSS's guess:", True, (255,255,255))
+        self.screen.blit(enemy_guess_str, (10*self.screen_size,44*self.screen_size))
+        try:
+            for j in range(5):
+                self.screen.blit(self.marks_s_16[int(self.boss_guess_list[j],base=16)], ((160+j*35)*self.screen_size, 38*self.screen_size, 30*self.screen_size, 30*self.screen_size))
+        except IndexError:
+            pass
+        # except:
+        
+
+        #     pass
+                # guess_mark = [self.marks_s[self.num[0]], self.marks_s[self.num[1]],
+                #                                       self.marks_s[self.num[2]], self.marks_s[self.num[3]], self.marks_s[self.num[4]]]
 
     def game_over(self):
         """ゲームオーバー画面の描画

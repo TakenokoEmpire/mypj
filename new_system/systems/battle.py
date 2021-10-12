@@ -983,7 +983,7 @@ class Battle(Core):
     """
 
     def autoplay(self):
-        vs = try_1009.AutoPlay("on")
+        vs = try_1009.AutoPlay("off")
         self.hist[1] = vs.run()
 
     def mob_turn(self):
