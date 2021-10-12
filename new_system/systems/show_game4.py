@@ -100,7 +100,8 @@ class ShowGame(battle.Battle, town.Town):
                 (self.hp_g/100)**(math.log(2)/math.log(1000/100))
         else:
             self.hp_bar_ratio = 300 / self.hp_g
-        # print(self.hp_bar_ratio)
+        # print(self.hp_bar_ratio = 0)
+        self.alert_count = 0
         self.attr_mark_qty = [4,4,4,4]
         self.mark_qty_all = 16
         self.attr_judge_battle()
@@ -884,7 +885,7 @@ class ShowGame(battle.Battle, town.Town):
     def boss_stage(self):
         """ボスステージの描画
         """
-        self.screen.blit(self.enemy_list[self.enemy_level],self.enemyrect) # 敵の描画
+        self.screen.blit(self.enemy_list[self.dungeon_num],self.enemyrect) # 敵の描画
         font2 = pygame.font.SysFont(None, 30*self.screen_size) # turnの表示
         stage = font2.render("turn:{}".format(self.turn), True, (255,255,255))
         font4 = pygame.font.SysFont(None, 50*self.screen_size)

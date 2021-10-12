@@ -624,7 +624,7 @@ class Commander(show_game4.ShowGame):
 
                         self.turn_switch = 0
 
-                        self.normal_stage("boss")
+                        self.boss_stage()
                         self.normal_stage_judge("boss")
                         # for event in pygame.event.get():
                         #     if event.type == pygame.QUIT:
