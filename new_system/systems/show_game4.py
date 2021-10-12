@@ -1037,6 +1037,9 @@ class ShowGame(battle.Battle, town.Town):
         """
         j = 0
         self.screen.fill((0,0,0))
+        self.paper_img = pygame.image.load("./new_system/mypj3/img/paper.png")
+        self.paper_img = pygame.transform.rotozoom(self.paper_img, 0, self.screen_size)
+        self.screen.blit(self.paper_img,Rect(0,0,360*self.screen_size,640*self.screen_size))
         for i in range(108):
             font = pygame.font.SysFont("bizudminchomediumbizudpminchomediumtruetype",25*self.screen_size)
             line_1 = font.render("この世界ではみんな",True, (255*i/108,255*i/108,255*i/108))
