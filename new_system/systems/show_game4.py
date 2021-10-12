@@ -1440,13 +1440,16 @@ class ShowGame(battle.Battle, town.Town):
         choice,message以外はchoice_screenと同様。最終引数を"on"にすると、choiceだけでなくmessageも複数ページ化できる。
         この場合、最も外側のリストのlengthは、choiceとmessageでそれぞれ等しくすること。
         自動化とメッセージ複数ページ化を同時にonにする場合の動作は未確認（ヤバそう）"""
-        page_qty = len(choice)
         if auto_page_grouping == "on":
-            if page_qty <= 6:
+            choice_qty = len(choice)
+            page_qty = math.ceil(choice_qty/6)
+            if choice_qty <= 6:
                 self.choice_screen(title,choice, message, dict_name, delete_dict_list_when_return)
                 return
             else:
                 choice = self.arrange_choice_list(choice)
+        else:
+            page_qty = len(choice)
         # 一番右のページで右を押したら左に戻ってくるための仕掛け
         page_num = self.choice_current_page % page_qty
         if message_multi_page == "off":
