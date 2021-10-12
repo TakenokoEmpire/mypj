@@ -398,10 +398,10 @@ class ShowGame:
     def stage_select(self):
         """ステージセレクト画面
         """
-        font = pygame.font.SysFont("bizudminchomediumbizudpminchomediumtruetype", 30*self.screen_size)
+        font = pygame.font.Font("./new_system/Harenosora.otf", 30*self.screen_size)
         level = font.render("ステージを選んで下さい",True, "WHITE")
         self.screen.blit(level, (11*self.screen_size,10*self.screen_size))
-        font2 = pygame.font.SysFont("algerian", 40*self.screen_size)
+        font2 = pygame.font.Font("./new_system/ALGERIA.TTF", 40*self.screen_size)
         for i in range(self.stage_num): # ステージの数だけ描画
             level = font2.render("LEVEL:{}".format(i+1),True, "WHITE")
             self.screen.blit(level, (100*self.screen_size,(100+100*i)*self.screen_size))
@@ -447,7 +447,7 @@ class ShowGame:
             pygame.draw.line(self.screen,(200,0,0),((30+self.hp)*self.screen_size,40*self.screen_size),((30+self.hp+damage)*self.screen_size,40*self.screen_size),10*self.screen_size)
         font4 = pygame.font.SysFont(None, 50*self.screen_size)
         hit_blow = font4.render("Hit:{}   Blow:{}".format(self.hit,self.blow), True, (255,255,255))
-        font = pygame.font.SysFont("algerian", 40*self.screen_size)
+        font = pygame.font.Font("./new_system/ALGERIA.TTF", 40*self.screen_size)
         item_comand = font.render("ITEMS", True, (255,255,255))
         self.screen.blit(item_comand,(130*self.screen_size, 310*self.screen_size))
         self.screen.blit(stage, (5*self.screen_size,5*self.screen_size))
@@ -594,7 +594,7 @@ class ShowGame:
         stage = font2.render("turn:{}".format(self.turn), True, (255,255,255))
         font4 = pygame.font.SysFont(None, 50*self.screen_size)
         hit_blow = font4.render("Hit:{}   Blow:{}".format(self.hit,self.blow), True, (255,255,255))
-        font = pygame.font.SysFont("algerian", 40*self.screen_size)
+        font = pygame.font.Font("./new_system/ALGERIA.TTF", 40*self.screen_size)
         item_comand = font.render("ITEMS", True, (255,255,255))
         self.screen.blit(item_comand,(130*self.screen_size, 310*self.screen_size))
         self.screen.blit(stage, (5*self.screen_size,5*self.screen_size))
@@ -665,7 +665,7 @@ class ShowGame:
 
     def screen_select(self):
         w, h = pygame.display.get_surface().get_size()
-        font = pygame.font.SysFont("bizudminchomediumbizudpminchomediumtruetype", 100)
+        font = pygame.font.Font("./new_system/Harenosora.otf", 100)
         pc = font.render("PC",True, "WHITE")
         self.screen.blit(pc, (50,10))
         pcrect = Rect(0,10,w,h/2-50)
