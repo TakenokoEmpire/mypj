@@ -9,6 +9,8 @@ import random
 import unicodedata
 # from . import game_number_guess
 import sys
+import cursor, tools
+import os
 
 from . import battle
 from . import town
@@ -31,8 +33,7 @@ class ShowGame(battle.Battle, town.Town):
                  num: List[int] = [0, 1, 2, 3, 4],
                  #  turn: int = 1,
                  display_size: Tuple[int] = (360, 640),
-                 dungeon_num: int = 0,
-                 max_dungeon_num: int = 3,
+                #  max_dungeon_num: int = 3,
                  gamescene: int = 0,
                  demand: List[int] = [1, 1, 1]):
         print("showgame init")
@@ -44,8 +45,7 @@ class ShowGame(battle.Battle, town.Town):
                 display_size, HWSURFACE | FULLSCREEN)
         else:
             self.screen = pygame.display.set_mode((360, 640))
-        self.dungeon_num = dungeon_num
-        self.max_dungeon_num = max_dungeon_num
+        # self.max_dungeon_num = max_dungeon_num
         self.gamescene = gamescene
         self.error_count = 0  # 同じ数字入れたときのエラーカウント
         self.history_count = 0  # 履歴画面関連
@@ -72,6 +72,7 @@ class ShowGame(battle.Battle, town.Town):
         self.ball_img = pygame.image.load("./new_system/mypj3/img/ball.png")
         self.ball_img = pygame.transform.rotozoom(self.ball_img, 0, self.screen_size)
         self.enemy_stop = 0
+        # self.dungeon_type = ""
 
     def second_init_showgame(self):
         # GUIに対応
@@ -100,7 +101,8 @@ class ShowGame(battle.Battle, town.Town):
                 (self.hp_g/100)**(math.log(2)/math.log(1000/100))
         else:
             self.hp_bar_ratio = 300 / self.hp_g
-        # print(self.hp_bar_ratio = 0)
+        self.make_1ans()
+        self.level_up_box = []
         self.alert_count = 0
         self.attr_mark_qty = [4,4,4,4]
         self.mark_qty_all = 16
@@ -324,9 +326,9 @@ class ShowGame(battle.Battle, town.Town):
         self.history_buttonrect = Rect(
             120*self.screen_size, 580*self.screen_size, 120*self.screen_size, 30*self.screen_size)
         self.stage_select_buttonrect = []
-        for i in range(self.max_dungeon_num):
-            self.stage_select_buttonrect.append(Rect(
-                80*self.screen_size, (100+100*i)*self.screen_size, 200*self.screen_size, 50*self.screen_size))
+        # for i in range(self.max_dungeon_num):
+        #     self.stage_select_buttonrect.append(Rect(
+        #         80*self.screen_size, (100+100*i)*self.screen_size, 200*self.screen_size, 50*self.screen_size))
         self.normal_button_img = pygame.image.load(
             "./new_system/mypj3/img/normal_button.png")
         self.normal_button_img = pygame.transform.rotozoom(
@@ -406,7 +408,7 @@ class ShowGame(battle.Battle, town.Town):
         self.hit_list = []
         self.blow_list = []
         self.num = [0, 1, 2, 3, 4]
-        self.dungeon_num = 0
+        self.dungeon_num = -1
 
     # ここまで初期設定
 
@@ -616,56 +618,62 @@ class ShowGame(battle.Battle, town.Town):
                 if self.prev_buttonrect.collidepoint(event.pos):
                     self.history_count -= 1
 
-    def stage_select(self):
-        """ステージセレクト画面
-        """
-        font = pygame.font.Font("./new_system/Harenosora.otf", 30*self.screen_size)
-        level = font.render("ステージを選んで下さい", True, "WHITE")
-        self.screen.blit(level, (11*self.screen_size, 10*self.screen_size))
-        font2 = pygame.font.Font("./new_system/ALGERIA.TTF", 40*self.screen_size)
-        for i in range(self.max_dungeon_num):  # ステージの数だけ描画
-            level = font2.render("LEVEL:{}".format(i+1), True, "WHITE")
-            self.screen.blit(level, (100*self.screen_size,
-                             (100+100*i)*self.screen_size))
-        self.screen.blit(self.return_button_img, self.return_buttonrect)
+    # def stage_select(self):
+    #     """ステージセレクト画面
+    #     """
+    #     font = pygame.font.Font("./new_system/Harenosora.otf", 30*self.screen_size)
+    #     level = font.render("ステージを選んで下さい", True, "WHITE")
+    #     self.screen.blit(level, (11*self.screen_size, 10*self.screen_size))
+    #     font2 = pygame.font.Font("./new_system/ALGERIA.TTF", 40*self.screen_size)
+    #     for i in range(self.max_dungeon_num):  # ステージの数だけ描画
+    #         level = font2.render("LEVEL:{}".format(i+1), True, "WHITE")
+    #         self.screen.blit(level, (100*self.screen_size,
+    #                          (100+100*i)*self.screen_size))
+    #     self.screen.blit(self.return_button_img, self.return_buttonrect)
 
-    def judge_stage_select(self):
-        """ステージセレクト画面のボタンの判定
-        """
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                self.running = False
-            if (event.type == pygame.MOUSEBUTTONUP) and (event.button == 1):
-                for i in range(self.max_dungeon_num):
-                    if self.stage_select_buttonrect[i].collidepoint(event.pos):
-                        self.dungeon_num = i+1
-                        pygame.mixer.Channel(0).play(
-                            pygame.mixer.Sound(self.se_dict["start"]))
-                        time.sleep(1)
-                        # 音楽関連
-                        # loops:繰り返す回数　loops+1回流れる、-1で無限ループ
-                        # load+playでセット
-                        # mixerで音楽をミックスできる（主にSEのとき）
-                        if self.gamescene == 1:
-                            pygame.mixer.music.load(self.bgm_dict["normal"])
-                            pygame.mixer.music.set_volume(0.3)
-                            pygame.mixer.music.play(loops=-1)
-                        elif self.gamescene == 2:
-                            pygame.mixer.music.load(self.bgm_dict["boss"])
-                            pygame.mixer.music.set_volume(0.3)
-                            pygame.mixer.music.play(loops=-1)
-                if self.return_buttonrect.collidepoint(event.pos):
-                    self.gamescene = 0
+    # def judge_stage_select(self):
+    #     """ステージセレクト画面のボタンの判定
+    #     """
+    #     for event in pygame.event.get():
+    #         if event.type == pygame.QUIT:
+    #             self.running = False
+    #         if (event.type == pygame.MOUSEBUTTONUP) and (event.button == 1):
+    #             for i in range(self.max_dungeon_num):
+    #                 if self.stage_select_buttonrect[i].collidepoint(event.pos):
+    #                     self.dungeon_num = i+1
+    #                     pygame.mixer.Channel(0).play(
+    #                         pygame.mixer.Sound(self.se_dict["start"]))
+    #                     time.sleep(1)
+    #                     # 音楽関連
+    #                     # loops:繰り返す回数　loops+1回流れる、-1で無限ループ
+    #                     # load+playでセット
+    #                     # mixerで音楽をミックスできる（主にSEのとき）
+    #                     if self.gamescene == 1:
+    #                         pygame.mixer.music.load(self.bgm_dict["normal"])
+    #                         pygame.mixer.music.set_volume(0.3)
+    #                         pygame.mixer.music.play(loops=-1)
+    #                     elif self.gamescene == 2:
+    #                         pygame.mixer.music.load(self.bgm_dict["boss"])
+    #                         pygame.mixer.music.set_volume(0.3)
+    #                         pygame.mixer.music.play(loops=-1)
+    #             if self.return_buttonrect.collidepoint(event.pos):
+    #                 self.gamescene = 0
+
+    def stage_select_effect(self):
+        pygame.mixer.Channel(0).play(
+            pygame.mixer.Sound(self.se_dict["start"]))
+        time.sleep(1)
+        if self.gamescene == 1:
+            pygame.mixer.music.load(self.bgm_dict["normal"])
+            pygame.mixer.music.set_volume(0.3)
+            pygame.mixer.music.play(loops=-1)
+        elif self.gamescene == 2:
+            pygame.mixer.music.load(self.bgm_dict["boss"])
+            pygame.mixer.music.set_volume(0.3)
+            pygame.mixer.music.play(loops=-1)
 
     def normal_stage(self, mode="normal"):
         """通常ステージの描画
-        最大HP→self、残らない変数【残りHP＋累計ダメージで導出可】
-        残りHP(「self.hp_g」)=毎ターン計算（ダメージを受けた値が保存される）
-        累計ダメージ（「damage」）→敵攻撃力（リスト）＊ターン数
-        【BEFORE】
-        hitblow→self
-        【AFTER】
-        hitblow→引数
         """
 
         self.screen.blit(self.enemy_list[self.dungeon_num],self.enemyrect) # 敵の描画
@@ -975,13 +983,46 @@ class ShowGame(battle.Battle, town.Town):
         """
         font = pygame.font.SysFont(None, 80*self.screen_size)
         font2 = pygame.font.SysFont(None, 40*self.screen_size)
-        clear = font.render("Clear!", True, (230, 180, 34))
-        self.screen.blit(clear, (98*self.screen_size, 100*self.screen_size))
-        exp = font2.render("EXP:{}".format(self.e_exp), True, (255, 255, 255))
-        self.screen.blit(exp, (130*self.screen_size, 200*self.screen_size))
+        font3 = pygame.font.SysFont(None, 28*self.screen_size)
+        if self.dungeon_type == "normal":
+            clear = font.render("CLEAR!!", True, (230, 180, 34))
+            self.screen.blit(clear, (58*self.screen_size, 100*self.screen_size))
+        elif self.dungeon_type == "boss":
+            clear = font.render("VICTORY!!!", True, (255, 32, 32))
+            self.screen.blit(clear, (38*self.screen_size, 100*self.screen_size))
+        exp = font2.render("EXP:+{}".format(self.e_exp), True, (255, 255, 255))
+        exp_left = font3.render("To next: {}/{}".format(self.vhlookup(self.book["level_table"],str(self.lv+1),1,"exp",1)-self.exp,self.vhlookup(self.book["level_table"],str(self.lv+1),1,"exp",1)-self.vhlookup(self.book["level_table"],str(self.lv),1,"exp",1)), True, (255, 255, 255))
+        money = font2.render("Gold:+{}".format(self.e_money), True, (255, 255, 255))
+        self.screen.blit(exp, (70*self.screen_size, 200*self.screen_size))
+        self.screen.blit(exp_left, (80*self.screen_size, 240*self.screen_size))
+        self.screen.blit(money, (70*self.screen_size, 300*self.screen_size))
         self.screen.blit(self.return_button_img, self.return_buttonrect)
         self.screen.blit(self.history_button_img, Rect(
             120*self.screen_size, 500*self.screen_size, 120*self.screen_size, 30*self.screen_size))
+
+    def level_up_screen(self):
+        """レベルアップ描写
+        レベルアップがない場合は何も起きない
+        while len(self.level_up_box) == 0:の形にして、表示するごとにboxを減らしていけば
+        「2レベル上がったら2回画面表示」が可能になるはず"""
+        while len(self.level_up_box) > 0:
+            font = pygame.font.SysFont(None, 80*self.screen_size)
+            font2 = pygame.font.SysFont(None, 40*self.screen_size)
+            levelup = font.render("LEVEL UP!!", True, (230, 180, 34))
+            self.screen.blit(levelup, (98*self.screen_size, 100*self.screen_size))
+            lvup = font2.render("Lv:{} -> {}".format(self.level_up_box[0][0],self.level_up_box[0][1]), True, (255, 255, 255))
+            hpup = font2.render("HP:{} -> {}".format(self.level_up_box[0][2],self.level_up_box[0][3]), True, (255, 255, 255))
+            self.screen.blit(lvup, (130*self.screen_size, 200*self.screen_size))
+            self.screen.blit(hpup, (130*self.screen_size, 260*self.screen_size))
+            self.screen.blit(self.return_button_img, self.return_buttonrect)
+            self.screen.blit(self.history_button_img, Rect(
+                120*self.screen_size, 500*self.screen_size, 120*self.screen_size, 30*self.screen_size))
+            if len(self.level_up_box) > 1:
+                self.level_up_box = self.level_up_box[1:]
+            else:
+                self.level_up_box = []
+            return
+
 
     def result_judge(self):
         """結果画面でのボタンの判定
@@ -1052,29 +1093,50 @@ class ShowGame(battle.Battle, town.Town):
                     self.set_button()
                     self.set_mark_entry()
 
-    def gacha_show(self):
+    def gacha_show(self,rarity,rand_value_judge = "off"):
         """ガチャの演出画面の描画
+        レアリティを引数にとり演出が変わる
+        rand_value_judgeをonにすると、0~1の間で乱数がどれだけいい値が出たかによって演出を変更する。
         """
-        for i in range(144):
+        if rand_value_judge == "on":
+            if rarity < 0.5:
+                rarity = int(1)
+            elif rarity < 0.75:
+                rarity = int(2)
+            elif rarity < 0.95: 
+                rarity = int(3)
+            elif rarity < 0.99:
+                rarity = int(4)
+            elif rarity <=1:
+                rarity = int(5)
+
+        color_dict = {1:(96,96,96),2:(72,72,216),3:(238,130,238),4:(238,130,238),5:(238,130,238)}
+        length_dict = {1:108,2:108,3:136,4:144,5:288}
+        central_ball_dict = {1:0,2:0,3:1,4:1,5:1}
+        last_speed_dict = {1:100,2:100,3:100,4:15,5:3}
+        for i in range(length_dict[rarity]):
             self.screen.fill((0,0,0))
-            if i > 47 and i < 72:
+            if i > 47 and i < 72 and rarity >= 3:
                 pygame.draw.circle(self.screen, (240,248,255) ,(180*self.screen_size,320*self.screen_size),(i-47)*self.screen_size,0) # 白い円が中心から徐々に広がる
-            if i >= 72:
+            if i >= 72 and i<108 and rarity >= 3:
                 self.screen.blit(self.ball_img,Rect(155*self.screen_size,295*self.screen_size,50*self.screen_size,50*self.screen_size))
-            pygame.draw.circle(self.screen, (238,130,238),(180*self.screen_size,320*self.screen_size),(5+i)*self.screen_size,3*self.screen_size) # 円環が広がる
+            if i >= 108 and i<120 and rarity == 3:
+                pygame.draw.circle(self.screen, (240,248,255) ,(180*self.screen_size,320*self.screen_size),(25-(i-108))*self.screen_size,0)
+            pygame.draw.circle(self.screen, color_dict[rarity],(180*self.screen_size,320*self.screen_size),(5+i)*self.screen_size,3*self.screen_size) # 円環が広がる
             if i > 10:
-                pygame.draw.circle(self.screen, (238,130,238),(50*self.screen_size,240*self.screen_size),(i-10)*self.screen_size,3*self.screen_size)
+                pygame.draw.circle(self.screen, color_dict[rarity],(50*self.screen_size,240*self.screen_size),(i-10)*self.screen_size,3*self.screen_size)
             if i > 15:
-                pygame.draw.circle(self.screen, (238,130,238),(300*self.screen_size,400*self.screen_size),(i-15)*self.screen_size,3*self.screen_size)
+                pygame.draw.circle(self.screen, color_dict[rarity],(300*self.screen_size,400*self.screen_size),(i-15)*self.screen_size,3*self.screen_size)
             if i > 20:
-                pygame.draw.circle(self.screen, (238,130,238),(240*self.screen_size,300*self.screen_size),(i-20)*self.screen_size,3*self.screen_size)
+                pygame.draw.circle(self.screen, color_dict[rarity],(240*self.screen_size,300*self.screen_size),(i-20)*self.screen_size,3*self.screen_size)
             if i > 23:
-                pygame.draw.circle(self.screen,(238,130,238),(120*self.screen_size,350*self.screen_size),(i-23)*self.screen_size,3*self.screen_size)
+                pygame.draw.circle(self.screen,color_dict[rarity],(120*self.screen_size,350*self.screen_size),(i-23)*self.screen_size,3*self.screen_size)
             if i > 25:
-                pygame.draw.circle(self.screen, (238,130,238),(220*self.screen_size,150*self.screen_size),(i-25)*self.screen_size,3*self.screen_size)
-                pygame.draw.circle(self.screen,(238,130,238),(130*self.screen_size,450*self.screen_size),(i-25)*self.screen_size,3*self.screen_size)
-            if i >= 108:
-                pygame.draw.circle(self.screen, (240,248,255) ,(180*self.screen_size,320*self.screen_size),(25+(i-108)*15)*self.screen_size,0) # 画面全体を白く塗りつぶす
+                pygame.draw.circle(self.screen, color_dict[rarity],(220*self.screen_size,150*self.screen_size),(i-25)*self.screen_size,3*self.screen_size)
+                pygame.draw.circle(self.screen,color_dict[rarity],(130*self.screen_size,450*self.screen_size),(i-25)*self.screen_size,3*self.screen_size)
+            if rarity >= 4:
+                if i >= 108:
+                    pygame.draw.circle(self.screen, (240,248,255) ,(180*self.screen_size,320*self.screen_size),(25+(i-108)*last_speed_dict[rarity])*self.screen_size,0) # 画面全体を白く塗りつぶす
             pygame.display.update()
             self.clock.tick(self.FPS)
             for event in pygame.event.get():
@@ -1292,6 +1354,10 @@ class ShowGame(battle.Battle, town.Town):
         for dict_name in self.dict_name_list:
             self.choice_dict.update(
                 {dict_name: {"number": "False", "name": "False"}})
+        # 「ダンジョンへ行く」状態でワールドマップなので、これで初期化する。
+        # 街いに行きたいときも、「ダンジョンへ行く」よりも「街へ行く」のほうが優先度が高いので、
+        # 街へ行く条件を満たすように設定すれば「ダンジョンへ行く」よりも優先されるため問題はない。
+        self.choice_dict["街へ行く"] = {"number":1,"name":"ダンジョンへ行く"}
         self.choice_current_page = 0
 
     def choice_screen(self, title, choice: List[str], message: List[str], dict_name, delete_dict_list_when_return: List[str] = [], multi_page_checker: str = "single",special_action_when_return:int = 0):
@@ -1707,6 +1773,81 @@ class ShowGame(battle.Battle, town.Town):
             pygame.display.update()
             time.sleep(period/2)
 
+    # def load_image(self,dir, filename, colorkey=None):
+    #     file = os.path.join(dir, filename)
+    #     image = pygame.image.load(file)
+    #     image = image.convert()
+    #     if not colorkey == None:
+    #         if colorkey == -1:
+    #             colorkey = image.get_at((0, 0))
+    #         image.set_colorkey(colorkey, RLEACCEL)
+    #     return image
+
+    def show_map(self):
+        self.world_map_image = pygame.image.load("./new_system/mypj3/img/world_map.jpg")
+        self.world_map_image = pygame.transform.rotozoom(self.world_map_image, 0, self.screen_size)
+        self.screen.blit(self.world_map_image,(0,0))
+        self.arrow_image = pygame.image.load("./new_system/mypj3/img/arrow.png").convert_alpha()
+        self.arrow_image = pygame.transform.rotozoom(self.arrow_image, 0, self.screen_size)
+        self.stage_range_image = pygame.image.load("./new_system/mypj3/img/rect_70.png").convert_alpha()
+        self.stage_range_image = pygame.transform.rotozoom(self.stage_range_image, 0, self.screen_size)
+        self.show_allow(3)
+
+    def show_allow(self,frontier_stage_id):
+        """現在の一番進んでいるステージ番号を入力すれば、そのステージまでの矢印と当たり判定を追加する関数。
+        画面上表示がarrow、当たり判定はrect、位置が異なるので注意"""
+
+        # 透過処理のやり方(備忘録）
+        # まず、画像を透過処理する（ウェブサイトでできる）
+        # 画像を読み込むとき（パスを書く行）、最後に.convert_alpha()をつける
+
+        # stage_position_dict:{ステージ番号:タップポイントの中心座標}
+        # ステージ0は街
+        self.stage_rect_dict_360p = {0:(93,566),1:(190,577),2:(280,503),3:(260,417),4:(255,332),5:(270,246),6:(166,263),7:(168,368),8:(91,430),9:(53,340),10:(67,253),
+        11:(90,160),12:(51,75),13:(176,51),14:(268,62),15:(319,146)}
+        self.stage_arrow_dict={}
+        self.stage_buttonrect = [0 for i in range(16)]
+        self.stage_type_dict = {"normal":1,"boss":2}
+        for stage_id in range(frontier_stage_id+1):
+            # arrowの「左上」位置を、ステージ選択のタップ判定の「中央」位置から左に11、上に48の位置に設定する
+            for i in range(len(self.stage_rect_dict_360p)):
+                self.stage_arrow_dict[i] = ((self.stage_rect_dict_360p[i][0]-11)*self.screen_size,(self.stage_rect_dict_360p[i][1]-48)*self.screen_size)
+            self.screen.blit(self.arrow_image,self.stage_arrow_dict[stage_id])
+            # print([(self.stage_rect_dict_360p[stage_id][0]-40)*self.screen_size, (self.stage_rect_dict_360p[stage_id][1]-40)*self.screen_size])
+            self.stage_buttonrect[stage_id] = Rect((self.stage_rect_dict_360p[stage_id][0]-35)*self.screen_size, (self.stage_rect_dict_360p[stage_id][1]-35)*self.screen_size, 70*self.screen_size, 70*self.screen_size)
+            # 当たり判定を表示
+            if self.demand[5] >= 2:
+                self.screen.blit(self.stage_range_image,((self.stage_rect_dict_360p[stage_id][0]-35)*self.screen_size,(self.stage_rect_dict_360p[stage_id][1]-35)*self.screen_size))
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+            if (event.type == pygame.MOUSEBUTTONUP) and (event.button == 1):
+                for stage_id in range(frontier_stage_id+1):
+                    if self.stage_buttonrect[stage_id].collidepoint(event.pos):
+                        pygame.mixer.Channel(0).play(pygame.mixer.Sound(self.se_dict["start"]))
+                        print(stage_id)
+                        self.dungeon_num = stage_id
+                        self.map_judge = 1
+                        if stage_id != 0:
+                            self.dungeon_type = self.vhlookup(self.book["通常ダンジョン"],str(stage_id),1,"type",1)
+                            self.gamescene = self.stage_type_dict[self.dungeon_type]
+                            self.stage_select_effect()
+                        return
+        return
+
+    def enter_dungeon(self):
+        if self.dungeon_type == "normal":
+            return self.book["通常ダンジョン"]
+        elif self.dungeon_type == "boss":
+            # ボス戦の場合、この段階でアルゴリズムを最後まで回す。
+            # なお、16進5桁以外は非対応である。
+            self.autoplay()
+            return self.book["ボスダンジョン"]
+        else:
+            self.dungeon_type = "normal"
+            print("normalダンジョンに入ります。")
+            return self.book["通常ダンジョン"]
 
     def historylast_show(self):
 

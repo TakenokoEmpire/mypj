@@ -40,9 +40,10 @@ class Commander(show_game4.ShowGame):
         3番目:闇属性のみ選択肢をvalだけ削る
         4番目:属性の効果を、(1+val)倍する
         """
-        self.demand = [1, 1,1,0,0]
+        self.demand = [1, 1,1,0,0,2]
         super().__init__(demand = self.demand)
         self.place = "entrance"
+        self.dungeon_num = -1# 初期状態は-1。0になると街へ移動する。
 
     def gui_run(self):
         pygame.display.set_caption("Hit, Blow and Dragons")
@@ -92,29 +93,16 @@ class Commander(show_game4.ShowGame):
                     self.choice_screen("Hit and blow", [["街へ行く","戦闘準備"], ["ダンジョンへ行く","モンスターとの戦闘"], ["ダイヤ購入","課金コーナー"]],"", "初期画面")
                     self.run_count_town = [0, 0, 0, 0, 0, 0, 0]
                     self.run_count_battle = [0, 0, 0, 0, 0, 0, 0]
+                    self.choice_dict.update({"初期画面": {"number": 1, "name": "ダンジョンへ行く"}})
 
-                elif self.choice_dict["初期画面"]["name"] == "ダイヤ購入":
-                    if self.choice_dict["ダイヤ購入"]["number"] == "False":
-                        self.choice_screen(["何個購入しますか？","保有ダイヤモンド:{}".format(self.diamond)], list(zip(["1個","10個","50個","100個"],["¥100","¥900","¥4000","¥7500"])), ["※現在は無料で購入できます"],  "ダイヤ購入")
-                    elif self.choice_dict["ダイヤ購入"]["name"] != "False" and self.choice_dict["ダイヤ購入確認"]["name"] == "False":
-                        diamond_qty = int(self.choice_dict["ダイヤ購入"]["name"][:-1])
-                        self.choice_screen("ダイヤを{}個購入します。本当によろしいですか？".format(diamond_qty), [["はい",""],["いいえ",""]], [""], "ダイヤ購入確認", ["ダイヤ購入"])
-                    elif self.choice_dict["ダイヤ購入確認"]["name"] == "はい":
-                        self.message = "ご購入ありがとうございます！"
-                        self.buy_diamond(diamond_qty)
-                        self.save()
-                        print("ダイヤ{}個購入".format(diamond_qty))
-                        self.choice_dict["ダイヤ購入確認"] = {"number": "False", "name": "False"}
-                        self.choice_dict["ダイヤ購入"] = {"number": "False", "name": "False"}
-                    elif self.choice_dict["ダイヤ購入確認"]["name"] == "いいえ":
-                        self.choice_dict["ダイヤ購入確認"] = {"number": "False", "name": "False"}
-                        self.choice_dict["ダイヤ購入"] = {"number": "False", "name": "False"}
+
 
                 #街のトップページ
-                elif self.choice_dict["初期画面"]["name"] == "街へ行く":
+                #↓の行の左の>を押すと、街のコードを一気に隠せる
+                elif self.choice_dict["初期画面"]["name"] == "街へ行く" or self.dungeon_num == 0:
                     if self.choice_dict["街の入口"]["number"] == "False":
                         self.choice_screen(
-                            ["街の入口","Lv.{} Gold:{} Diamond:{}".format(self.lv,self.money,self.diamond)], [["ステータスチェック","現在準備中"],  ["装備","装備の変更や成長合成を行う"],  ["ショップ","アイテムの購入"],  ["ガチャ",["超強力なアイテムゲットのチャンス。","期間限定のハロウィンイベント実施中！"]], ["クエスト","依頼をこなして報酬をゲットせよ！"],["成長合成","武器をカスタマイズしよう！"]], "", "街の入口")
+                            ["街の入口","Lv.{} Gold:{} Diamond:{}".format(self.lv,self.money,self.diamond)], [["ステータスチェック","現在のステータスを確認"],  ["装備","装備の変更"],  ["ショップ","アイテムの購入"],  ["ガチャ",["超強力なアイテムゲットのチャンス。","期間限定のハロウィンイベント実施中！"]], ["クエスト","依頼をこなして報酬をゲットせよ！"],["成長合成","武器をカスタマイズしよう！"],["ダイヤ購入","課金してダイヤモンドを購入します"]], "", "街の入口")
 
                     #ステータス表示
                     elif self.choice_dict["街の入口"]["name"] == "ステータスチェック":
@@ -151,7 +139,6 @@ class Commander(show_game4.ShowGame):
                         # self.town_status()
                         # self.init_town_info()
                         # self.save()
-
 
                     # 装備変更
                     elif self.choice_dict["街の入口"]["name"] == "装備":
@@ -191,7 +178,7 @@ class Commander(show_game4.ShowGame):
                         # 素材を魔女のところへ、装備購入をこちらで。進度に応じて変更したい。
                         if self.choice_dict["ショップ画面"]["number"] == "False":
                             item_list_consume = ["薬草","回復薬","妨害の笛","知恵の書","ハイポーション"]
-                            item_list_material = ["水の石","木の石","闇の石","雷の石","砂金"]
+                            item_list_material = ["水の砂","木の砂","闇の砂","雷の砂","砂金"]
                             self.choice_screen_multi(["ショップ","所持金:{}G".format(self.money)],
                             [self.show_nonequip_item(item_list_consume),self.show_nonequip_item(item_list_material)]
                             ,[["戦闘用消耗品コーナー", "右下・左下のボタンで他のコーナーに行けるよ"],["属性の砂コーナー", "付与属性値が増えると、", "各々の色の選択肢が一定確率で減少する"]]
@@ -213,7 +200,6 @@ class Commander(show_game4.ShowGame):
                             self.choice_dict["ショップ確認画面"] = {"number": "False", "name": "False"}
                             self.choice_dict["ショップ画面"] = {"number": "False", "name": "False"}
                             
-
                     #クエスト
                     elif self.choice_dict["街の入口"]["name"] == "クエスト":
                         if self.choice_dict["クエスト画面"]["number"] == "False":
@@ -259,8 +245,8 @@ class Commander(show_game4.ShowGame):
                                     print("{}:{}を手に入れた！".format(item_rarity, selected_item))
                                     self.save()
                                 atodekesu_count += 1
-                            self.gacha_show()
-                            self.message =("{}:{}を手に入れた！".format(item_rarity, selected_item))
+                            self.gacha_show(item_rarity)
+                            self.message =("{}:{}を手に入れた！".format(self.rarity_dict[item_rarity], selected_item))
                             self.choice_dict["ガチャ確認画面"] = {
                                 "number": "False", "name": "False"}
                             self.choice_dict["ガチャ画面"] = {
@@ -369,10 +355,10 @@ class Commander(show_game4.ShowGame):
                                 min_val,max_val = self.compound_min_max(equip_id,sel_slot,material,catalyst_red,catalyst_blue,catalyst_green)
                                 self.choice_screen("以下の内容で成長合成を行います。よろしいですか？",list(zip(["はい","いいえ"],["",""])),["対象：{}, 合成素材:{}".format(self.id_equip_info(equip_id,"name"),material),"触媒:{}".format(catalyst),"最小値:{},最大値:{}".format(min_val,max_val)],"成長合成7",["成長合成6"])
                             elif self.choice_dict["成長合成7"]["name"] == "はい":
-                                attr,value = self.compound(equip_id,sel_slot,material,catalyst_red,catalyst_blue,catalyst_green)
+                                attr,value,rand_value = self.compound(equip_id,sel_slot,material,catalyst_red,catalyst_blue,catalyst_green)
                                 self.status_checker()
                                 self.save()
-                                self.gacha_show()
+                                self.gacha_show(rand_value,"on")
                                 self.message =("{}属性値が{}上昇した！".format(self.attr_dict[attr],value))
                                 self.choice_dict["成長合成7"] = {"number": "False", "name": "False"}
                                 self.choice_dict["成長合成6"] = {"number": "False", "name": "False"}
@@ -475,8 +461,8 @@ class Commander(show_game4.ShowGame):
                                         print("{}:{}を手に入れた！".format(item_rarity, selected_item))
                                         self.save()
                                     atodekesu_count += 1
-                                self.gacha_show()
-                                self.message =("{}:{}を手に入れた！".format(item_rarity, selected_item))
+                                self.gacha_show(item_rarity)
+                                self.message =("{}:{}を手に入れた！".format(self.rarity_dict[item_rarity], selected_item))
                                 self.choice_dict["合成ガチャ3"] = {
                                     "number": "False", "name": "False"}
                                 self.choice_dict["合成ガチャ2"] = {
@@ -487,8 +473,27 @@ class Commander(show_game4.ShowGame):
                                 self.choice_dict["合成ガチャ2"] = {
                                     "number": "False", "name": "False"}
 
+                    elif self.choice_dict["街の入口"]["name"] == "ダイヤ購入":
+                        if self.choice_dict["ダイヤ購入"]["number"] == "False":
+                            self.choice_screen(["何個購入しますか？","保有ダイヤモンド:{}".format(self.diamond)], list(zip(["1個","10個","50個","100個"],["¥100","¥900","¥4000","¥7500"])), ["※現在は無料で購入できます"],  "ダイヤ購入")
+                        elif self.choice_dict["ダイヤ購入"]["name"] != "False" and self.choice_dict["ダイヤ購入確認"]["name"] == "False":
+                            diamond_qty = int(self.choice_dict["ダイヤ購入"]["name"][:-1])
+                            self.choice_screen("ダイヤを{}個購入します。本当によろしいですか？".format(diamond_qty), [["はい",""],["いいえ",""]], [""], "ダイヤ購入確認", ["ダイヤ購入"])
+                        elif self.choice_dict["ダイヤ購入確認"]["name"] == "はい":
+                            self.message = "ご購入ありがとうございます！"
+                            self.buy_diamond(diamond_qty)
+                            self.save()
+                            print("ダイヤ{}個購入".format(diamond_qty))
+                            self.choice_dict["ダイヤ購入確認"] = {"number": "False", "name": "False"}
+                            self.choice_dict["ダイヤ購入"] = {"number": "False", "name": "False"}
+                        elif self.choice_dict["ダイヤ購入確認"]["name"] == "いいえ":
+                            self.choice_dict["ダイヤ購入確認"] = {"number": "False", "name": "False"}
+                            self.choice_dict["ダイヤ購入"] = {"number": "False", "name": "False"}
+
                 elif self.choice_dict["初期画面"]["name"] == "ダンジョンへ行く":
-                    if self.error_count == 1:
+                    if self.demand[5] >= 1 and self.gamescene == 0:
+                        self.show_map()
+                    elif self.error_count == 1:
                         self.error_show()
                         for event in pygame.event.get():
                             if event.type == pygame.QUIT:
@@ -533,19 +538,21 @@ class Commander(show_game4.ShowGame):
                             self.damage_effect()
 
                     elif self.gamescene == 0:  # ホーム画面
+                        self.show_map()
                         self.reset()
-                        self.home_show()
+                        # self.home_show()
                         self.home_judge()
                     elif self.gamescene == 5:  # how to play
                         self.how_to_play()
                         self.how_to_play_judje()
-                    elif self.dungeon_num == 0:
-                        self.stage_select()
-                        self.judge_stage_select()
+                    # elif self.dungeon_num == 0:
+                    #     self.stage_select()
+                    #     self.judge_stage_select()
 
                     elif self.gamescene == 1:  # Normal Stage
                         if self.run_count_battle[1] == 0:
-                            # 各戦闘毎に一回のみ動作させたい
+                            # 各戦闘毎に一回のみ動作させたい 
+                            #第一ステージのときはhow to playを毎回出現させる。
                             self.dungeon_init()
                             self.second_init_showgame()
                             self.print_status()
@@ -565,16 +572,16 @@ class Commander(show_game4.ShowGame):
 
                     elif self.gamescene == 2:  # Boss Stage
                         if self.run_count_battle[2] == 0:
-                            # ↓autoplayもやってくれる
                             self.dungeon_init()
+                            self.autoplay()
                             self.boss_history = self.hist[1]
-                            print(self.boss_history)
+                            # print(self.boss_history)
                             self.second_init_showgame()
                             self.run_count_battle[2] += 1
                             self.run_count_battle[6] = 1
                         if self.run_count_battle[6] < self.turn:
                             # 各ターンに一度だけ動作させたい
-                            print(self.turn)
+                            # print(self.turn)
                             # self.hp_g -= self.damage
                             self.run_count_battle[6] += 1
                         if self.switch_judge("turn_switch", self.turn_switch, 0) == True:
@@ -602,6 +609,7 @@ class Commander(show_game4.ShowGame):
                             self.win()
                             self.run_count_battle[4] += 1
                         self.clear()
+                        self.level_up_screen()
                         self.result_judge()
 
                     if self.switch_judge("gamescene", self.gamescene, 0) == True:

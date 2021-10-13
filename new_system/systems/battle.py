@@ -4,8 +4,7 @@ import random
 import math
 import copy
 from systems import judge_manual
-import try_1003
-import try_1009
+import try_1013
 import send_recieve
 import time
 import unicodedata
@@ -21,7 +20,7 @@ return忘れ（Noneが帰ってきたときや、Nonetypeとの足し算がで�
 gameplay以外のファイルを実行（ipmortがおかしいときは大抵これ）
 過剰にリスト化（text must be a unicode or bytesのとき）
 変数のstr化（text must be a unicode or bytes）
-Excel検索文字列がstrでない（text must be a unicode or bytes）
+Excel検索文字列がstrでない（text must be a unicode or bytes　又は検索結果がFalse）
 """
 
 """
@@ -359,6 +358,7 @@ class Core(Function):
         self.attr_dict = {"dark":"闇","water":"水","plant":"木","elect":"雷","all":"全","dark_attr":"闇","water_attr":"水","plant_attr":"木","elect_attr":"雷","all_attr":"全"}
         self.attr_list4 = ["water_attr","plant_attr","dark_attr","elect_attr"]
         self.attr_list5 = ["water_attr","plant_attr","dark_attr","elect_attr","all_attr"]
+        self.rarity_dict = {1:"Common",2:"Uncommon",3:"Rare",4:"Legend",5:"Mythcal"}
         # ステータス取得
         self.status_checker()  # ステータス取得前にステータスを更新しておく
 
@@ -652,7 +652,7 @@ class Core(Function):
         self.use_multi_item([material,catalyst_red,catalyst_blue,catalyst_green])
         self.equip_multi_val_update(equip_id,["slot{}_attr".format(slot_num),"slot{}_val".format(slot_num)],[attr,compound_value])
         self.attribute_update(equip_id)
-        return attr,compound_value
+        return attr,compound_value,rand_exponent
 
     def compound_judge(self,material,catalyst_red = "",catalyst_blue = "",catalyst_green = ""):
         """同種類の触媒を同時に送ることは禁止（特に緑系統）
@@ -808,16 +808,15 @@ class Battle(Core):
         # ダンジョン情報と初期設定
         print("gamescene:{},dungeon_num:{}".format(
             self.gamescene, self.dungeon_num))
-        dungeon_type_list = ["none", "normal", "boss"]
-        self.dungeon_type = dungeon_type_list[self.gamescene]
+        # dungeon_type_list = ["none", "normal", "boss"]
+        # self.dungeon_type = dungeon_type_list[self.gamescene]
         self.ans = ["12345", "abcde"]
         self.turn_count = [0, 0]
         self.hist = [[], []]
         self.max_ans = 16
         self.length = 5
 
-        self.mobname = self.vlookup(
-            self.choose_dungeon(), str(self.dungeon_num), 3)
+        self.mobname = self.vhlookup(self.book["通常ダンジョン"], str(self.dungeon_num), 1,"enemy1",1)
         self.mobsheet = self.book[self.mobname]
         self.vs_sheet = [self.mysheet, self.mobsheet]
         print("野生の{}が現れた！".format(self.mobname))
@@ -859,20 +858,20 @@ class Battle(Core):
     #     self.exp[num] = self.vlookup(sheet, "exp", 2)
     #     self.money[num] = self.vlookup(sheet, "money", 2)
 
-    def choose_dungeon(self):
-        # 小文字化させたい
-        while True:
-            if self.dungeon_type == "normal":
-                return self.book["通常ダンジョン"]
-            elif self.dungeon_type == "boss":
-                # ボス戦の場合、この段階でアルゴリズムを最後まで回す。
-                # なお、16進5桁以外は非対応である。
-                self.autoplay()
-                return self.book["ボスダンジョン"]
-            else:
-                self.dungeon_type = "normal"
-                print("normalダンジョンに入ります。")
-                return self.book["通常ダンジョン"]
+    # def choose_dungeon(self):
+    #     # 小文字化させたい
+    #     while True:
+    #         if self.dungeon_type == "normal":
+    #             return self.book["通常ダンジョン"]
+    #         elif self.dungeon_type == "boss":
+    #             # ボス戦の場合、この段階でアルゴリズムを最後まで回す。
+    #             # なお、16進5桁以外は非対応である。
+    #             self.autoplay()
+    #             return self.book["ボスダンジョン"]
+    #         else:
+    #             self.dungeon_type = "normal"
+    #             print("normalダンジョンに入ります。")
+    #             return self.book["通常ダンジョン"]
 
     def main(self):
         # self.second_init_battle()
@@ -996,7 +995,7 @@ class Battle(Core):
     """
 
     def autoplay(self):
-        vs = try_1009.AutoPlay("off")
+        vs = try_1013.AutoPlay("off")
         self.hist[1] = vs.run()
 
     def mob_turn(self):
@@ -1048,8 +1047,8 @@ class Battle(Core):
                 print("おめでとう！レベルが{}に上がった！".format(self.lv + 1))
                 print("HPが{}上がった！".format(self.vlookup(
                     self.book["level_table"], str(self.lv + 1), 7)))
-                print("攻撃が{}上がった！".format(self.vlookup(
-                    self.book["level_table"], str(self.lv + 1), 8)))
+                print("攻撃が{}上がった！".format(self.vlookup(self.book["level_table"], str(self.lv + 1), 8)))
+                self.level_up_box.append([self.lv,self.lv+1,self.vhlookup(self.book["level_table"],self.lv,1,"hp",1),self.vhlookup(self.book["level_table"],self.lv+1,1,"hp",1)])
                 self.lv += 1
             else:
                 break
