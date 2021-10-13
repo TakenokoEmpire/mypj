@@ -603,10 +603,23 @@ class Core(Function):
         # print(equip_info_dict)
         return equip_info_dict
 
+    def id_equip_summery(self,equip_id):
+        """ゲーム中に表示する、武器の情報の詳細をリストで返す"""
+        return ["HP:+{}, 属性基礎力:{}, Slot:{}/{}".format(self.id_equip_info(equip_id,"hp"),self.id_equip_info(equip_id,"atk"),self.id_equip_info(equip_id,"slot_qty")-self.id_equip_info(equip_id,"slot_empty"),self.id_equip_info(equip_id,"slot_qty")),"水:{}, 木:{}, 闇:{}, 光:{}".format(self.id_equip_info(equip_id,"water_attr"),self.id_equip_info(equip_id,"plant_attr"),self.id_equip_info(equip_id,"dark_attr"),self.id_equip_info(equip_id,"elect_attr"))]
+
     def current_equip_list(self, info_type):
+        """現在装備の全部位の一種類の情報をリストで返す"""
         box = []
         for pos in self.equip_position:
             box.append(self.vhlookup_super(self.mysheet,pos,1,info_type,"position","off"))
+        return box
+
+    def current_equip_list_multi_info(self, info_type_list:List[str]):
+        """【注意】動作不安定かも？
+        現在装備の全部位の複数の情報をリストで返す。外側のリストが「情報種類」、内側が「装備部位」"""
+        box = []
+        for info_type in info_type_list:
+            box.append(self.current_equip_list(info_type))
         return box
 
     def equip_val_update(self,equip_id,info_type,update_val):

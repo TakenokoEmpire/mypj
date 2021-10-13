@@ -1566,26 +1566,46 @@ class ShowGame(battle.Battle, town.Town):
                     for dicts in delete_dict_list_when_return:
                         self.choice_dict.update({dicts: {"number": "False", "name": "False"}})
 
-    def message_screen(self, message: str):
+    def message_screen(self,message,fontsize:str = "large"):
         """メッセーのみを表示したいときに使うモジュール
         メッセージは自動改行される
+        リスト化すると、文中でも改行ができる。
+        fontsizeはmiddleかlargeの二択
         """
+        if type(message) == str:
+            self.message_screen_single(message,fontsize)
+        elif type(message) == list:
+            for i, line in enumerate(message):
+                self.message_screen_single(line,fontsize,i)
+            
+
+    def message_screen_single(self, message:str,fontsize:str = "large",row_pos:int=0):
         self.choice_buttonrect = []
         choice_answer = False
         font_title = pygame.font.SysFont(
-            "bizudminchomediumbizudpminchomediumtruetype", 24*self.screen_size)
+            "bizudminchomediumbizudpminchomediumtruetype", 26*self.screen_size)
         font = pygame.font.SysFont(
             "bizudminchomediumbizudpminchomediumtruetype", 21*self.screen_size)
         font2 = pygame.font.SysFont(
             "bizudminchomediumbizudpminchomediumtruetype", 16*self.screen_size)
         # 自動改行
-        message = str(message)
-        text_list = self.line_break(message, 32)
-        for i, name in enumerate(text_list):
-            print_message = font.render(name, True, "WHITE")
-            self.screen.blit(
-                print_message, (11*self.screen_size, (100+27*i)*self.screen_size))
-        self.screen.blit(self.return_button_img, self.return_buttonrect)
+        if fontsize == "middle":
+            message = str(message)
+            text_list = self.line_break(message, 32)
+            for i, name in enumerate(text_list):
+                print_message = font.render(name, True, "WHITE")
+                self.screen.blit(
+                    print_message, (11*self.screen_size, (100+27*(i+row_pos))*self.screen_size))
+            self.screen.blit(self.return_button_img, self.return_buttonrect)
+
+        else:
+            message = str(message)
+            text_list = self.line_break(message, 24)
+            for i, name in enumerate(text_list):
+                print_message = font_title.render(name, True, "WHITE")
+                self.screen.blit(
+                    print_message, (18*self.screen_size, (100+34*(i+row_pos))*self.screen_size))
+            self.screen.blit(self.return_button_img, self.return_buttonrect)
 
         # 以下、本来は別関数（judge_～～～）となるはずだった部分
         for event in pygame.event.get():
