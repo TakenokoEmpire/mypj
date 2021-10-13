@@ -143,7 +143,7 @@ class Commander(show_game4.ShowGame):
                         
                         # # ステータス表示
                         # elif self.choice_dict["ステータストップ画面"]["name"] == "ステータス":
-                            self.message = ["Level :{}".format(self.lv),"HP　　:{}(+{})".format(self.hp,self.mysheet["C3"].value),"水属性:{}".format(self.attr_power[0]),"木属性:{}".format(self.attr_power[1]),"闇属性:{}".format(self.attr_power[2]),"雷属性:{}".format(self.attr_power[3])]
+                            self.message = ["Level :{}".format(self.lv),"HP　　:{}(+{})".format(self.hp,self.mysheet["D3"].value),"水属性:{}".format(self.attr_power[0]),"木属性:{}".format(self.attr_power[1]),"闇属性:{}".format(self.attr_power[2]),"雷属性:{}".format(self.attr_power[3])]
                             self.init_town_info()
 
 
@@ -561,7 +561,7 @@ class Commander(show_game4.ShowGame):
                             self.run_count_battle[6] += 1
                         self.normal_stage()
                         self.normal_stage_judge()
-                        self.boss_action()
+                        self.boss_action() #消し忘れ？
 
                     elif self.gamescene == 2:  # Boss Stage
                         if self.run_count_battle[2] == 0:

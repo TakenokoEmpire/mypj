@@ -667,13 +667,30 @@ class ShowGame(battle.Battle, town.Town):
         【AFTER】
         hitblow→引数
         """
-        self.screen.blit(
-            self.enemy_list[self.dungeon_num], self.enemyrect)  # 敵の描画
+
+        self.screen.blit(self.enemy_list[self.dungeon_num],self.enemyrect) # 敵の描画
+        font2 = pygame.font.SysFont(None, 30*self.screen_size) # turnの表示
+        # stage = font2.render("turn:{}".format(self.turn), True, (255,255,255))
+        font4 = pygame.font.SysFont(None, 45*self.screen_size)
+        #ターン数が2桁になったときに位置がずれないように
+        if self.turn < 10:
+            hit_blow = font4.render("Turn:{}    Hit:{}    Blow:{}".format(self.turn,self.hit,self.blow), True, (255,255,255))
+        else:
+            hit_blow = font4.render("Turn:{}  Hit:{}    Blow:{}".format(self.turn,self.hit,self.blow), True, (255,255,255))
+        font = pygame.font.Font("./new_system/ALGERIA.TTF", 40*self.screen_size)
+        item_comand = font.render("ITEMS", True, (255,255,255))
+        self.screen.blit(item_comand,(130*self.screen_size, 315*self.screen_size))
+        # self.screen.blit(stage, (5*self.screen_size,5*self.screen_size))
+        self.screen.blit(hit_blow, (22*self.screen_size,360*self.screen_size))
+        self.screen.blit(self.enter_button_img, self.enter_buttonrect)
+        self.screen.blit(self.history_button_img, self.history_buttonrect)
+        self.mark_show()
+
+
+        self.screen.blit(self.enemy_list[self.dungeon_num], self.enemyrect)  # 敵の描画
         font2 = pygame.font.SysFont(None, 30*self.screen_size)  # turnの表示
-        stage = font2.render("turn:{}".format(
-            self.turn), True, (255, 255, 255))
-        pygame.draw.line(self.screen, (0, 200, 0), (30*self.screen_size, 40*self.screen_size),
-                        (30*self.screen_size+self.hp_g*self.hp_bar_ratio*self.screen_size, 40*self.screen_size), 10*self.screen_size)  # HPの表示
+        # stage = font2.render("turn:{}".format(self.turn), True, (255, 255, 255))
+        pygame.draw.line(self.screen, (0, 200, 0), (30*self.screen_size, 40*self.screen_size),(30*self.screen_size+self.hp_g*self.hp_bar_ratio*self.screen_size, 40*self.screen_size), 10*self.screen_size)  # HPの表示
         font3 = pygame.font.SysFont(None, 20*self.screen_size)
         hp_word = font3.render("HP", True, (255, 255, 255))
         hp_value = font3.render("{}".format(self.hp_g), True, (255, 255, 255))
@@ -690,19 +707,17 @@ class ShowGame(battle.Battle, town.Town):
         if damage != 0:
             pygame.draw.line(self.screen, (200, 0, 0),
                              (30*self.screen_size+self.hp_g*self.hp_bar_ratio*self.screen_size, 40*self.screen_size), (30*self.screen_size+(self.hp_g+damage)*self.hp_bar_ratio*self.screen_size, 40*self.screen_size), 10*self.screen_size)
-        font4 = pygame.font.SysFont(None, 50*self.screen_size)
-        hit_blow = font4.render("Hit:{}   Blow:{}".format(
-            self.hit, self.blow), True, (255, 255, 255))
-        self.screen.blit(stage, (5*self.screen_size, 5*self.screen_size))
+        # font4 = pygame.font.SysFont(None, 50*self.screen_size)
+        # hit_blow = font4.render("Hit:{}   Blow:{}".format(self.hit, self.blow), True, (255, 255, 255))
+        # self.screen.blit(stage, (5*self.screen_size, 5*self.screen_size))
         self.screen.blit(hp_word, (5*self.screen_size, 35*self.screen_size))
-        self.screen.blit(
-            hp_value, (30*self.screen_size+(self.hp_g+damage)*self.hp_bar_ratio*self.screen_size+2*self.screen_size, 35*self.screen_size))
-        self.screen.blit(hit_blow, (80*self.screen_size, 360*self.screen_size))
-        self.screen.blit(self.enter_button_img, self.enter_buttonrect)
-        self.screen.blit(self.history_button_img, self.history_buttonrect)
-        font = pygame.font.Font("./new_system/ALGERIA.TTF", 40*self.screen_size)
-        item_comand = font.render("ITEMS", True, (255,255,255))
-        self.screen.blit(item_comand,(130*self.screen_size, 310*self.screen_size))
+        self.screen.blit(hp_value, (30*self.screen_size+(self.hp_g+damage)*self.hp_bar_ratio*self.screen_size+2*self.screen_size, 35*self.screen_size))
+        # self.screen.blit(hit_blow, (80*self.screen_size, 360*self.screen_size))
+        # self.screen.blit(self.enter_button_img, self.enter_buttonrect)
+        # self.screen.blit(self.history_button_img, self.history_buttonrect)
+        # font = pygame.font.Font("./new_system/ALGERIA.TTF", 40*self.screen_size)
+        # item_comand = font.render("ITEMS", True, (255,255,255))
+        # self.screen.blit(item_comand,(130*self.screen_size, 310*self.screen_size))
         self.mark_show()
 
     def boss_action(self, mode="normal"):
@@ -800,9 +815,15 @@ class ShowGame(battle.Battle, town.Town):
                         self.turn_switch += 1  # ボス用
                         self.boss_action(mode)  # ボス用
                         if self.hit == 5:
-                            font4 = pygame.font.SysFont(None, 50*self.screen_size)
-                            hit_blow = font4.render("Hit:{}   Blow:{}".format(self.hit,self.blow), True, (230,180,34),(0,0,0))
-                            self.screen.blit(hit_blow, (80*self.screen_size,360*self.screen_size))
+                            # font4 = pygame.font.SysFont(None, 50*self.screen_size)
+                            # hit_blow = font4.render("Hit:{}   Blow:{}".format(self.hit,self.blow), True, (230,180,34),(0,0,0))
+                            # self.screen.blit(hit_blow, (80*self.screen_size,360*self.screen_size))
+                            font4 = pygame.font.SysFont(None, 45*self.screen_size)
+                            if self.turn < 10:
+                                hit_blow = font4.render("Turn:{}    Hit:{}    Blow:{}".format(self.turn,self.hit,self.blow), True, (230,180,34),(0,0,0))
+                            else:
+                                hit_blow = font4.render("Turn:{}  Hit:{}    Blow:{}".format(self.turn,self.hit,self.blow), True, (230,180,34),(0,0,0))
+                            self.screen.blit(hit_blow, (22*self.screen_size,360*self.screen_size))
                             pygame.display.update()
                             pygame.mixer.Channel(0).play(pygame.mixer.Sound(self.se_dict["clear"])) 
                             time.sleep(2)
@@ -890,34 +911,44 @@ class ShowGame(battle.Battle, town.Town):
         """
         self.screen.blit(self.enemy_list[self.dungeon_num],self.enemyrect) # 敵の描画
         font2 = pygame.font.SysFont(None, 30*self.screen_size) # turnの表示
-        stage = font2.render("turn:{}".format(self.turn), True, (255,255,255))
-        font4 = pygame.font.SysFont(None, 50*self.screen_size)
-        hit_blow = font4.render("Hit:{}   Blow:{}".format(self.hit,self.blow), True, (255,255,255))
+        # stage = font2.render("turn:{}".format(self.turn), True, (255,255,255))
+        font4 = pygame.font.SysFont(None, 45*self.screen_size)
+        #ターン数が2桁になったときに位置がずれないように
+        if self.turn < 10:
+            hit_blow = font4.render("Turn:{}    Hit:{}    Blow:{}".format(self.turn,self.hit,self.blow), True, (255,255,255))
+        else:
+            hit_blow = font4.render("Turn:{}  Hit:{}   Blow:{}".format(self.turn,self.hit,self.blow), True, (255,255,255))
         font = pygame.font.Font("./new_system/ALGERIA.TTF", 40*self.screen_size)
         item_comand = font.render("ITEMS", True, (255,255,255))
-        self.screen.blit(item_comand,(130*self.screen_size, 310*self.screen_size))
-        self.screen.blit(stage, (5*self.screen_size,5*self.screen_size))
-        self.screen.blit(hit_blow, (80*self.screen_size,360*self.screen_size))
+        self.screen.blit(item_comand,(130*self.screen_size, 315*self.screen_size))
+        # self.screen.blit(stage, (5*self.screen_size,5*self.screen_size))
+        self.screen.blit(hit_blow, (22*self.screen_size,360*self.screen_size))
         self.screen.blit(self.enter_button_img, self.enter_buttonrect)
         self.screen.blit(self.history_button_img, self.history_buttonrect)
         self.mark_show()
         # self.boss_guess_list, self.boss_hit, self.boss_blow
         # ボスのHit,Blow
-        font4 = pygame.font.SysFont(None, 40*self.screen_size)
+        font4 = pygame.font.SysFont(None, 36*self.screen_size)
         if self.boss_hit >= 3: #ここでボスのhitが3以上かどうか
             self.alert_count = 1
         if self.alert_count == 1:
-            hit_blow = font4.render("Hit:{}   Blow:{}".format(self.boss_hit,self.boss_blow), True, (160,0,0))
+            hit_blow = font4.render("Turn:{} Hit:{}  Blow:{}".format(self.boss_turn,self.boss_hit,self.boss_blow), True, (190,20,20))
         else:
-            hit_blow = font4.render("Hit:{}   Blow:{}".format(self.boss_hit,self.boss_blow), True, (255,255,255))
-        self.screen.blit(hit_blow, (105*self.screen_size,5*self.screen_size))
+            if self.boss_turn < 10:
+                hit_blow = font4.render("Turn:{}   Hit:{}  Blow:{}".format(self.boss_turn,self.boss_hit,self.boss_blow), True, (255,255,255))
+            else:
+                hit_blow = font4.render("Turn:{} Hit:{} Blow:{}".format(self.boss_turn,self.boss_hit,self.boss_blow), True, (255,255,255))
+        self.screen.blit(hit_blow, (111*self.screen_size,6*self.screen_size))
         # try:
-        font5 = pygame.font.SysFont(None, 28*self.screen_size)
-        enemy_guess_str = font5.render("BOSS's guess:", True, (255,255,255))
-        self.screen.blit(enemy_guess_str, (10*self.screen_size,44*self.screen_size))
+        font5 = pygame.font.SysFont(None, 49*self.screen_size)
+        boss_show = font5.render("BOSS", True, (190,20,20))
+        self.screen.blit(boss_show, (7*self.screen_size,15*self.screen_size))
+        font6 = pygame.font.SysFont(None, 28*self.screen_size)
+        enemy_guess_str = font6.render("Guess:", True, (255,255,255))
+        self.screen.blit(enemy_guess_str, (111*self.screen_size,35*self.screen_size))
         try:
             for j in range(5):
-                self.screen.blit(self.marks_s_16[int(self.boss_guess_list[j],base=16)], ((160+j*35)*self.screen_size, 38*self.screen_size, 30*self.screen_size, 30*self.screen_size))
+                self.screen.blit(self.marks_s_16[int(self.boss_guess_list[j],base=16)], ((180+j*30)*self.screen_size, 32*self.screen_size, 30*self.screen_size, 30*self.screen_size))
         except IndexError:
             pass
         # except:
@@ -1054,6 +1085,7 @@ class ShowGame(battle.Battle, town.Town):
     def show_prologue(self):
         """プロローグの表示
         """
+        
         j = 0
         self.screen.fill((0,0,0))
         self.paper_img = pygame.image.load("./new_system/mypj3/img/paper.png")
