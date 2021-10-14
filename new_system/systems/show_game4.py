@@ -1074,9 +1074,15 @@ class ShowGame(battle.Battle, town.Town):
         pc = font.render("PC", True, "WHITE")
         self.screen.blit(pc, (50, 10))
         pcrect = Rect(0, 10, w, h/2-50)
+
         smartphone = font.render("スマホ", True, "WHITE")
-        self.screen.blit(smartphone, (10, h/2+10))
-        smartphonerect = Rect(0, h/2+10, w, h/2-50)
+        self.screen.blit(smartphone, (10, h/3+10))
+        smartphonerect = Rect(0, h/3+10, w, h/2-50)
+
+        smartphone_hires = font.render("スマホ(大)", True, "WHITE")
+        self.screen.blit(smartphone_hires, (10, h/1.5+10))
+        smartphone_hiresrect = Rect(0, h/1.5+10, w, h/2-50)
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
@@ -1092,6 +1098,15 @@ class ShowGame(battle.Battle, town.Town):
                 if smartphonerect.collidepoint(event.pos):
                     self.screen = pygame.display.set_mode((1080, 1920))
                     self.screen_size = 3
+                    self.screen_count = 1
+                    self.set_player()
+                    self.set_mark()
+                    self.set_enemy()
+                    self.set_button()
+                    self.set_mark_entry()
+                if smartphone_hiresrect.collidepoint(event.pos):
+                    self.screen = pygame.display.set_mode((1440, 2560))
+                    self.screen_size = 4
                     self.screen_count = 1
                     self.set_player()
                     self.set_mark()
