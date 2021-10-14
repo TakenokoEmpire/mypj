@@ -201,7 +201,7 @@ class Function():
                         #     print(sheet.cell(row=j + 1, column=1).value)
                         #     print(top_index)
                         if str(sheet.cell(row=top_index_position, column=j+1).value) == top_index:
-                            if return_type == "excel":
+                            if return_type in ["excel","Excel"]:
                                 return openpyxl.utils.get_column_letter(j + 1)+str(i + 1)
                             else:
                                 return i + 1, j + 1
@@ -214,7 +214,7 @@ class Function():
                         #     print(sheet.cell(row=j + 1, column=1).value)
                         #     print(top_index)
                         if str(sheet.cell(row=top_index_position, column=j+left_index_position).value) == top_index:
-                            if return_type == "excel":
+                            if return_type in ["excel","Excel"]:
                                 return openpyxl.utils.get_column_letter(j + left_index_position)+str(i + top_index_position)
                             else:
                                 return i + top_index_position, j + left_index_position

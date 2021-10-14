@@ -101,6 +101,10 @@ class Commander(show_game4.ShowGame):
                 #↓の行の左の>を押すと、街のコードを一気に隠せる
                 elif self.choice_dict["初期画面"]["name"] == "街へ行く" or self.dungeon_num == 0:
                     if self.choice_dict["街の入口"]["number"] == "False":
+                        # if self.run_count_town[0] == 0:
+                        #     self.screen.blit(self.town_back_list[1],self.scenerect)
+                        #     time.sleep(1)
+                        #     self.run_count_town[0]+=1
                         self.choice_screen(
                             ["街の入口","Lv.{} Gold:{} Diamond:{}".format(self.lv,self.money,self.diamond)], [["ステータスチェック","現在のステータスを確認"],  ["装備","装備の変更"],  ["ショップ","アイテムの購入"],  ["ガチャ",["超強力なアイテムゲットのチャンス。","期間限定のハロウィンイベント実施中！"]], ["クエスト","依頼をこなして報酬をゲットせよ！"],["成長合成","武器をカスタマイズしよう！"],["ダイヤ購入","課金してダイヤモンドを購入します"]], "", "街の入口")
 

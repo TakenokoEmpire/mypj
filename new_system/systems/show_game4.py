@@ -268,41 +268,35 @@ class ShowGame(battle.Battle, town.Town):
             self.marks[i] = self.marks_16[self.attr_mark_dict[i]]
             self.marks_s[i] = self.marks_s_16[self.attr_mark_dict[i]]
 
+    def set_town(self):
+        self.town_back_list = {}
+        for stage_minus1 in range(5):
+            stage = stage_minus1 + 1
+            self.town_back_list[stage] = pygame.image.load("./new_system/mypj3/img/scenery/town{}.png".format(stage))
+            self.town_back_list[stage] = pygame.transform.rotozoom(self.town_back_list[stage], 0, self.screen_size)
+
+        self.townbackrect=Rect(0, 70*self.screen_size,
+                              187*self.screen_size, 250*self.screen_size)
+
+
+
     def set_enemy(self):
         """敵の設定
         """
         # ダンジョン番号毎の敵画像
         # ダメージときに点滅させるために2種類用意
-        # 【】敵画像の名称は、変数を用いたい
-        # 【】点滅用敵画像を作るのがめんどくさいなら、他にいい方法ありそう
-        # for stage_minus1 in range(15):
-        #     stage = stage_minus1 + 1
 
-        self.enemy1_img = pygame.image.load("./new_system/mypj3/img/enemy1.png")
-        self.enemy1_img = pygame.transform.rotozoom(
-            self.enemy1_img, 0, self.screen_size)
-        self.enemy1_damage_img = pygame.image.load(
-            "./new_system/mypj3/img/enemy1_damage.png")
-        self.enemy1_damage_img = pygame.transform.rotozoom(
-            self.enemy1_damage_img, 0, self.screen_size)
-        self.enemy2_img = pygame.image.load("./new_system/mypj3/img/enemy2.png")
-        self.enemy2_img = pygame.transform.rotozoom(
-            self.enemy2_img, 0, self.screen_size)
-        self.enemy2_damage_img = pygame.image.load(
-            "./new_system/mypj3/img/enemy2_damage.png")
-        self.enemy2_damage_img = pygame.transform.rotozoom(
-            self.enemy2_damage_img, 0, self.screen_size)
-        self.enemy3_img = pygame.image.load("./new_system/mypj3/img/enemy3.png")
-        self.enemy3_img = pygame.transform.rotozoom(
-            self.enemy3_img, 0, self.screen_size)
-        self.enemy3_damage_img = pygame.image.load(
-            "./mypj3/img/enemy3_damage.png")
-        self.enemy3_damage_img = pygame.transform.rotozoom(
-            self.enemy3_damage_img, 0, self.screen_size)
-        self.enemy_list = {1: self.enemy1_img,2: self.enemy2_img, 3: self.enemy3_img}
-        # self.enemy_damage_list = {1: self.enemy1_damage_img,
-        #                           2: self.enemy2_damage_img, 3: self.enemy3_damage_img}
-        self.enemyrect = Rect(93*self.screen_size, 60*self.screen_size,
+        self.enemy_list = {}
+        self.enemy_back_list = {}
+        self.enemyrect = {}
+        for stage_minus1 in range(15):
+            stage = stage_minus1 + 1
+            self.enemy_list[stage] = pygame.image.load("./new_system/mypj3/img/monster/enemy_{}.png".format(stage)).convert_alpha()
+            self.enemy_list[stage] = pygame.transform.rotozoom(self.enemy_list[stage], 0, self.screen_size)
+            self.enemy_back_list[stage] = pygame.image.load("./new_system/mypj3/img/scenery/sc{}.png".format(stage))
+            self.enemy_back_list[stage] = pygame.transform.rotozoom(self.enemy_back_list[stage], 0, self.screen_size)
+            self.enemyrect[stage] = Rect(180*self.screen_size-int(self.enemy_list[stage].get_width()/2), 85*self.screen_size,187*self.screen_size, 250*self.screen_size)
+        self.scenerect= Rect(0, 70*self.screen_size,
                               187*self.screen_size, 250*self.screen_size)
 
     def set_button(self):
@@ -326,7 +320,7 @@ class ShowGame(battle.Battle, town.Town):
         self.next_buttonrect = Rect(
             190*self.screen_size, 500*self.screen_size, 120*self.screen_size, 30*self.screen_size)
         self.history_buttonrect = Rect(
-            120*self.screen_size, 580*self.screen_size, 120*self.screen_size, 30*self.screen_size)
+            25*self.screen_size, 580*self.screen_size, 120*self.screen_size, 30*self.screen_size)
         self.stage_select_buttonrect = []
         # for i in range(self.max_dungeon_num):
         #     self.stage_select_buttonrect.append(Rect(
@@ -386,7 +380,7 @@ class ShowGame(battle.Battle, town.Town):
         self.enter_button_img = pygame.transform.rotozoom(
             self.enter_button_img, 0, self.screen_size)
         self.enter_buttonrect = Rect(
-            120*self.screen_size, 520*self.screen_size, 120*self.screen_size, 32*self.screen_size)
+            25*self.screen_size, 520*self.screen_size, 120*self.screen_size, 32*self.screen_size)
 
     def set_sound(self):
         self.bgm_dict = {"normal": "./new_system/mypj3/sound/normal_BGM.mp3",
@@ -678,7 +672,8 @@ class ShowGame(battle.Battle, town.Town):
         """通常ステージの描画
         """
 
-        self.screen.blit(self.enemy_list[self.dungeon_num],self.enemyrect) # 敵の描画
+        self.screen.blit(self.enemy_back_list[self.dungeon_num],self.scenerect) # 背景の描画
+        self.screen.blit(self.enemy_list[self.dungeon_num],self.enemyrect[self.dungeon_num]) # 敵の描画
         font2 = pygame.font.SysFont(None, 30*self.screen_size) # turnの表示
         # stage = font2.render("turn:{}".format(self.turn), True, (255,255,255))
         font4 = pygame.font.SysFont(None, 45*self.screen_size)
@@ -689,15 +684,14 @@ class ShowGame(battle.Battle, town.Town):
             hit_blow = font4.render("Turn:{}  Hit:{}    Blow:{}".format(self.turn,self.hit,self.blow), True, (255,255,255))
         font = pygame.font.Font("./new_system/ALGERIA.TTF", 40*self.screen_size)
         item_comand = font.render("ITEMS", True, (255,255,255))
-        self.screen.blit(item_comand,(130*self.screen_size, 315*self.screen_size))
+        self.screen.blit(item_comand,(210*self.screen_size, 555*self.screen_size))
         # self.screen.blit(stage, (5*self.screen_size,5*self.screen_size))
         self.screen.blit(hit_blow, (22*self.screen_size,360*self.screen_size))
         self.screen.blit(self.enter_button_img, self.enter_buttonrect)
         self.screen.blit(self.history_button_img, self.history_buttonrect)
         self.mark_show()
 
-
-        self.screen.blit(self.enemy_list[self.dungeon_num], self.enemyrect)  # 敵の描画
+        # self.screen.blit(self.enemy_list[self.dungeon_num], self.enemyrect[self.dungeon_num])  # 敵の描画
         font2 = pygame.font.SysFont(None, 30*self.screen_size)  # turnの表示
         # stage = font2.render("turn:{}".format(self.turn), True, (255, 255, 255))
         pygame.draw.line(self.screen, (0, 200, 0), (30*self.screen_size, 40*self.screen_size),(30*self.screen_size+self.hp_g*self.hp_bar_ratio*self.screen_size, 40*self.screen_size), 10*self.screen_size)  # HPの表示
@@ -741,6 +735,10 @@ class ShowGame(battle.Battle, town.Town):
                 self.boss_guess_list = self.boss_history[self.boss_turn-1]["guess"]
                 self.boss_hit = self.boss_history[self.boss_turn-1]["hit"]
                 self.boss_blow = self.boss_history[self.boss_turn-1]["blow"]
+                self.damage_effect(mode)
+                if self.boss_hit == 3:
+                    self.damage_effect(mode)
+                    self.damage_effect(mode)
                 self.boss_turn += 1
             except IndexError:
                 pass
@@ -846,32 +844,27 @@ class ShowGame(battle.Battle, town.Town):
                             # self.hp_g -= self.damage
                             pygame.mixer.Channel(0).play(
                                 pygame.mixer.Sound(self.se_dict["attack"]))
-                            for i in range(2):
-                                self.screen.blit(
-                                    self.enemy_list[self.dungeon_num], self.enemyrect)
-                                pygame.display.update()
-                                time.sleep(0.1)
-                                self.screen.blit(
-                                    self.enemy_list[self.dungeon_num], self.enemyrect)
-                                pygame.display.update()
-                                time.sleep(0.1)
+                            self.damage_effect(mode)
                         elif mode == "boss" and self.enemy_stop < 1:
-                            if self.boss_hit == 3:
-                                print("演出はここに入れる")
-                            elif self.boss_hit == 5:
+                            # self.damage_effect(mode)
+                            # if self.boss_hit == 3:
+                            #     self.damage_effect(mode)
+                            #     self.damage_effect(mode)
+                                # print("演出はここに入れる")
+                            if self.boss_hit == 5:
                                 self.hp_g -= self.damage*100
                                 self.hp_g -= self.damage
                                 pygame.mixer.Channel(0).play(
                                     pygame.mixer.Sound(self.se_dict["attack"]))
-                                for i in range(3):
-                                    self.screen.blit(
-                                        self.enemy_list[self.dungeon_num], self.enemyrect)
-                                    pygame.display.update()
-                                    time.sleep(0.25)
-                                    self.screen.blit(
-                                        self.enemy_list[self.dungeon_num], self.enemyrect)
-                                    pygame.display.update()
-                                    time.sleep(0.25)
+                                # for i in range(3):
+                                #     self.screen.blit(
+                                #         self.enemy_list[self.dungeon_num], self.enemyrect[self.dungeon_num])
+                                #     pygame.display.update()
+                                #     time.sleep(0.25)
+                                #     self.screen.blit(
+                                #         self.enemy_list[self.dungeon_num], self.enemyrect[self.dungeon_num])
+                                #     pygame.display.update()
+                                #     time.sleep(0.25)
                         self.turn += 1
                         if self.hp_g <= 0:
                             self.gamescene = 3
@@ -883,7 +876,7 @@ class ShowGame(battle.Battle, town.Town):
                                 pygame.mixer.Sound(self.se_dict["failed"]))
                 if self.history_buttonrect.collidepoint(event.pos):
                     self.history_count = 1
-                if Rect(130*self.screen_size,310*self.screen_size,120*self.screen_size, 50*self.screen_size).collidepoint(event.pos):
+                if Rect(210*self.screen_size,550*self.screen_size,120*self.screen_size, 50*self.screen_size).collidepoint(event.pos):
                     self.item_screen_count = 1
                     # pass #アイテムコマンド押したときの処理を入れてほしい
 
@@ -919,7 +912,8 @@ class ShowGame(battle.Battle, town.Town):
     def boss_stage(self):
         """ボスステージの描画
         """
-        self.screen.blit(self.enemy_list[self.dungeon_num],self.enemyrect) # 敵の描画
+        self.screen.blit(self.enemy_back_list[self.dungeon_num],self.scenerect) # 背景の描画
+        self.screen.blit(self.enemy_list[self.dungeon_num],self.enemyrect[self.dungeon_num]) # 敵の描画
         font2 = pygame.font.SysFont(None, 30*self.screen_size) # turnの表示
         # stage = font2.render("turn:{}".format(self.turn), True, (255,255,255))
         font4 = pygame.font.SysFont(None, 45*self.screen_size)
@@ -930,7 +924,7 @@ class ShowGame(battle.Battle, town.Town):
             hit_blow = font4.render("Turn:{}  Hit:{}   Blow:{}".format(self.turn,self.hit,self.blow), True, (255,255,255))
         font = pygame.font.Font("./new_system/ALGERIA.TTF", 40*self.screen_size)
         item_comand = font.render("ITEMS", True, (255,255,255))
-        self.screen.blit(item_comand,(130*self.screen_size, 315*self.screen_size))
+        self.screen.blit(item_comand,(210*self.screen_size, 555*self.screen_size))
         # self.screen.blit(stage, (5*self.screen_size,5*self.screen_size))
         self.screen.blit(hit_blow, (22*self.screen_size,360*self.screen_size))
         self.screen.blit(self.enter_button_img, self.enter_buttonrect)
@@ -978,11 +972,15 @@ class ShowGame(battle.Battle, town.Town):
         self.screen.blit(over, (120*self.screen_size, 250*self.screen_size))
         self.screen.blit(self.return_button_img, self.return_buttonrect)
         self.screen.blit(self.history_button_img, Rect(
-            120*self.screen_size, 500*self.screen_size, 120*self.screen_size, 30*self.screen_size))
+            25*self.screen_size, 500*self.screen_size, 120*self.screen_size, 30*self.screen_size))
 
     def clear(self, dungeon_num: int = 0):
         """クリア画面の描画
         """
+        # 入場可能ダンジョンを更新
+        if self.dungeon_num == self.dungeon_num:
+            self.mysheet[self.vhindex(self.mysheet,"frontier",1,"total",1,"excel")] = self.dungeon_num + 1
+
         font = pygame.font.SysFont(None, 80*self.screen_size)
         font2 = pygame.font.SysFont(None, 40*self.screen_size)
         font3 = pygame.font.SysFont(None, 28*self.screen_size)
@@ -1005,7 +1003,7 @@ class ShowGame(battle.Battle, town.Town):
         self.screen.blit(drop2, (75*self.screen_size, 400*self.screen_size))
         self.screen.blit(self.return_button_img, self.return_buttonrect)
         self.screen.blit(self.history_button_img, Rect(
-            120*self.screen_size, 500*self.screen_size, 120*self.screen_size, 30*self.screen_size))
+            25*self.screen_size, 500*self.screen_size, 120*self.screen_size, 30*self.screen_size))
 
     def level_up_screen(self):
         """レベルアップ描写
@@ -1067,6 +1065,7 @@ class ShowGame(battle.Battle, town.Town):
             self.set_player()
             self.set_mark()
             self.set_enemy()
+            self.set_town()
             self.set_button()
             self.set_mark_entry()
             return
@@ -1767,15 +1766,18 @@ class ShowGame(battle.Battle, town.Town):
         self.hp_g -= self.damage
             
 
-    def damage_effect(self,count=2,period=0.1):
-        pygame.mixer.Channel(0).play(
-            pygame.mixer.Sound(self.se_dict["attack"]))
+    def damage_effect(self,mode="normal",count=2,period=0.1):
+        
+        self.enemyrect_move = Rect(180*self.screen_size-int(self.enemy_list[self.dungeon_num].get_width()/2), 70*self.screen_size,187*self.screen_size, 250*self.screen_size)
+        if mode != "boss":
+            pygame.mixer.Channel(0).play(
+                pygame.mixer.Sound(self.se_dict["attack"]))
         for i in range(count):
             for i in range(2):
-                self.screen.blit(self.enemy_list[self.enemy_level],Rect(93*self.screen_size,50*self.screen_size,187*self.screen_size,250*self.screen_size))
+                self.screen.blit(self.enemy_list[self.dungeon_num],self.enemyrect_move)
                 pygame.display.update()
                 time.sleep(period)
-                self.screen.blit(self.enemy_list[self.enemy_level],self.enemyrect)
+                self.screen.blit(self.enemy_list[self.dungeon_num],self.enemyrect[self.dungeon_num])
                 pygame.display.update()
                 time.sleep(period)
 
@@ -1809,7 +1811,9 @@ class ShowGame(battle.Battle, town.Town):
 
         # stage_position_dict:{ステージ番号:タップポイントの中心座標}
         # ステージ0は街
-        frontier_stage_id = self.vlookup(self.mysheet,"frontier",2)
+        frontier_stage_id = int(self.vlookup(self.mysheet,"frontier",2))
+        if frontier_stage_id > 15:
+            frontier_stage_id = 15
         self.stage_rect_dict_360p = {0:(93,566),1:(190,577),2:(280,503),3:(260,417),4:(255,332),5:(270,246),6:(166,263),7:(168,368),8:(91,430),9:(53,340),10:(67,253),
         11:(90,160),12:(51,75),13:(176,51),14:(268,62),15:(319,146)}
         self.stage_arrow_dict={}
