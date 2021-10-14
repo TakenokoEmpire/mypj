@@ -978,7 +978,7 @@ class ShowGame(battle.Battle, town.Town):
         """クリア画面の描画
         """
         # 入場可能ダンジョンを更新
-        if self.dungeon_num == self.dungeon_num:
+        if self.dungeon_num == self.frontier_stage_id:
             self.mysheet[self.vhindex(self.mysheet,"frontier",1,"total",1,"excel")] = self.dungeon_num + 1
 
         font = pygame.font.SysFont(None, 80*self.screen_size)
@@ -1811,15 +1811,13 @@ class ShowGame(battle.Battle, town.Town):
 
         # stage_position_dict:{ステージ番号:タップポイントの中心座標}
         # ステージ0は街
-        frontier_stage_id = int(self.vlookup(self.mysheet,"frontier",2))
-        if frontier_stage_id > 15:
-            frontier_stage_id = 15
+        self.frontier_stage_id = min(int(self.vlookup(self.mysheet,"frontier",2)),15)
         self.stage_rect_dict_360p = {0:(93,566),1:(190,577),2:(280,503),3:(260,417),4:(255,332),5:(270,246),6:(166,263),7:(168,368),8:(91,430),9:(53,340),10:(67,253),
         11:(90,160),12:(51,75),13:(176,51),14:(268,62),15:(319,146)}
         self.stage_arrow_dict={}
         self.stage_buttonrect = [0 for i in range(16)]
         self.stage_type_dict = {"normal":1,"boss":2}
-        for stage_id in range(frontier_stage_id+1):
+        for stage_id in range(self.frontier_stage_id+1):
             # arrowの「左上」位置を、ステージ選択のタップ判定の「中央」位置から左に11、上に48の位置に設定する
             for i in range(len(self.stage_rect_dict_360p)):
                 self.stage_arrow_dict[i] = ((self.stage_rect_dict_360p[i][0]-11)*self.screen_size,(self.stage_rect_dict_360p[i][1]-48)*self.screen_size)
@@ -1834,7 +1832,7 @@ class ShowGame(battle.Battle, town.Town):
             if event.type == pygame.QUIT:
                 self.running = False
             if (event.type == pygame.MOUSEBUTTONUP) and (event.button == 1):
-                for stage_id in range(frontier_stage_id+1):
+                for stage_id in range(self.frontier_stage_id+1):
                     if self.stage_buttonrect[stage_id].collidepoint(event.pos):
                         pygame.mixer.Channel(0).play(pygame.mixer.Sound(self.se_dict["start"]))
                         print(stage_id)
