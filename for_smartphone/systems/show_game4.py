@@ -984,7 +984,7 @@ class ShowGame(battle.Battle, town.Town):
         font = pygame.font.SysFont(None, 80*self.screen_size)
         font2 = pygame.font.SysFont(None, 40*self.screen_size)
         font3 = pygame.font.SysFont(None, 28*self.screen_size)
-        font_j = pygame.font.Font("./Harenosora.otf", 26)
+        font_j = pygame.font.Font("./Harenosora.otf", 26*self.screen_size)
         if self.dungeon_type == "normal":
             clear = font.render("CLEAR!!", True, (230, 180, 34))
             self.screen.blit(clear, (58*self.screen_size, 100*self.screen_size))
@@ -1043,7 +1043,7 @@ class ShowGame(battle.Battle, town.Town):
                     pygame.mixer.music.load(self.bgm_dict["home"])
                     pygame.mixer.music.set_volume(0.3)
                     pygame.mixer.music.play(loops=-1)
-                if Rect(120*self.screen_size, 500*self.screen_size, 120*self.screen_size, 30*self.screen_size).collidepoint(event.pos):
+                if Rect(25*self.screen_size, 500*self.screen_size, 120*self.screen_size, 30*self.screen_size).collidepoint(event.pos):
                     self.history_count = 1
 
     def how_to_play(self):  # how to play 画面の描画
