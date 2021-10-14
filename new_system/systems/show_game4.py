@@ -1767,18 +1767,17 @@ class ShowGame(battle.Battle, town.Town):
         self.hp_g -= self.damage
             
 
-    def damage_effect(self,count=2,period=0.2):
+    def damage_effect(self,count=2,period=0.1):
         pygame.mixer.Channel(0).play(
             pygame.mixer.Sound(self.se_dict["attack"]))
         for i in range(count):
-            self.screen.blit(
-                self.enemy_list[self.dungeon_num], self.enemyrect)
-            pygame.display.update()
-            time.sleep(period/2)
-            self.screen.blit(
-                self.enemy_list[self.dungeon_num], self.enemyrect)
-            pygame.display.update()
-            time.sleep(period/2)
+            for i in range(2):
+                self.screen.blit(self.enemy_list[self.enemy_level],Rect(93*self.screen_size,50*self.screen_size,187*self.screen_size,250*self.screen_size))
+                pygame.display.update()
+                time.sleep(period)
+                self.screen.blit(self.enemy_list[self.enemy_level],self.enemyrect)
+                pygame.display.update()
+                time.sleep(period)
 
     # def load_image(self,dir, filename, colorkey=None):
     #     file = os.path.join(dir, filename)
