@@ -307,11 +307,15 @@ class Function():
         return min_val + rand_exponent * (max_val - min_val)
 
     def rand_judge(self,threshold_prob):
+        """自動生成された乱数が、引数よりも小さければTrueを返す"""
         rand = random.random()
         if rand < threshold_prob:
             return True
         else:
             return False
+
+    # def rand_judge_multi(self,threshold_prob_list):
+    #     """自動生成された乱数が、引数のリストよりも小さくなった番号(0スタート)を返す"""
 
 class Core(Function):
     """
@@ -816,17 +820,16 @@ class Battle(Core):
         self.max_ans = 16
         self.length = 5
 
-        self.mobname = self.vhlookup(self.book["通常ダンジョン"], str(self.dungeon_num), 1,"enemy1",1)
-        self.mobsheet = self.book[self.mobname]
-        self.vs_sheet = [self.mysheet, self.mobsheet]
+        self.mobsheet = self.book["ダンジョン"]
+        self.mobname = self.vhlookup(self.mobsheet,"mob_name",1, str(self.dungeon_num),1)
+        # self.vs_sheet = [self.mysheet, self.mobsheet]
         print("野生の{}が現れた！".format(self.mobname))
         self.droplist = []
 
         # 敵ステータス取得
         status_box = []
         for num in range(len(self.all_status_index)):
-            status_box.append(self.vlookup(
-                self.mobsheet, self.all_status_index[num], 2))
+            status_box.append(self.vhlookup(self.mobsheet, self.all_status_index[num],1,str(self.dungeon_num),1))
         # ステータス定義
         self.e_lv = status_box[0]
         self.e_hp = status_box[1]
@@ -1055,12 +1058,11 @@ class Battle(Core):
 
     def drop(self) -> None:
         rand = random.random()
-        for i in range(6):
-            if rand < float(self.vlookup(self.mobsheet, "drop" + str(i + 1), 4)):
-                print("{}を手に入れた！".format(self.vlookup(
-                    self.mobsheet, "drop" + str(i + 1), 2)))
-                self.droplist.append(self.vlookup(
-                    self.mobsheet, "drop" + str(i + 1), 2))
+        for i in range(9):
+            if rand < float(self.vhlookup(self.mobsheet,"drop{}_sum_prob".format(i+1),1,str(self.dungeon_num),1)):
+                drop_item = self.vhlookup(self.mobsheet,"drop{}".format(i+1),1,str(self.dungeon_num),1)
+                print("{}を手に入れた！".format(drop_item))
+                self.droplist.append(drop_item)
                 return(self.droplist)
         print(self.droplist)
 

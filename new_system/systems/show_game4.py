@@ -275,6 +275,9 @@ class ShowGame(battle.Battle, town.Town):
         # ダメージときに点滅させるために2種類用意
         # 【】敵画像の名称は、変数を用いたい
         # 【】点滅用敵画像を作るのがめんどくさいなら、他にいい方法ありそう
+        # for stage_minus1 in range(15):
+        #     stage = stage_minus1 + 1
+
         self.enemy1_img = pygame.image.load("./new_system/mypj3/img/enemy1.png")
         self.enemy1_img = pygame.transform.rotozoom(
             self.enemy1_img, 0, self.screen_size)
@@ -296,10 +299,9 @@ class ShowGame(battle.Battle, town.Town):
             "./mypj3/img/enemy3_damage.png")
         self.enemy3_damage_img = pygame.transform.rotozoom(
             self.enemy3_damage_img, 0, self.screen_size)
-        self.enemy_list = {1: self.enemy1_img,
-                           2: self.enemy2_img, 3: self.enemy3_img}
-        self.enemy_damage_list = {1: self.enemy1_damage_img,
-                                  2: self.enemy2_damage_img, 3: self.enemy3_damage_img}
+        self.enemy_list = {1: self.enemy1_img,2: self.enemy2_img, 3: self.enemy3_img}
+        # self.enemy_damage_list = {1: self.enemy1_damage_img,
+        #                           2: self.enemy2_damage_img, 3: self.enemy3_damage_img}
         self.enemyrect = Rect(93*self.screen_size, 60*self.screen_size,
                               187*self.screen_size, 250*self.screen_size)
 
@@ -846,7 +848,7 @@ class ShowGame(battle.Battle, town.Town):
                                 pygame.mixer.Sound(self.se_dict["attack"]))
                             for i in range(2):
                                 self.screen.blit(
-                                    self.enemy_damage_list[self.dungeon_num], self.enemyrect)
+                                    self.enemy_list[self.dungeon_num], self.enemyrect)
                                 pygame.display.update()
                                 time.sleep(0.1)
                                 self.screen.blit(
@@ -863,7 +865,7 @@ class ShowGame(battle.Battle, town.Town):
                                     pygame.mixer.Sound(self.se_dict["attack"]))
                                 for i in range(3):
                                     self.screen.blit(
-                                        self.enemy_damage_list[self.dungeon_num], self.enemyrect)
+                                        self.enemy_list[self.dungeon_num], self.enemyrect)
                                     pygame.display.update()
                                     time.sleep(0.25)
                                     self.screen.blit(
@@ -984,18 +986,23 @@ class ShowGame(battle.Battle, town.Town):
         font = pygame.font.SysFont(None, 80*self.screen_size)
         font2 = pygame.font.SysFont(None, 40*self.screen_size)
         font3 = pygame.font.SysFont(None, 28*self.screen_size)
+        font_j = pygame.font.Font("./new_system/Harenosora.otf", 26)
         if self.dungeon_type == "normal":
             clear = font.render("CLEAR!!", True, (230, 180, 34))
             self.screen.blit(clear, (58*self.screen_size, 100*self.screen_size))
         elif self.dungeon_type == "boss":
             clear = font.render("VICTORY!!!", True, (255, 32, 32))
-            self.screen.blit(clear, (38*self.screen_size, 100*self.screen_size))
+            self.screen.blit(clear, (29*self.screen_size, 100*self.screen_size))
         exp = font2.render("EXP:+{}".format(self.e_exp), True, (255, 255, 255))
         exp_left = font3.render("To next: {}/{}".format(self.vhlookup(self.book["level_table"],str(self.lv+1),1,"exp",1)-self.exp,self.vhlookup(self.book["level_table"],str(self.lv+1),1,"exp",1)-self.vhlookup(self.book["level_table"],str(self.lv),1,"exp",1)), True, (255, 255, 255))
         money = font2.render("Gold:+{}".format(self.e_money), True, (255, 255, 255))
-        self.screen.blit(exp, (70*self.screen_size, 200*self.screen_size))
-        self.screen.blit(exp_left, (80*self.screen_size, 240*self.screen_size))
-        self.screen.blit(money, (70*self.screen_size, 300*self.screen_size))
+        drop1 = font2.render("Drop", True, (255, 255, 255))
+        drop2 = font_j.render(self.droplist[0], True, (255, 255, 255))
+        self.screen.blit(exp, (50*self.screen_size, 200*self.screen_size))
+        self.screen.blit(exp_left, (65*self.screen_size, 240*self.screen_size))
+        self.screen.blit(money, (50*self.screen_size, 300*self.screen_size))
+        self.screen.blit(drop1, (50*self.screen_size, 360*self.screen_size))
+        self.screen.blit(drop2, (75*self.screen_size, 400*self.screen_size))
         self.screen.blit(self.return_button_img, self.return_buttonrect)
         self.screen.blit(self.history_button_img, Rect(
             120*self.screen_size, 500*self.screen_size, 120*self.screen_size, 30*self.screen_size))
@@ -1765,7 +1772,7 @@ class ShowGame(battle.Battle, town.Town):
             pygame.mixer.Sound(self.se_dict["attack"]))
         for i in range(count):
             self.screen.blit(
-                self.enemy_damage_list[self.dungeon_num], self.enemyrect)
+                self.enemy_list[self.dungeon_num], self.enemyrect)
             pygame.display.update()
             time.sleep(period/2)
             self.screen.blit(
@@ -1791,10 +1798,10 @@ class ShowGame(battle.Battle, town.Town):
         self.arrow_image = pygame.transform.rotozoom(self.arrow_image, 0, self.screen_size)
         self.stage_range_image = pygame.image.load("./new_system/mypj3/img/rect_70.png").convert_alpha()
         self.stage_range_image = pygame.transform.rotozoom(self.stage_range_image, 0, self.screen_size)
-        self.show_allow(3)
+        self.show_allow()
 
-    def show_allow(self,frontier_stage_id):
-        """現在の一番進んでいるステージ番号を入力すれば、そのステージまでの矢印と当たり判定を追加する関数。
+    def show_allow(self):
+        """現在の一番進んでいるステージ番号をエクセルから取得し、そのステージまでの矢印と当たり判定を追加する関数。
         画面上表示がarrow、当たり判定はrect、位置が異なるので注意"""
 
         # 透過処理のやり方(備忘録）
@@ -1803,6 +1810,7 @@ class ShowGame(battle.Battle, town.Town):
 
         # stage_position_dict:{ステージ番号:タップポイントの中心座標}
         # ステージ0は街
+        frontier_stage_id = self.vlookup(self.mysheet,"frontier",2)
         self.stage_rect_dict_360p = {0:(93,566),1:(190,577),2:(280,503),3:(260,417),4:(255,332),5:(270,246),6:(166,263),7:(168,368),8:(91,430),9:(53,340),10:(67,253),
         11:(90,160),12:(51,75),13:(176,51),14:(268,62),15:(319,146)}
         self.stage_arrow_dict={}
@@ -1830,24 +1838,24 @@ class ShowGame(battle.Battle, town.Town):
                         self.dungeon_num = stage_id
                         self.map_judge = 1
                         if stage_id != 0:
-                            self.dungeon_type = self.vhlookup(self.book["通常ダンジョン"],str(stage_id),1,"type",1)
+                            self.dungeon_type = self.vhlookup(self.book["ダンジョン"],"type",1,str(self.dungeon_num),1)
                             self.gamescene = self.stage_type_dict[self.dungeon_type]
                             self.stage_select_effect()
                         return
         return
 
-    def enter_dungeon(self):
-        if self.dungeon_type == "normal":
-            return self.book["通常ダンジョン"]
-        elif self.dungeon_type == "boss":
-            # ボス戦の場合、この段階でアルゴリズムを最後まで回す。
-            # なお、16進5桁以外は非対応である。
-            self.autoplay()
-            return self.book["ボスダンジョン"]
-        else:
-            self.dungeon_type = "normal"
-            print("normalダンジョンに入ります。")
-            return self.book["通常ダンジョン"]
+    # def enter_dungeon(self):
+    #     if self.dungeon_type == "normal":
+    #         return self.book["通常ダンジョン"]
+    #     elif self.dungeon_type == "boss":
+    #         # ボス戦の場合、この段階でアルゴリズムを最後まで回す。
+    #         # なお、16進5桁以外は非対応である。
+    #         self.autoplay()
+    #         return self.book["ボスダンジョン"]
+    #     else:
+    #         self.dungeon_type = "normal"
+    #         print("normalダンジョンに入ります。")
+    #         return self.book["通常ダンジョン"]
 
     def historylast_show(self):
 
