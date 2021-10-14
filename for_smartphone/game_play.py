@@ -540,7 +540,7 @@ class Commander(show_game4.ShowGame):
                                 "number": "False", "name": "False"}
                         if self.enemy_stop < 1 and self.item_screen_count == 0:
                             time.sleep(0.4)
-                            self.damage_effect()
+                            # self.damage_effect()
 
                     elif self.gamescene == 0:  # ホーム画面
                         self.show_map()
