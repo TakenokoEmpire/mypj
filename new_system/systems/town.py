@@ -85,10 +85,6 @@ class Town(battle.Core):
         self.print_status()
         print("装備を変更しました。")
 
-        # self.save()
-        # self.book.close
-        # self.book = openpyxl.load_workbook('systems/base.xlsx', data_only=True)
-
     def town_equip1(self):
         """"現在の全身装備をリストで返す"""
         # 装備の情報更新
@@ -138,11 +134,6 @@ class Town(battle.Core):
         self.mysheet[self.vhindex_super(self.mysheet, selected_position,
                                   1, "id", "position", "excel","off")] = int(selected_id)
         print("装備が変更されました！")
-        # battle.Battle("town")
-        # self.equip_checker_new()
-        # self.print_equip()
-        # self.print_status()
-        # print(self.book["プレイヤーステータス"]["B4"].value)
 
     def town_test(self):
         self.mysheet["G6"].value += 1

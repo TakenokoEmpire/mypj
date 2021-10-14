@@ -1,34 +1,23 @@
 from systems import initialize
 from systems import town
 from systems import battle
-
 import random
 import pygame
 from pygame import Surface, mixer
 from pygame.locals import *
 from typing import List, Tuple
 import time
-# from mypj3.game_number_guess import NumberGuess
 import sys
 import systems
 from systems import show_game4
 
-
-# gui = show_game3.ShowGame(demand=0, gamescene=0, dungeon_num=0)
 pygame.init()
 mixer.init()
-# numberguess = mypj3.game_number_guess.NumberGuess()
-
 
 def gui_title():
     display = Commander()
     # vs = battle.Battle()
     display.gui_run()
-
-
-# def __init__(self, dungeon_type, dungeon_num):
-#     super().__init__(dungeon_type, dungeon_num)
-
 class Commander(show_game4.ShowGame):
 
     def __init__(self):
@@ -41,7 +30,7 @@ class Commander(show_game4.ShowGame):
         4番目:属性の効果を、(1+val)倍する
         5番目:2にすると、マップのタップ当たり判定を表示
         """
-        self.demand = [0,0,0,0,0,0]
+        self.demand = [1,1,1,0,0,0]
         super().__init__(demand = self.demand)
         self.place = "entrance"
         self.dungeon_num = -1# 初期状態は-1。0になると街へ移動する。
@@ -95,8 +84,6 @@ class Commander(show_game4.ShowGame):
                     self.run_count_town = [0, 0, 0, 0, 0, 0, 0]
                     self.run_count_battle = [0, 0, 0, 0, 0, 0, 0]
                     self.choice_dict.update({"初期画面": {"number": 1, "name": "ダンジョンへ行く"}})
-
-
 
                 #街のトップページ
                 #↓の行の左の>を押すと、街のコードを一気に隠せる
@@ -158,14 +145,7 @@ class Commander(show_game4.ShowGame):
                         elif self.choice_dict["装備変更：変更対象"]["number"] != "False" and self.choice_dict["装備変更：手持ち"]["number"] == "False":
                             selected_position = self.choice_dict["装備変更：変更対象"]["name"].split(':')[0]
                             current_id = id_list[self.choice_dict["装備変更：変更対象"]["number"]]
-                            required_info  = ["name","hp","atk"]
                             equip_list_name = self.equip_list_position(selected_position,"name")
-                            equip_list_hp = self.equip_list_position(selected_position,"hp")
-                            equip_list_atk = self.equip_list_position(selected_position,"atk")
-                            equip_list_water = self.equip_list_position(selected_position,"water_attr")
-                            equip_list_plant = self.equip_list_position(selected_position,"plant_attr")
-                            equip_list_dark = self.equip_list_position(selected_position,"dark_attr")
-                            equip_list_elect = self.equip_list_position(selected_position,"elect_attr")
                             equip_list_id = self.equip_list_position(selected_position,"id")
                             self.choice_screen_multi(
                                 "{}の装備を変更".format(selected_position), list(["{}:{}".format(equip_list_id[i],equip_list_name[i]),self.id_equip_summery(equip_list_id[i])]for i in range(len(equip_list_name))),["現在装備:{}".format(self.id_equip_info(current_id,"name")),self.id_equip_summery(current_id)[0],self.id_equip_summery(current_id)[1]] , "装備変更：手持ち", ["装備変更：変更対象"])
@@ -550,9 +530,6 @@ class Commander(show_game4.ShowGame):
                     elif self.gamescene == 5:  # how to play
                         self.how_to_play()
                         self.how_to_play_judje()
-                    # elif self.dungeon_num == 0:
-                    #     self.stage_select()
-                    #     self.judge_stage_select()
 
                     elif self.gamescene == 1:  # Normal Stage
                         if self.run_count_battle[1] == 0:
@@ -658,9 +635,6 @@ def system_run():
         rest.main()
 
     if choice == "2":
-        # dungeon_type = input("choose dungeon type [boss/normal] ->")
-        # dungeon_num = input("choose dungeon number ->")
-        # vs = battle.Battle(dungeon_type, int(dungeon_num))
         vs = battle.Battle("console")
         vs.main()
 

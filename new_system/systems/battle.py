@@ -23,29 +23,6 @@ gameplay以外のファイルを実行（ipmortがおかしいときは大抵こ
 Excel検索文字列がstrでない（text must be a unicode or bytes　又は検索結果がFalse）
 """
 
-"""
-やること
-runにまとめる
-通常戦：（単発のhitblowで終わらない場合）→とき終わったら、再度答えを生成
-ボス戦（単発のhitblowで終わらない場合）→どちらかが終わったら、アルゴリズム再起動
-"""
-
-"""
-やりたいこと
-special mode→クリティカル攻撃
-"""
-
-"""メモ
-ゲーム序盤は2回、中盤は4回、終盤は7回ほどで次のダンジョンに行けるようゲームバランス調整
-（慣れれば慣れるほど、解くのが早くなって所要時間が短縮される）
-"""
-
-
-# drun = SendReceive(room_id=room)
-
-# room_id:Optional[int]=None,
-# self.room_id = room_id
-
 class Function():
     """計算で使う関数たち
     ゲーム的要素を一切含まない、ただの計算用の関数"""
@@ -840,42 +817,6 @@ class Battle(Core):
         self.e_skill2 = status_box[6]
         self.e_skill3 = status_box[7]
 
-        # """
-    # lv,hp,atk,skill[0]~[2],exp,moneyはリストとなっており、[0]がプレイヤーの値、[1]が敵の値
-    # """
-    # self.basic_status_index = ["lv", "hp", "atk"]
-    # self.status_checker()  # ステータス取得前にステータスを更新しておく
-    # self.lv = [0, 0]
-    # self.hp = [0, 0]
-    # self.atk = [0, 0]
-    # self.skill = [[0, 0] for j in range(3)]
-    # self.exp = [0, 0]
-    # self.money = [0, 0]
-    # for num, sheet in enumerate(self.vs_sheet):
-    #     self.lv[num] = self.vlookup(sheet, "lv", 2)
-    #     self.hp[num] = self.vlookup(sheet, "hp", 2)
-    #     self.atk[num] = self.vlookup(sheet, "atk", 2)
-    #     for j in range(3):
-    #         self.skill[j][num] = self.vlookup(
-    #             sheet, "skill{}".format(j), 2)
-    #     self.exp[num] = self.vlookup(sheet, "exp", 2)
-    #     self.money[num] = self.vlookup(sheet, "money", 2)
-
-    # def choose_dungeon(self):
-    #     # 小文字化させたい
-    #     while True:
-    #         if self.dungeon_type == "normal":
-    #             return self.book["通常ダンジョン"]
-    #         elif self.dungeon_type == "boss":
-    #             # ボス戦の場合、この段階でアルゴリズムを最後まで回す。
-    #             # なお、16進5桁以外は非対応である。
-    #             self.autoplay()
-    #             return self.book["ボスダンジョン"]
-    #         else:
-    #             self.dungeon_type = "normal"
-    #             print("normalダンジョンに入ります。")
-    #             return self.book["通常ダンジョン"]
-
     def main(self):
         # self.second_init_battle()
         self.print_status()
@@ -897,12 +838,6 @@ class Battle(Core):
         self.print_history()
         print("残りHP{}".format(self.hp))
 
-        # try:
-        #     self.print_out_history()
-        # except IndexError:
-        #     self.hist[0].append({"guess": "-----", "hit": "0", "blow": "0"})
-        #     self.print_out_history()
-        # print("残りHP{}".format(self.hp))
 
     def print_enemy_status(self):
         # 敵情報と自分のステータスを分離するために関数を分離させた
@@ -1082,118 +1017,9 @@ class Battle(Core):
         for i, stat in enumerate(self.basic_status_index):
             self.mysheet[self.vhindex(
                 self.mysheet, stat, 1, "raw", 1, "excel")] = new_stats[i]
-        # self.mysheet[self.xy_index(
-        #     self.mysheet, "lv", 1, "raw", 1, "excel")] = new_lv
-        # self.mysheet[self.xy_index(
-        #     self.mysheet, "hp", 1, "raw", 1, "excel")] = new_hp
-        # self.mysheet[self.xy_index(
-        #     self.mysheet, "atk", 1, "raw", 1, "excel")] = new_atk
-        # self.status_checker()
         # 経験値、金の更新
         self.mysheet.cell(row=self.vindex(self.mysheet, "exp"), column=2, value=self.exp)
         self.mysheet.cell(row=self.vindex(self.mysheet, "money"), column=2, value=self.money)
         #ドロップアイテムの処理
         self.get_item(self.droplist[0])
         self.save()
-
-
-        # # self.mysheet.cell(row=self.vindex(self.mysheet, "diamond"),column=2, value=self.diamond)
-        # # ドロップアイテム数は1のみ対応。
-        # # 解説：ゲットしたアイテムがまだ道具箱に1個もない→新しくインデックスを追加し個数を1増やす(実際に行う順序は、個数を1にしてからインデックス追加)
-        # # 　　　そうでない（すでにある）→個数を1増やす
-        # if self.vindex(self.book["道具箱"], self.droplist[0]) == False:
-        #     self.book["道具箱"].cell(row=self.vindex(
-        #         self.book["道具箱"], "empty"), column=2, value=self.vlookup(self.book["道具箱"], "empty", 2)+1)
-        #     self.book["道具箱"].cell(row=self.vindex(
-        #         self.book["道具箱"], "empty"), column=1, value=self.droplist[0])
-        # else:
-        #     self.book["道具箱"].cell(row=self.vindex(self.book["道具箱"], self.droplist[0]),
-        #                           column=2, value=self.vlookup(self.book["道具箱"], self.droplist[0], 2)+1)
-        # print(self.vindex(self.book["道具箱"], "empty"))
-        """開いてる途中だとエラー出るよ"""
-        # self.save()
-
-    # def save(self):
-    #     """開いてる途中だとエラー出るよ"""
-    #     try:
-    #         self.book.save("systems/base.xlsx")
-    #     except FileNotFoundError:
-    #         self.book.save(
-    #             'C:/Users/wolke/git1008/new_system/systems/base.xlsx')
-    #     except PermissionError:
-    #         print("エクセルファイルを閉じてください")  # これ戦闘前に欲しい
-    #         exit()
-
-
-# class Initialize(Battle):
-#     """めんどくさいからinitはそのままコピーした
-#     """
-
-#     def __init__(self) -> None:
-#         """コンストラクタ
-#         lv,hp,atk,skill[0]~[2],exp,moneyはリストとなっており、[0]がプレイヤー、[1]が敵
-#         """
-#         self.basic_status_index = ["lv", "hp", "atk"]
-#         self.mobname = "スライム"
-#         self.book = openpyxl.load_workbook('systems/base.xlsx', data_only=True)
-#         self.mobsheet = self.book[self.mobname]
-#         self.mysheet = self.book["プレイヤーステータス"]
-#         self.vs_sheet = [self.mysheet, self.mobsheet]
-#         self.lv = [0, 0]
-#         self.hp = [0, 0]
-#         self.atk = [0, 0]
-#         self.skill = [[0, 0] for j in range(3)]
-#         self.exp = [0, 0]
-#         self.money = [0, 0]
-#         for num, sheet in enumerate(self.vs_sheet):
-#             self.lv[num] = self.vlookup(sheet, "lv", 2)
-#             self.hp[num] = self.vlookup(sheet, "hp", 2)
-#             self.atk[num] = self.vlookup(sheet, "atk", 2)
-#             for j in range(3):
-#                 self.skill[j][num] = self.vlookup(
-#                     sheet, "skill{}".format(j), 2)
-#             self.exp[num] = self.vlookup(sheet, "exp", 2)
-#             self.money[num] = self.vlookup(sheet, "money", 2)
-#         self.droplist = []
-
-#     def confirm(self):
-#         confirm = input("これまでのプレイデータを削除します。本当によろしいですか？[Y/n] ->")
-#         if confirm == "y" or confirm == "Y":
-#             input("削除されたデータは戻りません。本当によろしいですか？[Y/n] ->")
-#             if confirm == "y" or confirm == "Y":
-#                 self.all_zero()
-#                 print("データは削除されました m9(^Д^)")
-
-#     def all_zero(self):
-#         """戦闘後の処理を参考にした
-#         ステータスの更新
-#         経験値の更新
-#         金の更新
-#         アイテムの更新
-#         以上の情報をエクセルファイルに更新・保存
-#         """
-#         # ステータス更新
-#         init_lv = 0
-#         init_hp = 100
-#         init_atk = 10
-#         box = [init_lv, ]
-#         for stat in self.basic_status_index:
-#             for i in range(4):
-#                 self.mysheet.cell(row=self.vindex(
-#                     self.mysheet, stat), column=i+2, value=init_lv)
-#                 self.mysheet.cell(row=self.vindex(
-#                     self.mysheet, stat), column=i+2, value=init_hp)
-#                 self.mysheet.cell(row=self.vindex(
-#                     self.mysheet, s), column=i+2, value=init_atk)
-#         # 経験値、金の更新
-#         self.mysheet.cell(row=self.vindex(
-#             self.mysheet, "exp"), column=2, value=0)
-#         self.mysheet.cell(row=self.vindex(
-#             self.mysheet, "money"), column=2, value=0)
-#         # ドロップアイテム数は1のみ対応。
-#         # 解説：ゲットしたアイテムがまだ道具箱に1個もない→新しくインデックスを追加し個数を1増やす(実際に行う順序は、個数を1にしてからインデックス追加)
-#         # 　　　そうでない（すでにある）→個数を1増やす
-#         for i in range(39):
-#             self.book["道具箱"].cell(row=i+2, column=1, value="empty")
-#             self.book["道具箱"].cell(row=i+2, column=2, value=0)
-#         self.save()

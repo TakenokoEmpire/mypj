@@ -322,9 +322,6 @@ class ShowGame(battle.Battle, town.Town):
         self.history_buttonrect = Rect(
             25*self.screen_size, 580*self.screen_size, 120*self.screen_size, 30*self.screen_size)
         self.stage_select_buttonrect = []
-        # for i in range(self.max_dungeon_num):
-        #     self.stage_select_buttonrect.append(Rect(
-        #         80*self.screen_size, (100+100*i)*self.screen_size, 200*self.screen_size, 50*self.screen_size))
         self.normal_button_img = pygame.image.load(
             "./new_system/mypj3/img/normal_button.png")
         self.normal_button_img = pygame.transform.rotozoom(
@@ -614,46 +611,6 @@ class ShowGame(battle.Battle, town.Town):
                 if self.prev_buttonrect.collidepoint(event.pos):
                     self.history_count -= 1
 
-    # def stage_select(self):
-    #     """ステージセレクト画面
-    #     """
-    #     font = pygame.font.Font("./new_system/Harenosora.otf", 30*self.screen_size)
-    #     level = font.render("ステージを選んで下さい", True, "WHITE")
-    #     self.screen.blit(level, (11*self.screen_size, 10*self.screen_size))
-    #     font2 = pygame.font.Font("./new_system/ALGERIA.TTF", 40*self.screen_size)
-    #     for i in range(self.max_dungeon_num):  # ステージの数だけ描画
-    #         level = font2.render("LEVEL:{}".format(i+1), True, "WHITE")
-    #         self.screen.blit(level, (100*self.screen_size,
-    #                          (100+100*i)*self.screen_size))
-    #     self.screen.blit(self.return_button_img, self.return_buttonrect)
-
-    # def judge_stage_select(self):
-    #     """ステージセレクト画面のボタンの判定
-    #     """
-    #     for event in pygame.event.get():
-    #         if event.type == pygame.QUIT:
-    #             self.running = False
-    #         if (event.type == pygame.MOUSEBUTTONUP) and (event.button == 1):
-    #             for i in range(self.max_dungeon_num):
-    #                 if self.stage_select_buttonrect[i].collidepoint(event.pos):
-    #                     self.dungeon_num = i+1
-    #                     pygame.mixer.Channel(0).play(
-    #                         pygame.mixer.Sound(self.se_dict["start"]))
-    #                     time.sleep(1)
-    #                     # 音楽関連
-    #                     # loops:繰り返す回数　loops+1回流れる、-1で無限ループ
-    #                     # load+playでセット
-    #                     # mixerで音楽をミックスできる（主にSEのとき）
-    #                     if self.gamescene == 1:
-    #                         pygame.mixer.music.load(self.bgm_dict["normal"])
-    #                         pygame.mixer.music.set_volume(0.3)
-    #                         pygame.mixer.music.play(loops=-1)
-    #                     elif self.gamescene == 2:
-    #                         pygame.mixer.music.load(self.bgm_dict["boss"])
-    #                         pygame.mixer.music.set_volume(0.3)
-    #                         pygame.mixer.music.play(loops=-1)
-    #             if self.return_buttonrect.collidepoint(event.pos):
-    #                 self.gamescene = 0
 
     def stage_select_effect(self):
         pygame.mixer.Channel(0).play(
@@ -698,30 +655,13 @@ class ShowGame(battle.Battle, town.Town):
         font3 = pygame.font.SysFont(None, 20*self.screen_size)
         hp_word = font3.render("HP", True, (255, 255, 255))
         hp_value = font3.render("{}".format(self.hp_g), True, (255, 255, 255))
-        # if mode == "normal":
-        #     damage_ratio = (self.turn-1)
-        # elif mode == "boss":
-        #     if self.boss_hit == 5:
-        #         damage_ratio = 100
-        #     else:
-        #         damage_ratio = 0
-        # damage = damage_ratio*self.damage
 
         damage = self.hp - self.hp_g
         if damage != 0:
             pygame.draw.line(self.screen, (200, 0, 0),
                              (30*self.screen_size+self.hp_g*self.hp_bar_ratio*self.screen_size, 40*self.screen_size), (30*self.screen_size+(self.hp_g+damage)*self.hp_bar_ratio*self.screen_size, 40*self.screen_size), 10*self.screen_size)
-        # font4 = pygame.font.SysFont(None, 50*self.screen_size)
-        # hit_blow = font4.render("Hit:{}   Blow:{}".format(self.hit, self.blow), True, (255, 255, 255))
-        # self.screen.blit(stage, (5*self.screen_size, 5*self.screen_size))
         self.screen.blit(hp_word, (5*self.screen_size, 35*self.screen_size))
         self.screen.blit(hp_value, (30*self.screen_size+(self.hp_g+damage)*self.hp_bar_ratio*self.screen_size+2*self.screen_size, 35*self.screen_size))
-        # self.screen.blit(hit_blow, (80*self.screen_size, 360*self.screen_size))
-        # self.screen.blit(self.enter_button_img, self.enter_buttonrect)
-        # self.screen.blit(self.history_button_img, self.history_buttonrect)
-        # font = pygame.font.Font("./new_system/ALGERIA.TTF", 40*self.screen_size)
-        # item_comand = font.render("ITEMS", True, (255,255,255))
-        # self.screen.blit(item_comand,(130*self.screen_size, 310*self.screen_size))
         self.mark_show()
 
     def boss_action(self, mode="normal"):
@@ -811,11 +751,7 @@ class ShowGame(battle.Battle, town.Town):
                     if self.error_count == 0:
                         guess_mark = [self.marks_s[self.num[0]], self.marks_s[self.num[1]],
                                       self.marks_s[self.num[2]], self.marks_s[self.num[3]], self.marks_s[self.num[4]]]
-                        # print(self.num)
                         self.guess_list.append(guess_mark)  # マークの履歴
-                        # self.guess = self.convert() # マークから文字列へ変換
-                        # self.hit = 1
-                        # self.blow = 2 #正誤の判定
                         self.hit, self.blow = self.judge_guess(
                             guess=self.num)  # 判定
                         self.hit_list.append(self.hit)
@@ -823,9 +759,6 @@ class ShowGame(battle.Battle, town.Town):
                         self.turn_switch += 1  # ボス用
                         self.boss_action(mode)  # ボス用
                         if self.hit == 5:
-                            # font4 = pygame.font.SysFont(None, 50*self.screen_size)
-                            # hit_blow = font4.render("Hit:{}   Blow:{}".format(self.hit,self.blow), True, (230,180,34),(0,0,0))
-                            # self.screen.blit(hit_blow, (80*self.screen_size,360*self.screen_size))
                             font4 = pygame.font.SysFont(None, 45*self.screen_size)
                             if self.turn < 10:
                                 hit_blow = font4.render("Turn:{}    Hit:{}    Blow:{}".format(self.turn,self.hit,self.blow), True, (230,180,34),(0,0,0))
@@ -846,25 +779,11 @@ class ShowGame(battle.Battle, town.Town):
                                 pygame.mixer.Sound(self.se_dict["attack"]))
                             self.damage_effect(mode)
                         elif mode == "boss" and self.enemy_stop < 1:
-                            # self.damage_effect(mode)
-                            # if self.boss_hit == 3:
-                            #     self.damage_effect(mode)
-                            #     self.damage_effect(mode)
-                                # print("演出はここに入れる")
                             if self.boss_hit == 5:
                                 self.hp_g -= self.damage*100
                                 self.hp_g -= self.damage
                                 pygame.mixer.Channel(0).play(
                                     pygame.mixer.Sound(self.se_dict["attack"]))
-                                # for i in range(3):
-                                #     self.screen.blit(
-                                #         self.enemy_list[self.dungeon_num], self.enemyrect[self.dungeon_num])
-                                #     pygame.display.update()
-                                #     time.sleep(0.25)
-                                #     self.screen.blit(
-                                #         self.enemy_list[self.dungeon_num], self.enemyrect[self.dungeon_num])
-                                #     pygame.display.update()
-                                #     time.sleep(0.25)
                         self.turn += 1
                         if self.hp_g <= 0:
                             self.gamescene = 3
@@ -925,12 +844,10 @@ class ShowGame(battle.Battle, town.Town):
         font = pygame.font.Font("./new_system/ALGERIA.TTF", 40*self.screen_size)
         item_comand = font.render("ITEMS", True, (255,255,255))
         self.screen.blit(item_comand,(210*self.screen_size, 555*self.screen_size))
-        # self.screen.blit(stage, (5*self.screen_size,5*self.screen_size))
         self.screen.blit(hit_blow, (22*self.screen_size,360*self.screen_size))
         self.screen.blit(self.enter_button_img, self.enter_buttonrect)
         self.screen.blit(self.history_button_img, self.history_buttonrect)
         self.mark_show()
-        # self.boss_guess_list, self.boss_hit, self.boss_blow
         # ボスのHit,Blow
         font4 = pygame.font.SysFont(None, 36*self.screen_size)
         if self.boss_hit >= 3: #ここでボスのhitが3以上かどうか
@@ -955,12 +872,6 @@ class ShowGame(battle.Battle, town.Town):
                 self.screen.blit(self.marks_s_16[int(self.boss_guess_list[j],base=16)], ((180+j*30)*self.screen_size, 32*self.screen_size, 30*self.screen_size, 30*self.screen_size))
         except IndexError:
             pass
-        # except:
-        
-
-        #     pass
-                # guess_mark = [self.marks_s[self.num[0]], self.marks_s[self.num[1]],
-                #                                       self.marks_s[self.num[2]], self.marks_s[self.num[3]], self.marks_s[self.num[4]]]
 
     def game_over(self):
         """ゲームオーバー画面の描画
@@ -1353,7 +1264,7 @@ class ShowGame(battle.Battle, town.Town):
     def make_1ans(self):
         
         if self.demand[0] == 1:
-            self.ans_g = [0, 1, 2, 3, 5]
+            self.ans_g = [0, 2, 4, 7, 9]
         else:
             nums = list(range(self.mark_qty_all))
             self.ans_g = random.sample(nums, 5)
@@ -1796,16 +1707,6 @@ class ShowGame(battle.Battle, town.Town):
                 pygame.display.update()
                 time.sleep(period)
 
-    # def load_image(self,dir, filename, colorkey=None):
-    #     file = os.path.join(dir, filename)
-    #     image = pygame.image.load(file)
-    #     image = image.convert()
-    #     if not colorkey == None:
-    #         if colorkey == -1:
-    #             colorkey = image.get_at((0, 0))
-    #         image.set_colorkey(colorkey, RLEACCEL)
-    #     return image
-
     def show_map(self):
         self.world_map_image = pygame.image.load("./new_system/mypj3/img/world_map.jpg")
         self.world_map_image = pygame.transform.rotozoom(self.world_map_image, 0, self.screen_size)
@@ -1859,110 +1760,3 @@ class ShowGame(battle.Battle, town.Town):
                             self.stage_select_effect()
                         return
         return
-
-    # def enter_dungeon(self):
-    #     if self.dungeon_type == "normal":
-    #         return self.book["通常ダンジョン"]
-    #     elif self.dungeon_type == "boss":
-    #         # ボス戦の場合、この段階でアルゴリズムを最後まで回す。
-    #         # なお、16進5桁以外は非対応である。
-    #         self.autoplay()
-    #         return self.book["ボスダンジョン"]
-    #     else:
-    #         self.dungeon_type = "normal"
-    #         print("normalダンジョンに入ります。")
-    #         return self.book["通常ダンジョン"]
-
-    def historylast_show(self):
-
-        # def judge_choice_screen(self):
-        """
-        """
-
-    # def run(self):
-    #     pygame.display.set_caption("Hit, Blow and Dragons")
-    #     self.set_player()
-    #     self.set_mark()
-    #     self.set_enemy()
-    #     self.set_button()
-    #     self.set_mark_entry()
-    #     self.set_sound()
-
-    #     pygame.mixer.music.load(self.bgm_dict["home"])
-    #     pygame.mixer.music.set_volume(0.3)
-    #     pygame.mixer.music.play(loops=-1)
-    #     while self.running:
-    #         self.screen.fill((0, 0, 0))
-    #         if self.error_count == 1:
-    #             self.error_show()
-    #             for event in pygame.event.get():
-    #                 if event.type == pygame.QUIT:
-    #                     self.running = False
-    #                 if (event.type == pygame.MOUSEBUTTONUP) and (event.button == 1):
-    #                     if self.return_buttonrect.collidepoint(event.pos):
-    #                         self.error_count = 0
-    #         elif self.history_count == 1:
-    #             self.history_show()
-    #             self.history_judge()
-    #         elif self.history_count == 2:
-    #             self.history2_show()
-    #             self.history2_judge()
-    #         elif self.history_count == 3:
-    #             self.history2_show()
-    #             self.history2_judge()
-    #         elif self.history_count == 4:
-    #             self.historylast_show()
-    #             self.historylast_judge()
-    #         elif self.gamescene == 0:  # ホーム画面
-    #             self.reset()
-    #             self.home_show()
-    #             self.home_judge()
-    #         elif self.gamescene == 5:  # how to play
-    #             self.how_to_play()
-    #             self.how_to_play_judje()
-    #         elif self.dungeon_num == 0:
-    #             self.stage_select()
-    #             self.judge_stage_select()
-
-    #         elif self.gamescene == 1:  # Normal Stage
-    #             self.normal_stage()
-    #             self.normal_stage_judge()
-
-    #         elif self.gamescene == 2:  # Boss Stage
-    #             self.boss_stage()
-    #             for event in pygame.event.get():
-    #                 if event.type == pygame.QUIT:
-    #                     self.running = False
-    #                 if (event.type == pygame.MOUSEBUTTONUP) and (event.button == 1):
-    #                     if self.return_buttonrect.collidepoint(event.pos):
-    #                         self.gamescene = 0
-
-    #         elif self.gamescene == 3:  # game over
-    #             self.game_over()
-    #             self.result_judge()
-
-    #         elif self.gamescene == 4:
-    #             self.clear()
-    #             self.result_judge()
-
-    #         pygame.display.update()  # スクリーン上のものを書き換えた時にはupdateが必要
-
-
-# def main():
-#     display = ShowGame()
-#     display.run()
-
-
-# main()
-
-
-
-
-
-
-
-
-
-
-
-
