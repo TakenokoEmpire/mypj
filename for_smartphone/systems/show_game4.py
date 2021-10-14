@@ -69,8 +69,6 @@ class ShowGame(battle.Battle, town.Town):
         self.message_checker = 0
         self.clock = pygame.time.Clock()
         self.FPS = 72
-        self.ball_img = pygame.image.load("./mypj3/img/ball.png")
-        self.ball_img = pygame.transform.rotozoom(self.ball_img, 0, self.screen_size)
         self.enemy_stop = 0
         # self.dungeon_type = ""
 
@@ -143,6 +141,8 @@ class ShowGame(battle.Battle, town.Town):
         self.img = pygame.image.load("./mypj3/img/player.png")
         self.img = pygame.transform.rotozoom(self.img, 0, self.screen_size)
         self.player_place = (X*self.screen_size, Y*self.screen_size)
+        self.ball_img = pygame.image.load("./mypj3/img/ball.png")
+        self.ball_img = pygame.transform.rotozoom(self.ball_img, 0, self.screen_size)
 
     def set_mark(self):
         """入力用マークの設定
