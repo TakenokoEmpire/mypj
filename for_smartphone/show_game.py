@@ -145,7 +145,7 @@ class ShowGame:
     def set_enemy(self):
         """敵の設定
         """
-        self.enemy1_img = pygame.image.load("./new_system/mypj3/img/normal_enemy1.png")
+        self.enemy1_img = pygame.image.load("./mypj3/img/enemy1.png")
         self.enemy1_img = pygame.transform.rotozoom(self.enemy1_img, 0, self.screen_size)
         self.enemy1_damage_img = pygame.image.load("./mypj3/img/enemy1_damage.png")
         self.enemy1_damage_img = pygame.transform.rotozoom(self.enemy1_damage_img, 0, self.screen_size)
@@ -534,7 +534,7 @@ class ShowGame:
                             self.hp -= self.damage_list[self.enemy_level-1]
                             pygame.mixer.Channel(0).play(pygame.mixer.Sound(self.se_dict["attack"]))
                             for i in range(2):
-                                self.screen.blit(self.enemy_list[self.enemy_level],Rect(93*self.screen_size,50*self.screen_size,187*self.screen_size,250*self.screen_size))
+                                self.screen.blit(self.enemy_damage_list[self.enemy_level],self.enemyrect)
                                 pygame.display.update()
                                 time.sleep(0.1)
                                 self.screen.blit(self.enemy_list[self.enemy_level],self.enemyrect)
