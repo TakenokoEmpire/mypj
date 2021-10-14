@@ -9,7 +9,7 @@ import random
 import unicodedata
 # from . import game_number_guess
 import sys
-import cursor, tools
+
 import os
 
 from . import battle
@@ -1280,7 +1280,7 @@ class ShowGame(battle.Battle, town.Town):
             time.sleep(1)
 
         for i in range(108):
-            font = pygame.font.Font("Harenosora.otf",25)
+            font = pygame.font.Font("Harenosora.otf",25*self.screen_size)
             line_1 = font.render("ボスは冒険者の秘密のマークを",True, (255*i/108,255*i/108,255*i/108))
             line_2 = font.render("解いてしまうのです",True,  (255*i/108,255*i/108,255*i/108))
             self.screen.blit(line_1, (10*self.screen_size,360*self.screen_size))
@@ -1404,12 +1404,12 @@ class ShowGame(battle.Battle, town.Town):
         ・dict検索時のnumberとnameを間違えてないか"""
         self.choice_buttonrect = []
         choice_answer = False
-        font_title = pygame.font.SysFont(
-            "bizudminchomediumbizudpminchomediumtruetype", 24*self.screen_size)
-        font = pygame.font.SysFont(
-            "bizudminchomediumbizudpminchomediumtruetype", 20*self.screen_size)
-        font2 = pygame.font.SysFont(
-            "bizudminchomediumbizudpminchomediumtruetype", 15*self.screen_size)
+        font_title = pygame.font.Font(
+            "Harenosora.otf", 24*self.screen_size)
+        font = pygame.font.Font(
+            "Harenosora.otf", 20*self.screen_size)
+        font2 = pygame.font.Font(
+            "Harenosora.otf", 15*self.screen_size)
         # titleを表示
         title = self.auto_line_break(title,28)
         print_title1 = font_title.render(title[0], True, "WHITE")
@@ -1505,12 +1505,12 @@ class ShowGame(battle.Battle, town.Town):
         """
         self.choice_buttonrect = []
         choice_answer = False
-        font_title = pygame.font.SysFont(
-            "bizudminchomediumbizudpminchomediumtruetype", 24*self.screen_size)
-        font = pygame.font.SysFont(
-            "bizudminchomediumbizudpminchomediumtruetype", 21*self.screen_size)
-        font2 = pygame.font.SysFont(
-            "bizudminchomediumbizudpminchomediumtruetype", 16*self.screen_size)
+        font_title = pygame.font.Font(
+            "Harenosora.otf", 24*self.screen_size)
+        font = pygame.font.Font(
+            "Harenosora.otf", 21*self.screen_size)
+        font2 = pygame.font.Font(
+            "Harenosora.otf", 16*self.screen_size)
         # titleを表示
         # titleが長すぎたら改行して2行にする
         title = str(title)
@@ -1626,12 +1626,12 @@ class ShowGame(battle.Battle, town.Town):
         choice = [["はい",""],["いいえ",""]]
         self.choice_buttonrect = []
         choice_answer = False
-        font_title = pygame.font.SysFont(
-            "bizudminchomediumbizudpminchomediumtruetype", 24*self.screen_size)
-        font = pygame.font.SysFont(
-            "bizudminchomediumbizudpminchomediumtruetype", 20*self.screen_size)
-        font2 = pygame.font.SysFont(
-            "bizudminchomediumbizudpminchomediumtruetype", 15*self.screen_size)
+        font_title = pygame.font.Font(
+            "Harenosora.otf", 24*self.screen_size)
+        font = pygame.font.Font(
+            "Harenosora.otf", 20*self.screen_size)
+        font2 = pygame.font.Font(
+            "Harenosora.otf", 15*self.screen_size)
         # titleを表示
         title = self.auto_line_break(title,28)
         print_title1 = font_title.render(title[0], True, "WHITE")
@@ -1704,12 +1704,12 @@ class ShowGame(battle.Battle, town.Town):
     def message_screen_single(self, message:str,fontsize:str = "large",row_pos:int=0):
         self.choice_buttonrect = []
         choice_answer = False
-        font_title = pygame.font.SysFont(
-            "bizudminchomediumbizudpminchomediumtruetype", 26*self.screen_size)
-        font = pygame.font.SysFont(
-            "bizudminchomediumbizudpminchomediumtruetype", 21*self.screen_size)
-        font2 = pygame.font.SysFont(
-            "bizudminchomediumbizudpminchomediumtruetype", 16*self.screen_size)
+        font_title = pygame.font.Font(
+            "Harenosora.otf", 26*self.screen_size)
+        font = pygame.font.Font(
+            "Harenosora.otf", 21*self.screen_size)
+        font2 = pygame.font.Font(
+            "Harenosora.otf", 16*self.screen_size)
         # 自動改行
         if fontsize == "middle":
             message = str(message)

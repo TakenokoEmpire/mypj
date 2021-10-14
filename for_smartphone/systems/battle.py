@@ -7,7 +7,7 @@ from systems import judge_manual
 import try_1013
 import send_recieve
 import time
-import unicodedataS
+import unicodedata
 from typing import List, Tuple
 
 # from systems import testtry
