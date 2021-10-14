@@ -35,7 +35,7 @@ class ShowGame(battle.Battle, town.Town):
                  display_size: Tuple[int] = (360, 640),
                 #  max_dungeon_num: int = 3,
                  gamescene: int = 0,
-                 demand: List[int] = [1, 1, 1]):
+                 demand: List[int] = [0,0,0,0,0,0]):
         print("showgame init")
         super().__init__()
         self.demand = demand
@@ -101,7 +101,6 @@ class ShowGame(battle.Battle, town.Town):
                 (self.hp_g/100)**(math.log(2)/math.log(1000/100))
         else:
             self.hp_bar_ratio = 300 / self.hp_g
-        self.make_1ans()
         self.level_up_box = []
         self.alert_count = 0
         self.attr_mark_qty = [4,4,4,4]
@@ -109,6 +108,7 @@ class ShowGame(battle.Battle, town.Town):
         self.attr_judge_battle()
         self.attr_mark_dict = {}
         self.make_attr_mark_dict()
+        self.make_1ans()
         self.digit_16_to_less()
 
     def make_attr_mark_dict(self):

@@ -39,8 +39,9 @@ class Commander(show_game4.ShowGame):
         2番目:プロローグをカット
         3番目:闇属性のみ選択肢をvalだけ削る
         4番目:属性の効果を、(1+val)倍する
+        5番目:2にすると、マップのタップ当たり判定を表示
         """
-        self.demand = [1, 1,1,0,0,2]
+        self.demand = [0,0,0,0,0,0]
         super().__init__(demand = self.demand)
         self.place = "entrance"
         self.dungeon_num = -1# 初期状態は-1。0になると街へ移動する。
@@ -495,7 +496,7 @@ class Commander(show_game4.ShowGame):
                             self.choice_dict["ダイヤ購入"] = {"number": "False", "name": "False"}
 
                 elif self.choice_dict["初期画面"]["name"] == "ダンジョンへ行く":
-                    if self.demand[5] >= 1 and self.gamescene == 0:
+                    if self.gamescene == 0:
                         self.show_map()
                     elif self.error_count == 1:
                         self.error_show()
