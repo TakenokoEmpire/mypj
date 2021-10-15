@@ -663,6 +663,8 @@ class ShowGame(battle.Battle, town.Town):
         self.screen.blit(hp_word, (5*self.screen_size, 35*self.screen_size))
         self.screen.blit(hp_value, (30*self.screen_size+(self.hp_g+damage)*self.hp_bar_ratio*self.screen_size+2*self.screen_size, 35*self.screen_size))
         self.mark_show()
+        if self.hp_g <= 0:
+            self.game_over_1()
 
     def boss_action(self, mode="normal"):
         if mode == "normal":
@@ -677,7 +679,6 @@ class ShowGame(battle.Battle, town.Town):
                 self.boss_blow = self.boss_history[self.boss_turn-1]["blow"]
                 self.damage_effect(mode)
                 if self.boss_hit == 3:
-                    self.damage_effect(mode)
                     self.damage_effect(mode)
                 self.boss_turn += 1
             except IndexError:
@@ -786,18 +787,21 @@ class ShowGame(battle.Battle, town.Town):
                                     pygame.mixer.Sound(self.se_dict["attack"]))
                         self.turn += 1
                         if self.hp_g <= 0:
-                            self.gamescene = 3
-                            pygame.mixer.music.stop()
-                            pygame.mixer.music.load(self.bgm_dict["failed"])
-                            pygame.mixer.music.set_volume(0.5)
-                            pygame.mixer.music.play(loops=-1)
-                            pygame.mixer.Channel(0).play(
-                                pygame.mixer.Sound(self.se_dict["failed"]))
+                            self.game_over_1()
                 if self.history_buttonrect.collidepoint(event.pos):
                     self.history_count = 1
                 if Rect(210*self.screen_size,550*self.screen_size,120*self.screen_size, 50*self.screen_size).collidepoint(event.pos):
                     self.item_screen_count = 1
                     # pass #アイテムコマンド押したときの処理を入れてほしい
+
+    def game_over_1(self):
+        self.gamescene = 3
+        pygame.mixer.music.stop()
+        pygame.mixer.music.load(self.bgm_dict["failed"])
+        pygame.mixer.music.set_volume(0.5)
+        pygame.mixer.music.play(loops=-1)
+        pygame.mixer.Channel(0).play(
+            pygame.mixer.Sound(self.se_dict["failed"]))
 
     def mark_show(self):
         """入力画面の描画
@@ -883,7 +887,7 @@ class ShowGame(battle.Battle, town.Town):
         self.screen.blit(over, (120*self.screen_size, 250*self.screen_size))
         self.screen.blit(self.return_button_img, self.return_buttonrect)
         self.screen.blit(self.history_button_img, Rect(
-            25*self.screen_size, 500*self.screen_size, 120*self.screen_size, 30*self.screen_size))
+            120*self.screen_size, 500*self.screen_size, 120*self.screen_size, 30*self.screen_size))
 
     def clear(self, dungeon_num: int = 0):
         """クリア画面の描画
@@ -914,7 +918,7 @@ class ShowGame(battle.Battle, town.Town):
         self.screen.blit(drop2, (75*self.screen_size, 400*self.screen_size))
         self.screen.blit(self.return_button_img, self.return_buttonrect)
         self.screen.blit(self.history_button_img, Rect(
-            25*self.screen_size, 500*self.screen_size, 120*self.screen_size, 30*self.screen_size))
+            120*self.screen_size, 500*self.screen_size, 120*self.screen_size, 30*self.screen_size))
 
     def level_up_screen(self):
         """レベルアップ描写
