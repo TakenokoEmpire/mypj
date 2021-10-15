@@ -6,6 +6,7 @@ verify_ssl = true
 requests = "*"
 streamlit = "*"
 pygame = "*"
+openpyxl = "*"
 
 [dev-packages]
 pytest = "==6.2.2"
