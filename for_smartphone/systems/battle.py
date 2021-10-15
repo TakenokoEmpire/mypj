@@ -328,12 +328,27 @@ class Core(Function):
         super().__init__()
         print("CORE")
         # エクセルファイルの呼び出し
+        # データ番号を選んだあとはここは呼び出されないはずだが、念の為に
+        # データ番号を選んだあとはself.bookが更新されないようにしておく
+        self.book_number = -1
+        if self.book_number == -1:   
+            try:
+                self.book = openpyxl.load_workbook(
+                    './systems/base.xlsx', data_only=True)
+            except:
+                self.book = openpyxl.load_workbook(
+                    './systems/base.xlsx', data_only=True)
+        self.get_core_info()
+
+    def get_book(self):
         try:
             self.book = openpyxl.load_workbook(
-                './systems/base.xlsx', data_only=True)
+                'systems/base{}.xlsx'.format(self.book_num), data_only=True)
         except:
             self.book = openpyxl.load_workbook(
-                './systems/base.xlsx', data_only=True)
+                'C:/Users/wolke/git1009/new_system/systems/base{}.xlsx'.format(self.book_num), data_only=True)
+
+    def get_core_info(self):
         self.mysheet = self.book["プレイヤーステータス"]
 
         # 課金関連
@@ -772,10 +787,10 @@ class Core(Function):
     def save(self):
         """開いてる途中だとエラー出るよ"""
         try:
-            self.book.save("./systems/base.xlsx")
+            self.book.save("./systems/base{}.xlsx".format(self.book_num))
         except FileNotFoundError:
             self.book.save(
-                './systems/base.xlsx')
+                "./systems/base{}.xlsx".format(self.book_num))
         except PermissionError:
             print("エクセルファイルを閉じてください")  # これ戦闘前に欲しい
             exit()
