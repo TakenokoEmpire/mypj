@@ -20,7 +20,7 @@ return忘れ（Noneが帰ってきたときや、Nonetypeとの足し算がで�
 gameplay以外のファイルを実行（ipmortがおかしいときは大抵これ）
 過剰にリスト化（text must be a unicode or bytesのとき）
 変数のstr化（text must be a unicode or bytes）
-Excel検索文字列がstrでない（text must be a unicode or bytes　又は検索結果がFalse）
+【頻発】Excel検索文字列がstrでない（検索結果がFalseのとき。int型の変数で検査うするときは、かならずint(変数名)とする）
 """
 
 class Function():
@@ -305,14 +305,28 @@ class Core(Function):
         super().__init__()
         print("CORE")
         # エクセルファイルの呼び出し
+        # データ番号を選んだあとはここは呼び出されないはずだが、念の為に
+        # データ番号を選んだあとはself.bookが更新されないようにしておく
+        self.book_number = -1
+        if self.book_number == -1:
+            try:
+                self.book = openpyxl.load_workbook(
+                    'systems/base.xlsx', data_only=True)
+            except:
+                self.book = openpyxl.load_workbook(
+                    'C:/Users/wolke/git1009/new_system/systems/base.xlsx', data_only=True)
+        self.get_core_info()
+
+    def get_book(self):
         try:
             self.book = openpyxl.load_workbook(
-                'systems/base.xlsx', data_only=True)
+                'systems/base{}.xlsx'.format(self.book_num), data_only=True)
         except:
             self.book = openpyxl.load_workbook(
-                'C:/Users/wolke/git1009/new_system/systems/base.xlsx', data_only=True)
-        self.mysheet = self.book["プレイヤーステータス"]
+                'C:/Users/wolke/git1009/new_system/systems/base{}.xlsx'.format(self.book_num), data_only=True)
 
+    def get_core_info(self):
+        self.mysheet = self.book["プレイヤーステータス"]
         # 課金関連
         self.diamond = self.vlookup(self.mysheet, "diamond", 2)
         # 装備関連
@@ -342,9 +356,7 @@ class Core(Function):
         self.rarity_dict = {1:"Common",2:"Uncommon",3:"Rare",4:"Legend",5:"Mythcal"}
         # ステータス取得
         self.status_checker()  # ステータス取得前にステータスを更新しておく
-
     # def equip_index_of_position(self, position):
-
     #     return equip_index_list, equip_sepc_list
 
     def status_checker(self):
@@ -749,10 +761,10 @@ class Core(Function):
     def save(self):
         """開いてる途中だとエラー出るよ"""
         try:
-            self.book.save("systems/base.xlsx")
+            self.book.save('systems/base{}.xlsx'.format(self.book_num))
         except FileNotFoundError:
             self.book.save(
-                'C:/Users/wolke/git1009/new_system/systems/base.xlsx')
+                'C:/Users/wolke/git1009/new_system/systems/base{}.xlsx'.format(self.book_num))
         except PermissionError:
             print("エクセルファイルを閉じてください")  # これ戦闘前に欲しい
             exit()

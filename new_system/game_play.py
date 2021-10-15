@@ -10,6 +10,7 @@ import time
 import sys
 import systems
 from systems import show_game4
+import openpyxl
 
 pygame.init()
 mixer.init()
@@ -34,6 +35,8 @@ class Commander(show_game4.ShowGame):
         super().__init__(demand = self.demand)
         self.place = "entrance"
         self.dungeon_num = -1# 初期状態は-1。0になると街へ移動する。
+        self.data_load_check = 0
+        self.data_choice_done_check = 0
 
     def gui_run(self):
         pygame.display.set_caption("Hit, Blow and Dragons")
@@ -78,12 +81,37 @@ class Commander(show_game4.ShowGame):
                 self.message_screen(self.message)
 
             else:
+                #プレイデータの選択
                 if self.choice_dict["初期画面"]["name"] == "False":
+                    if self.data_choice_done_check == 0:
+                        if self.data_load_check == 0:
+                            data_list = []
+                            for i in range(4):
+                                try:
+                                    book = openpyxl.load_workbook('systems/base{}.xlsx'.format(i), data_only=True)
+                                except:
+                                    book = openpyxl.load_workbook('C:/Users/wolke/git1009/new_system/systems/base{}.xlsx'.format(i), data_only=True)
+                                frontier = self.vlookup(book["プレイヤーステータス"],"frontier",2)
+                                data_list.append(["データ{}".format(i),["ステージ:{} {}".format(frontier,self.vhlookup(book["ダンジョン"],"dungeon_name",1,str(frontier),1)),"Level:{}".format(self.vlookup(book["プレイヤーステータス"],"lv",3))]])
+                            data_list[0][1] = ["エンディングまで到達したデータです","全てのステージを遊べます。"]
+                            self.data_load_check += 1
+                        self.choice_screen("プレイデータを選択", data_list,"", "初期画面")
+                    else:
+                        self.reset()
+                        self.run_count_town = [0, 0, 0, 0, 0, 0, 0]
+                        self.run_count_battle = [0, 0, 0, 0, 0, 0, 0]
+                        self.choice_dict.update({"初期画面": {"number": 1, "name": "ダンジョンへ行く"}})
+                        self.data_choice_done_check += 1
+                elif self.choice_dict["初期画面"]["name"] != "False" and self.data_choice_done_check == 0:
+                    self.book_num = self.choice_dict["初期画面"]["number"]
+                    self.get_book()
+                    self.get_core_info()
                     self.reset()
-                    self.choice_screen("Hit and blow", [["街へ行く","戦闘準備"], ["ダンジョンへ行く","モンスターとの戦闘"], ["ダイヤ購入","課金コーナー"]],"", "初期画面")
                     self.run_count_town = [0, 0, 0, 0, 0, 0, 0]
                     self.run_count_battle = [0, 0, 0, 0, 0, 0, 0]
                     self.choice_dict.update({"初期画面": {"number": 1, "name": "ダンジョンへ行く"}})
+                    self.data_choice_done_check += 1
+                    # self.choice_dict.update({"初期画面": {"number": 1, "name": "ダンジョンへ行く"}})
 
                 #街のトップページ
                 #↓の行の左の>を押すと、街のコードを一気に隠せる

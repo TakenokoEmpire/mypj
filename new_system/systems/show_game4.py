@@ -1031,7 +1031,7 @@ class ShowGame(battle.Battle, town.Town):
         rand_value_judgeをonにすると、0~1の間で乱数がどれだけいい値が出たかによって演出を変更する。
         """
         if rand_value_judge == "on":
-            if rarity < 0.5:
+            if rarity < 0.25:
                 rarity = int(1)
             elif rarity < 0.75:
                 rarity = int(2)
@@ -1043,9 +1043,9 @@ class ShowGame(battle.Battle, town.Town):
                 rarity = int(5)
 
         color_dict = {1:(96,96,96),2:(72,72,216),3:(238,130,238),4:(238,130,238),5:(238,130,238)}
-        length_dict = {1:108,2:108,3:136,4:144,5:288}
+        length_dict = {1:108,2:108,3:136,4:144,5:224}
         central_ball_dict = {1:0,2:0,3:1,4:1,5:1}
-        last_speed_dict = {1:100,2:100,3:100,4:15,5:3}
+        last_speed_dict = {1:100,2:100,3:100,4:15,5:2}
         for i in range(length_dict[rarity]):
             self.screen.fill((0,0,0))
             if i > 47 and i < 72 and rarity >= 3:
@@ -1069,6 +1069,14 @@ class ShowGame(battle.Battle, town.Town):
             if rarity >= 4:
                 if i >= 108:
                     pygame.draw.circle(self.screen, (240,248,255) ,(180*self.screen_size,320*self.screen_size),(25+(i-108)*last_speed_dict[rarity])*self.screen_size,0) # 画面全体を白く塗りつぶす
+            if rarity == 5:
+                if i >= 144:
+                    pygame.draw.circle(self.screen, (240,248,255) ,(45*self.screen_size,130*self.screen_size),(25+(i-144)*last_speed_dict[rarity])*self.screen_size,0) # 画面全体を白く塗りつぶす
+                    pygame.draw.circle(self.screen, (240,248,255) ,(210*self.screen_size,60*self.screen_size),(25+(i-144)*last_speed_dict[rarity])*self.screen_size,0) # 画面全体を白く塗りつぶす
+                    pygame.draw.circle(self.screen, (240,248,255) ,(300*self.screen_size,220*self.screen_size),(25+(i-144)*last_speed_dict[rarity])*self.screen_size,0) # 画面全体を白く塗りつぶす
+                    pygame.draw.circle(self.screen, (240,248,255) ,(315*self.screen_size,510*self.screen_size),(25+(i-144)*last_speed_dict[rarity])*self.screen_size,0) # 画面全体を白く塗りつぶす
+                    pygame.draw.circle(self.screen, (240,248,255) ,(150*self.screen_size,580*self.screen_size),(25+(i-144)*last_speed_dict[rarity])*self.screen_size,0) # 画面全体を白く塗りつぶす
+                    pygame.draw.circle(self.screen, (240,248,255) ,(60*self.screen_size,420*self.screen_size),(25+(i-144)*last_speed_dict[rarity])*self.screen_size,0) # 画面全体を白く塗りつぶす
             pygame.display.update()
             self.clock.tick(self.FPS)
             for event in pygame.event.get():
