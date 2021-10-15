@@ -69,8 +69,6 @@ class ShowGame(battle.Battle, town.Town):
         self.message_checker = 0
         self.clock = pygame.time.Clock()
         self.FPS = 72
-        self.ball_img = pygame.image.load("./new_system/mypj3/img/ball.png")
-        self.ball_img = pygame.transform.rotozoom(self.ball_img, 0, self.screen_size)
         self.enemy_stop = 0
         # self.dungeon_type = ""
 
@@ -255,6 +253,8 @@ class ShowGame(battle.Battle, town.Town):
                         8: self.p_moon_s_img, 9: self.p_snow_s_img, 10: self.p_star_s_img, 11: self.p_sun_s_img,
                         12: self.y_moon_s_img, 13: self.y_snow_s_img, 14: self.y_star_s_img, 15: self.y_sun_s_img
                         }
+        self.ball_img = pygame.image.load("./new_system/mypj3/img/ball.png")
+        self.ball_img = pygame.transform.rotozoom(self.ball_img, 0, self.screen_size)
 
         self.mark_buttonrect = []
         for n in range(5):
@@ -1055,7 +1055,7 @@ class ShowGame(battle.Battle, town.Town):
             if i > 47 and i < 72 and rarity >= 3:
                 pygame.draw.circle(self.screen, (240,248,255) ,(180*self.screen_size,320*self.screen_size),(i-47)*self.screen_size,0) # 白い円が中心から徐々に広がる
             if i >= 72 and i<108 and rarity >= 3:
-                self.screen.blit(self.ball_img,Rect(180*self.screen_size,320*self.screen_size,50*self.screen_size,50*self.screen_size))
+                self.screen.blit(self.ball_img,Rect(155*self.screen_size,295*self.screen_size,50*self.screen_size,50*self.screen_size))
             if i >= 108 and i<120 and rarity == 3:
                 pygame.draw.circle(self.screen, (240,248,255) ,(180*self.screen_size,320*self.screen_size),(25-(i-108))*self.screen_size,0)
             pygame.draw.circle(self.screen, color_dict[rarity],(180*self.screen_size,320*self.screen_size),(5+i)*self.screen_size,3*self.screen_size) # 円環が広がる
