@@ -31,7 +31,7 @@ class Commander(show_game4.ShowGame):
         4番目:属性の効果を、(1+val)倍する
         5番目:2にすると、マップのタップ当たり判定を表示
         """
-        self.demand = [1,1,1,0,0,0]
+        self.demand = [0,0,0,0,0,0]
         super().__init__(demand = self.demand)
         self.place = "entrance"
         self.dungeon_num = -1# 初期状態は-1。0になると街へ移動する。

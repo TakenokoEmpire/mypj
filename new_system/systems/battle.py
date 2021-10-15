@@ -720,6 +720,11 @@ class Core(Function):
                     for slot in range(5):
                         if dic["slot{}_attr".format(slot+1)] == attr:
                             attr_val += dic["slot{}_val".format(slot+1)]
+                    # 「全属性」（賢者の石など）
+                    attr5 = "all_attr"
+                    for slot in range(5):
+                        if dic["slot{}_attr".format(slot+1)] == attr5:
+                            attr_val += dic["slot{}_val".format(slot+1)]
                     self.equip_val_update(current_id,"{}".format(attr),attr_val)
                 used_slot_count = 0
                 for slot in range(5):

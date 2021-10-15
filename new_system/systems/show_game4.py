@@ -899,7 +899,7 @@ class ShowGame(battle.Battle, town.Town):
         font = pygame.font.SysFont(None, 80*self.screen_size)
         font2 = pygame.font.SysFont(None, 40*self.screen_size)
         font3 = pygame.font.SysFont(None, 28*self.screen_size)
-        font_j = pygame.font.Font("./new_system/Harenosora.otf", 26)
+        font_j = pygame.font.Font("./new_system/Harenosora.otf", 26*self.screen_size)
         if self.dungeon_type == "normal":
             clear = font.render("CLEAR!!", True, (230, 180, 34))
             self.screen.blit(clear, (58*self.screen_size, 100*self.screen_size))
@@ -1055,7 +1055,7 @@ class ShowGame(battle.Battle, town.Town):
             if i > 47 and i < 72 and rarity >= 3:
                 pygame.draw.circle(self.screen, (240,248,255) ,(180*self.screen_size,320*self.screen_size),(i-47)*self.screen_size,0) # 白い円が中心から徐々に広がる
             if i >= 72 and i<108 and rarity >= 3:
-                self.screen.blit(self.ball_img,Rect(155*self.screen_size,295*self.screen_size,50*self.screen_size,50*self.screen_size))
+                self.screen.blit(self.ball_img,Rect(180*self.screen_size,320*self.screen_size,50*self.screen_size,50*self.screen_size))
             if i >= 108 and i<120 and rarity == 3:
                 pygame.draw.circle(self.screen, (240,248,255) ,(180*self.screen_size,320*self.screen_size),(25-(i-108))*self.screen_size,0)
             pygame.draw.circle(self.screen, color_dict[rarity],(180*self.screen_size,320*self.screen_size),(5+i)*self.screen_size,3*self.screen_size) # 円環が広がる
