@@ -13,7 +13,7 @@ class SendReceive():
     def __init__(
             self,
             url: str = "https://damp-earth-70561.herokuapp.com",
-            player_id: str = "d2b8e778-20f3-4744-920b-6eb67eacc901",
+            player_id: str = "e9eab746-bc3b-4200-884b-b3b8e7f5dac0",
             player_name: str = "D",
             room_id: Optional[int] = None,
             headers: Dict[str, str] = {"Content-Type": "application/json"}) -> None:

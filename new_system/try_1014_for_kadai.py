@@ -695,56 +695,58 @@ class AutoPlay():
         # 368af
         
         while True:
-            dic =drun.get_table()
-            if dic["state"] == 3:
-                self.ending()
-                return self.history
-            # drun.post_guess("12345")
-            try:
-                drun.post_guess(self.fugaku(self.numberinfo, self.groupinfo, self.history, self.wholeinfo))
-            except:
-                drun.post_guess("13024")
-            print(drun.get_table())
-            result = drun.get_table()['table'][-1]
-            self.history.append(result)
-            # 情報のアップデート
-            self.numberinfo, self.groupinfo, self.history, self.wholeinfo = self.info_update(self.numberinfo, self.groupinfo, self.history, self.wholeinfo)
+            turn_owner = drun.get_table()['now_player']
+            if turn_owner == "D":
+                dic =drun.get_table()
+                if dic["state"] == 3:
+                    self.ending()
+                    return self.history
+                # drun.post_guess("12345")
+                try:
+                    drun.post_guess(self.fugaku(self.numberinfo, self.groupinfo, self.history, self.wholeinfo))
+                except:
+                    drun.post_guess("13024")
+                print(drun.get_table())
+                result = drun.get_table()['table'][-1]
+                self.history.append(result)
+                # 情報のアップデート
+                self.numberinfo, self.groupinfo, self.history, self.wholeinfo = self.info_update(self.numberinfo, self.groupinfo, self.history, self.wholeinfo)
 
-            if self.print_mode == "on":
-                for tt in range(len(self.history)):
-                    print(self.history[tt])
-            self.game_record.append(self.wholeinfo["phase"])
-            """クリア判定"""
-            if self.history[-1]["hit"] == 5:
-                self.ending()
-                """ここで終了"""
-                return self.history
+                if self.print_mode == "on":
+                    for tt in range(len(self.history)):
+                        print(self.history[tt])
+                self.game_record.append(self.wholeinfo["phase"])
+                """クリア判定"""
+                if self.history[-1]["hit"] == 5:
+                    self.ending()
+                    """ここで終了"""
+                    return self.history
 
-            if self.print_mode == "on":
-                print()
-                print("--------------------------------------------")
-                print("You are in "+self.phase_list[self.wholeinfo["phase"]])
-                print("TURN" + str(self.wholeinfo["turn"]))
-            # elif self.print_mode == "off":
-            #     if self.wholeinfo["turn"] % 3 == 0:
-            #         print("TURN" + str(self.wholeinfo["turn"]))
+                if self.print_mode == "on":
+                    print()
+                    print("--------------------------------------------")
+                    print("You are in "+self.phase_list[self.wholeinfo["phase"]])
+                    print("TURN" + str(self.wholeinfo["turn"]))
+                # elif self.print_mode == "off":
+                #     if self.wholeinfo["turn"] % 3 == 0:
+                #         print("TURN" + str(self.wholeinfo["turn"]))
 
-            # 文字の入力
-            # guess2 = input("player1 guess ->")
-            """ショートカット
-            中盤まで：3
-            終盤まで：4
-            最後まで：5"""
-            if self.wholeinfo["phase"] < 5:
-                guess2 = 12345
-            else:
-                guess2 = input("player1 guess ->")
-            if guess2 == "":
-                guess2 = 12345
-            # d2run.post_guess(guess2)
-            drun.get_table()
-            # self.ramの消去
-            self.ram = []
+                # 文字の入力
+                # guess2 = input("player1 guess ->")
+                """ショートカット
+                中盤まで：3
+                終盤まで：4
+                最後まで：5"""
+                if self.wholeinfo["phase"] < 5:
+                    guess2 = 12345
+                else:
+                    guess2 = input("player1 guess ->")
+                if guess2 == "":
+                    guess2 = 12345
+                # d2run.post_guess(guess2)
+                drun.get_table()
+                # self.ramの消去
+                self.ram = []
 
 room_id = int(input("Input room id -->"))
 battle_qty = 100
