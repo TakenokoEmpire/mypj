@@ -1,5 +1,6 @@
 import requests
 from typing import Dict, Optional
+import time
 
 # URL = "https://damp-earth-70561.herokuapp.com"
 # player_id_D = "d2b8e778-20f3-4744-920b-6eb67eacc901"
@@ -60,6 +61,7 @@ class SendReceive():
     # 対戦情報テーブル(現在のターン, hit&blowの履歴, 勝敗の判定)を取得する
 
     def get_table(self):
+        time.sleep(0.5)
         url_get_table = self.url + "/rooms/" + \
             str(self.room_id) + "/players/" + self.player_name + "/table"
         result_table = session.get(url_get_table)

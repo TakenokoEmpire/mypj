@@ -696,12 +696,12 @@ class AutoPlay():
         
         while True:
             turn_owner = drun.get_table()['now_player']
+            dic =drun.get_table()
+            if dic["state"] == 3:
+                self.ending()
+                return self.history
+            # drun.post_guess("12345")
             if turn_owner == "D":
-                dic =drun.get_table()
-                if dic["state"] == 3:
-                    self.ending()
-                    return self.history
-                # drun.post_guess("12345")
                 try:
                     drun.post_guess(self.fugaku(self.numberinfo, self.groupinfo, self.history, self.wholeinfo))
                 except:
